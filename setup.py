@@ -3,7 +3,7 @@ requires = [
         'tahrir-api',
         'fedmsg']
 
-long_description = file("readme.rst").read().strip()
+long_description = file("README.rst").read().strip()
 setup(
         name='fedbadges',
         version='0.1.0',
@@ -13,6 +13,7 @@ setup(
         author_email='rdelinge@redhat.com',
         url='https://github.com/rossdylan/fedbages',
         install_requires=requires,
+        include_package_data=True,
         packages=[
             'fedbadges.consumers',
             'fedbadges.commands'],
