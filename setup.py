@@ -15,6 +15,7 @@ setup(
         install_requires=requires,
         include_package_data=True,
         packages=[
+            'fedbadges',
             'fedbadges.consumers',
             'fedbadges.commands'],
         zip_safe=False,
