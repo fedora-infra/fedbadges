@@ -6,7 +6,7 @@ requires = [
 long_description = file("README.rst").read().strip()
 setup(
         name='fedbadges',
-        version='0.1.2',
+        version='0.1.4',
         description='fedmsg consumer for awarding open badges',
         long_description=long_description,
         author='Ross Delinger',
