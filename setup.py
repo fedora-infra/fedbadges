@@ -22,4 +22,4 @@ setup(
             'console_scripts': [
                 "fedmsg-badges=fedbadges.commands.badges:badges"],
             'moksha.consumer': [
-                "fedmsg-badges=fedbadges.consumers.ExampleBadge:ExampleBadgessConsumer"]},)
+                "fedmsg-badges=fedbadges.consumers.ExampleBadge:ExampleBadgesConsumer"]},)
