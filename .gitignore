@@ -1,1 +1,4 @@
 *.egg*
+*.pyc
+*.pyo
+*.swp
