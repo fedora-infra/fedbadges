@@ -1,5 +1,11 @@
 from setuptools import setup
 
+# Need this to get around weird setuptools biz on py2.7
+try:
+    import multiprocessing, logging
+except ImportError:
+    pass
+
 
 def get_requirements(filename='requirements.txt'):
     with open(filename, 'r') as f:
@@ -18,6 +24,8 @@ setup(
         author_email='rdelinge@redhat.com',
         url='https://github.com/rossdylan/fedbages',
         install_requires=get_requirements(),
+        tests_require=["nose"],
+        test_suite="nose.collector",
         include_package_data=True,
         packages=[
             'fedbadges',
@@ -28,4 +36,7 @@ setup(
             'console_scripts': [
                 "fedmsg-badges=fedbadges.commands.badges:badges"],
             'moksha.consumer': [
-                "fedmsg-badges=fedbadges.consumers.ExampleBadge:ExampleBadgesConsumer"]},)
+                "fedmsg-badges=fedbadges.consumers.yamlconsumer:YAMLBadgeConsumer"
+            ]
+        },
+)

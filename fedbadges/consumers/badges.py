@@ -48,18 +48,7 @@ class FedoraBadgesConsumer(FedmsgConsumer):
                 issuer.get('issuer_org'),
                 issuer.get('issuer_contact')
                 )
-
-        badges_settings = hub.config.get("{0}_badges".format(self.name))
-        for badge in badges_settings:
-            self.tahrir.add_badge(
-                    badge.get('badge_name'),
-                    badge.get('badge_image'),
-                    badge.get('badge_desc'),
-                    badge.get('badge_criteria'),
-                    self.issuer_id
-                    )
         return super(FedoraBadgesConsumer, self).__init__(hub)
-
 
     def award_badge(self, email, badge_id, issued_on=None):
         """
@@ -87,4 +76,4 @@ class FedoraBadgesConsumer(FedmsgConsumer):
         :type msg: dict
         :param msg: The message to be parsed
         """
-        pass
+        raise NotImplementedError()

@@ -1,0 +1,24 @@
+%YAML 1.2
+---
+
+# This is some metadata about the badge
+name:           Like a Rock
+description:    You have pushed 500 or more bodhi updates to stable status.
+creator:        ralph
+
+# This is a link to the discussion about adopting this as a for-real badge.
+discussion: http://github.com/fedora-infra/badges/pull/SOME_NUMBER
+
+# We'll perform our more costly check (defined below) only when
+# we receive messages that match this 'trigger'
+trigger:
+  topic:  org.fedoraproject.prod.bodhi.update.request.stable
+
+# Once the check has been triggered, this defines what we actually check.
+criteria:
+  datanommer:
+    - filter:
+        topic: {{topic}}  # The topic of the message that triggered us.
+      operation: count
+      must be:
+        greater than or equal to: 500
