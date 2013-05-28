@@ -1,5 +1,6 @@
 from badges import FedoraBadgesConsumer
 import os.path
+import yaml
 
 import logging
 log = logging.getLogger("moksha.hub")
@@ -24,7 +25,10 @@ class YAMLConsumer(FedoraBadgesConsumer):
         for root, dirs, files in os.walk(directory):
             for partial_fname in files:
                 fname = root + "/" + partial_fname
-                self.badges.append(self._load_badge_from_yaml(fname))
+                badge = self._load_badge_from_yaml(fname)
+                if badge:
+                    self.badges.append(badge)
+
 
         log.info("Loaded %i total badge definitions" % len(self.badges))
 
@@ -32,9 +36,10 @@ class YAMLConsumer(FedoraBadgesConsumer):
         log.debug("Loading %r" % fname)
         try:
             with open(fname, 'r') as f:
-                return yaml.loads(f.read())
+                return yaml.load(f.read())
         except Exception as e:
             log.error("Loading %r failed with %r" % (fname, e))
+            return None
 
     def consume(self, msg):
         raise NotImplementError("I haven't written this yet")

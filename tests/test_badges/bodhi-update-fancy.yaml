@@ -27,7 +27,7 @@ criteria:
   datanommer:
     - filter:
         all:
-          topic: {{topic}}
+          topic: "{{topic}}"
           raw_contains:
             any:
               - foo
