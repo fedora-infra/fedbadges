@@ -1,9 +1,14 @@
 from setuptools import setup
-requires = [
-        'tahrir-api',
-        'fedmsg']
+
+
+def get_requirements(filename='requirements.txt'):
+    with open(filename, 'r') as f:
+        return [line for line in f.readlines()]
+
 
 long_description = file("README.rst").read().strip()
+
+
 setup(
         name='fedbadges',
         version='0.1.4',
@@ -12,7 +17,7 @@ setup(
         author='Ross Delinger',
         author_email='rdelinge@redhat.com',
         url='https://github.com/rossdylan/fedbages',
-        install_requires=requires,
+        install_requires=get_requirements(),
         include_package_data=True,
         packages=[
             'fedbadges',
