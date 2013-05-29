@@ -8,6 +8,7 @@ Authors:  Ross Delinger
 import os.path
 import yaml
 
+import fedbadges.models
 from paste.deploy.converters import asbool
 from fedmsg.consumers import FedmsgConsumer
 from tahrir_api.dbapi import TahrirDatabase
@@ -44,23 +45,33 @@ class FedoraBadgesConsumer(FedmsgConsumer):
             issuer.get('issuer_contact')
         )
 
-
         directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
-        self._load_badges_from_yaml(directory)
+        self.badges = self._load_badges_from_yaml(directory)
+
 
     def _load_badges_from_yaml(self, directory):
         # badges indexed by trigger
-        self.badges = []
+        badges = []
         directory = os.path.abspath(directory)
         log.info("Looking in %r to load badge definitions" % directory)
         for root, dirs, files in os.walk(directory):
             for partial_fname in files:
                 fname = root + "/" + partial_fname
                 badge = self._load_badge_from_yaml(fname)
-                if badge:
-                    self.badges.append(badge)
 
-        log.info("Loaded %i total badge definitions" % len(self.badges))
+                if not badge:
+                    continue
+
+                try:
+                    badge_rule = fedbadges.models.BadgeRule(badge)
+                    badges.append(badge_rule)
+                except ValueError as e:
+                    log.error("Initializing rule for %r failed with %r" % (
+                        fname, e))
+
+        log.info("Loaded %i total badge definitions" % len(badges))
+        return badges
+
 
     def _load_badge_from_yaml(self, fname):
         log.debug("Loading %r" % fname)
