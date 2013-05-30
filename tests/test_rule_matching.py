@@ -29,21 +29,18 @@ class TestRuleMatching(unittest.TestCase):
             trigger=dict(topic="test_topic"),
         ))
 
+    # TODO test integrated trigger and criteria matching
 
-    def test_basic_topic_matching(self):
+class TestTriggerMatching(unittest.TestCase):
+    def test_basic_topic_matching_isolated(self):
         """ Test that the matches method can match a basic topic. """
-        rule = fedbadges.models.BadgeRule(dict(
-            name="Test",
-            description="Doesn't matter...",
-            creator="Somebody",
-            discussion="http://somelink.com",
-            trigger=dict(topic="test_topic"),
-            criteria=dict(),
+        trigger = fedbadges.models.Trigger(dict(
+            topic="test_topic",
         ))
         message = dict(
             topic="test_topic",
         )
-        assert(rule.matches(message))
+        assert(trigger.matches(message))
 
     # TODO test malformed trigger
     # TODO test malformed criteria
