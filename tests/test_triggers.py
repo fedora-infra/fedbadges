@@ -16,8 +16,63 @@ class TestTriggerMatching(unittest.TestCase):
         )
         assert(trigger.matches(message))
 
+    def test_basic_category_matching_isolated(self):
+        """ Test that the matches method can match a basic topic. """
+        trigger = fedbadges.models.Trigger(dict(
+            category="test_category",
+        ))
+        message = dict(
+            topic="org.fedoraproject.dev.test_category.some_topic",
+        )
+        assert(trigger.matches(message))
+
+    def test_basic_conjunction_pass(self):
+        """ Test that two anded fields accept the right message """
+        trigger = fedbadges.models.Trigger({
+            "all": [
+                dict(topic="org.fedoraproject.dev.test_category.test_topic"),
+                dict(category="test_category"),
+            ]
+        })
+        message = dict(
+            topic="org.fedoraproject.dev.test_category.test_topic",
+        )
+        assert(trigger.matches(message))
+
+    def test_basic_conjunction_fail(self):
+        """ Test that two anded fields reject the non-matching messages """
+        trigger = fedbadges.models.Trigger({
+            "all": [
+                dict(topic="org.fedoraproject.dev.test_category.test_topic"),
+                dict(category="test_category"),
+            ]
+        })
+        message = dict(
+            topic="org.fedoraproject.dev.test_category.test_topic.doesntmatch",
+        )
+        assert(not trigger.matches(message))
+
+    @raises(TypeError)
+    def test_invalid_nesting(self):
+        """ Test that invalid nesting is detected and excepted. """
+        trigger = fedbadges.models.Trigger({
+            "all": dict(
+                topic="org.fedoraproject.dev.test_category.test_topic",
+                category="test_category",
+            )
+        })
+
     @raises(ValueError)
+    def test_two_fields(self):
+        """ Test that passing two statements as a trigger is invalid. """
+        trigger = fedbadges.models.Trigger(dict(
+            topic="test_topic",
+            category="test_topic",
+        ))
+
+    @raises(KeyError)
     def test_malformed_trigger(self):
+        """ Test that a single, undefined field is handled as invalid. """
         trigger = fedbadges.models.Trigger(dict(
             watwat="does not exist",
         ))

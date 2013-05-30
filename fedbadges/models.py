@@ -9,6 +9,13 @@ Authors:    Ralph Bean
 
 import abc
 
+operator_fields = [
+    "all",
+    "any",
+    #"not",
+]
+# TODO -- lambdas?
+
 
 class BadgeRule(object):
     required_fields = [
@@ -48,7 +55,7 @@ class BaseComparator(object):
     def __init__(self, d):
         for field in d:
             if not field in self.possible_fields:
-                raise ValueError("%r is not a possible field" % field)
+                raise KeyError("%r is not a possible field" % field)
         self._d = d
 
     @abc.abstractmethod
@@ -60,19 +67,45 @@ class Trigger(BaseComparator):
     possible_fields = [
         'topic',
         'category',
-    ]
+    ] + operator_fields
+    children = None
+
+    def __init__(self, d):
+        super(Trigger, self).__init__(d)
+
+        if len(self._d) > 1:
+            raise ValueError("No more than one trigger allowed.  "
+                             "Use an operator, one of %r" % operator_fields)
+        self.attribute = self._d.keys()[0]
+        self.expected_value = self._d[self.attribute]
+
+        # Check if we should we recursively nest Triggers?
+        if self.attribute in operator_fields:
+
+            if not isinstance(self.expected_value, list):
+                raise TypeError("Operators only accept lists, not %r" %
+                                 type(self.expected_value))
+
+            self.children = [Trigger(child) for child in self.expected_value]
 
     def matches(self, msg):
-        for k, v in self._d.items():
-            if not msg[k] is v:
-                return False
-        return True
+        # Check if we should just aggregate the results of our children.
+        # Otherwise, we are a leaf-node doing a straightforward comparison.
+        if self.children:
+            return __builtins__[self.attribute]([
+                child.matches(msg) for child in self.children
+            ])
+        elif self.attribute == 'category':
+            # TODO -- use fedmsg.meta.msg2processor(msg).__name__.lower()
+            return msg['topic'].split('.')[3] == self.expected_value
+        else:
+            return msg[self.attribute] == self.expected_value
 
 
 class Criteria(BaseComparator):
     possible_fields = [
         'datanommer',
-    ]
+    ] + operator_fields
 
     def matches(self, msg):
         raise NotImplementedError("need to write this")

@@ -6,7 +6,7 @@ import fedbadges.models
 
 
 class TestCriteriaMatching(unittest.TestCase):
-    @raises(ValueError)
+    @raises(KeyError)
     def test_malformed_criteria(self):
         criteria = fedbadges.models.Criteria(dict(
             watwat="does not exist",
