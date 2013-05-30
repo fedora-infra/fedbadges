@@ -9,20 +9,20 @@ Authors:    Ralph Bean
 
 import abc
 
-required_fields = [
-    'name',
-    'description',
-    'creator',
-    'discussion',
-    'trigger',
-    'criteria',
-]
 
 
 class BadgeRule(object):
+    required_fields = [
+        'name',
+        'description',
+        'creator',
+        'discussion',
+        'trigger',
+        'criteria',
+    ]
 
     def __init__(self, badge_dict):
-        for field in required_fields:
+        for field in self.required_fields:
             if not field in badge_dict:
                 raise ValueError("BadgeRule requires %r" % field)
 
