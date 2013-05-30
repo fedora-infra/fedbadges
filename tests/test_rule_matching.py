@@ -28,6 +28,7 @@ class TestRuleMatching(unittest.TestCase):
         ))
 
     # TODO test integrated trigger and criteria matching
+    # TODO test that matches is false if user already has the badge.
 
 
 class TestTriggerMatching(unittest.TestCase):
@@ -46,8 +47,6 @@ class TestTriggerMatching(unittest.TestCase):
         trigger = fedbadges.models.Trigger(dict(
             watwat="does not exist",
         ))
-
-    # TODO test that matches is false if user already has the badge.
 
 
 class TestCriteriaMatching(unittest.TestCase):
