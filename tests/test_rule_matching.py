@@ -8,9 +8,6 @@ from nose.tools import eq_, raises
 
 class TestRuleMatching(unittest.TestCase):
 
-    def setUp(self):
-        pass
-
     @raises(ValueError)
     def test_metadata_validation(self):
         """ Test for failure if not enough metadata """
@@ -29,31 +26,3 @@ class TestRuleMatching(unittest.TestCase):
 
     # TODO test integrated trigger and criteria matching
     # TODO test that matches is false if user already has the badge.
-
-
-class TestTriggerMatching(unittest.TestCase):
-    def test_basic_topic_matching_isolated(self):
-        """ Test that the matches method can match a basic topic. """
-        trigger = fedbadges.models.Trigger(dict(
-            topic="test_topic",
-        ))
-        message = dict(
-            topic="test_topic",
-        )
-        assert(trigger.matches(message))
-
-    @raises(ValueError)
-    def test_malformed_trigger(self):
-        trigger = fedbadges.models.Trigger(dict(
-            watwat="does not exist",
-        ))
-
-
-class TestCriteriaMatching(unittest.TestCase):
-    @raises(ValueError)
-    def test_malformed_criteria(self):
-        criteria = fedbadges.models.Criteria(dict(
-            watwat="does not exist",
-        ))
-
-    # TODO - mock out datanommer to test real criteria
