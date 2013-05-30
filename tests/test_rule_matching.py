@@ -44,3 +44,4 @@ class TestTriggerMatching(unittest.TestCase):
 
     # TODO test malformed trigger
     # TODO test malformed criteria
+    # TODO test that matches is false if user already has the badge.
