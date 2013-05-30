@@ -42,6 +42,11 @@ class TestTriggerMatching(unittest.TestCase):
         )
         assert(trigger.matches(message))
 
-    # TODO test malformed trigger
+    @raises(ValueError)
+    def test_malformed_trigger(self):
+        trigger = fedbadges.models.Trigger(dict(
+            watwat="does not exist",
+        ))
+
     # TODO test malformed criteria
     # TODO test that matches is false if user already has the badge.

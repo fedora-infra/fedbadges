@@ -56,8 +56,16 @@ class BaseComparator(object):
 
 
 class Trigger(BaseComparator):
+    possible_fields = [
+        'topic',
+        'category',
+    ]
 
     def __init__(self, d):
+        for field in d:
+            if not field in self.possible_fields:
+                raise ValueError("%r is not a possible trigger" % field)
+
         self._d = d
 
     def matches(self, msg):
