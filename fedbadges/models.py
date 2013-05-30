@@ -46,9 +46,12 @@ class BaseComparator(object):
     """ Base class for shared behavior between trigger and criteria. """
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod
     def __init__(self, d):
-        pass
+        for field in d:
+            if not field in self.possible_fields:
+                raise ValueError("%r is not a possible field" % field)
+        self._d = d
+
 
     @abc.abstractmethod
     def matches(self, msg):
@@ -61,13 +64,6 @@ class Trigger(BaseComparator):
         'category',
     ]
 
-    def __init__(self, d):
-        for field in d:
-            if not field in self.possible_fields:
-                raise ValueError("%r is not a possible trigger" % field)
-
-        self._d = d
-
     def matches(self, msg):
         for k, v in self._d.items():
             if not msg[k] is v:
@@ -76,9 +72,9 @@ class Trigger(BaseComparator):
 
 
 class Criteria(BaseComparator):
-
-    def __init__(self, d):
-        self._d = d
+    possible_fields = [
+        'datanommer',
+    ]
 
     def matches(self, msg):
         raise NotImplementedError("need to write this")
