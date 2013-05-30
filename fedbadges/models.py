@@ -10,7 +10,6 @@ Authors:    Ralph Bean
 import abc
 
 
-
 class BadgeRule(object):
     required_fields = [
         'name',
@@ -51,7 +50,6 @@ class BaseComparator(object):
             if not field in self.possible_fields:
                 raise ValueError("%r is not a possible field" % field)
         self._d = d
-
 
     @abc.abstractmethod
     def matches(self, msg):

@@ -44,4 +44,4 @@ class TestYamlCollector(unittest.TestCase):
         eq_(names, set([
             'Like a Rock',
             'The Zen of Foo Bar Baz',
-        ]))
+            ]))

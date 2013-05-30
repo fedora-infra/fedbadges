@@ -1,6 +1,6 @@
 config = dict(
     # Options for the fedmsg-fedbadges services
-    badges_global = dict(
+    badges_global=dict(
         database_uri='mysql://fedbadges:password@localhost/fedbadges',
         badge_issuer=dict(
             issuer_id='Fedora Project',

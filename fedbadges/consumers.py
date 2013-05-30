@@ -48,7 +48,6 @@ class FedoraBadgesConsumer(FedmsgConsumer):
         directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
         self.badges = self._load_badges_from_yaml(directory)
 
-
     def _load_badges_from_yaml(self, directory):
         # badges indexed by trigger
         badges = []
@@ -71,7 +70,6 @@ class FedoraBadgesConsumer(FedmsgConsumer):
 
         log.info("Loaded %i total badge definitions" % len(badges))
         return badges
-
 
     def _load_badge_from_yaml(self, fname):
         log.debug("Loading %r" % fname)
