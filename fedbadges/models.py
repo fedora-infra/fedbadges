@@ -28,10 +28,13 @@ class BadgeRule(object):
     ])
 
     def __init__(self, badge_dict):
-        for field in self.required_fields:
-            # TODO - do set magic here
-            if not field in badge_dict:
-                raise ValueError("BadgeRule requires %r" % field)
+        argued_fields = set(badge_dict.keys())
+        if not self.required_fields.issubset(argued_fields):
+            raise ValueError(
+                "BadgeRule requires %r.  Missing %r" % (
+                    self.required_fields,
+                    self.required_fields.difference(argued_fields),
+                ))
 
         self._d = badge_dict
 
@@ -54,10 +57,13 @@ class BaseComparator(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, d):
-        for field in d:
-            # TODO -- do set magic here
-            if not field in self.possible_fields:
-                raise KeyError("%r is not a possible field" % field)
+        argued_fields = set(d.keys())
+        if not argued_fields.issubset(self.possible_fields):
+            raise KeyError(
+                "%r are not possible fields.  Choose from %r" % (
+                    argued_fields.difference(self.possible_fields),
+                    self.possible_fields
+                ))
         self._d = d
 
     @abc.abstractmethod
