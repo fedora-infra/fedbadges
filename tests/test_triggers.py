@@ -17,7 +17,7 @@ class TestTriggerMatching(unittest.TestCase):
         assert(trigger.matches(message))
 
     def test_basic_category_matching_isolated(self):
-        """ Test that the matches method can match a basic topic. """
+        """ Test that the matches method can match a basic category. """
         trigger = fedbadges.models.Trigger(dict(
             category="test_category",
         ))
@@ -40,7 +40,7 @@ class TestTriggerMatching(unittest.TestCase):
         assert(trigger.matches(message))
 
     def test_basic_conjunction_fail(self):
-        """ Test that two anded fields reject the non-matching messages """
+        """ Test that two anded fields reject non-matching messages """
         trigger = fedbadges.models.Trigger({
             "all": [
                 dict(topic="org.fedoraproject.dev.test_category.test_topic"),
