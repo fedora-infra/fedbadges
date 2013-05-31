@@ -18,7 +18,7 @@ operator_fields = set([
 
 
 class BadgeRule(object):
-    required_fields = set([
+    required = set([
         'name',
         'description',
         'creator',
@@ -29,11 +29,11 @@ class BadgeRule(object):
 
     def __init__(self, badge_dict):
         argued_fields = set(badge_dict.keys())
-        if not self.required_fields.issubset(argued_fields):
+        if not self.required.issubset(argued_fields):
             raise ValueError(
                 "BadgeRule requires %r.  Missing %r" % (
-                    self.required_fields,
-                    self.required_fields.difference(argued_fields),
+                    self.required,
+                    self.required.difference(argued_fields),
                 ))
 
         self._d = badge_dict
@@ -55,15 +55,24 @@ class BadgeRule(object):
 class BaseComparator(object):
     """ Base class for shared behavior between trigger and criteria. """
     __metaclass__ = abc.ABCMeta
+    possible = required = set()
 
     def __init__(self, d):
         argued_fields = set(d.keys())
-        if not argued_fields.issubset(self.possible_fields):
+        if not argued_fields.issubset(self.possible):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
-                    argued_fields.difference(self.possible_fields),
-                    self.possible_fields
+                    argued_fields.difference(self.possible),
+                    self.possible
                 ))
+
+        if self.required and not self.required.issubset(argued_fields):
+            raise ValueError(
+                "%r are required fields.  Missing %r" % (
+                    self.required,
+                    self.required.difference(argued_fields),
+                ))
+
         self._d = d
 
     @abc.abstractmethod
@@ -72,7 +81,7 @@ class BaseComparator(object):
 
 
 class Trigger(BaseComparator):
-    possible_fields = set([
+    possible = set([
         'topic',
         'category',
     ]).union(operator_fields)
@@ -109,7 +118,7 @@ class Trigger(BaseComparator):
 
 
 class Criteria(BaseComparator):
-    possible_fields = set([
+    possible = set([
         'datanommer',
     ]).union(operator_fields)
 
