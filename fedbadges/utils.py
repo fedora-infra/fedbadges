@@ -17,12 +17,13 @@ def construct_substitutions(msg):
 
 def format_args(obj, subs):
     """ Recursively apply a substitutions dict to a given criteria subtree """
-    if isinstance(obj, list):
-        return [format_args(item, subs) for item in obj]
 
-    for key in obj:
-        if isinstance(obj[key], dict):
+    if isinstance(obj, dict):
+        for key in obj:
             obj[key] = format_args(obj[key], subs)
-        else:
-            obj[key] = obj[key].format(**subs)
+    elif isinstance(obj, list):
+        return [format_args(item, subs) for item in obj]
+    else:
+        obj = obj.format(**subs)
+
     return obj

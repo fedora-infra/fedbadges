@@ -82,6 +82,25 @@ class TestFormatArgs(unittest.TestCase):
         actual = format_args(obj, subs)
         eq_(actual, target)
 
+    def test_list(self):
+        subs = {
+            "foo_bar_baz": "value",
+        }
+        obj = {
+            "something should be": [
+                "{foo_bar_baz}",
+                "or this",
+            ]
+        }
+        target = {
+            "something should be": [
+                "value",
+                "or this",
+            ]
+        }
+        actual = format_args(obj, subs)
+        eq_(actual, target)
+
     # XXX - This would be cool.
     #def test_numeric(self):
     #    subs = {
