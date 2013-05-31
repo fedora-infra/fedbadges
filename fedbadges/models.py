@@ -9,26 +9,27 @@ Authors:    Ralph Bean
 
 import abc
 
-operator_fields = [
+operator_fields = set([
     "all",
     "any",
     #"not",
-]
+])
 # TODO -- lambdas?
 
 
 class BadgeRule(object):
-    required_fields = [
+    required_fields = set([
         'name',
         'description',
         'creator',
         'discussion',
         'trigger',
         'criteria',
-    ]
+    ])
 
     def __init__(self, badge_dict):
         for field in self.required_fields:
+            # TODO - do set magic here
             if not field in badge_dict:
                 raise ValueError("BadgeRule requires %r" % field)
 
@@ -54,6 +55,7 @@ class BaseComparator(object):
 
     def __init__(self, d):
         for field in d:
+            # TODO -- do set magic here
             if not field in self.possible_fields:
                 raise KeyError("%r is not a possible field" % field)
         self._d = d
@@ -64,10 +66,10 @@ class BaseComparator(object):
 
 
 class Trigger(BaseComparator):
-    possible_fields = [
+    possible_fields = set([
         'topic',
         'category',
-    ] + operator_fields
+    ]).union(operator_fields)
     children = None
 
     def __init__(self, d):
@@ -103,9 +105,9 @@ class Trigger(BaseComparator):
 
 
 class Criteria(BaseComparator):
-    possible_fields = [
+    possible_fields = set([
         'datanommer',
-    ] + operator_fields
+    ]).union(operator_fields)
 
     def matches(self, msg):
         raise NotImplementedError("need to write this")
