@@ -8,16 +8,47 @@ import fedbadges.models
 class TestCriteriaMatching(unittest.TestCase):
     @raises(KeyError)
     def test_malformed_criteria(self):
+        """ Test that an error is raised when nonsense is provided. """
         criteria = fedbadges.models.Criteria(dict(
             watwat="does not exist",
         ))
+
+    @raises(ValueError)
+    def test_underspecified_criteria(self):
+        """ Test that an error is raised when condition is missing. """
+        criteria = fedbadges.models.Criteria(dict(
+            datanommer={
+                "filter": {
+                    "topics": ["{topic}"],
+                    "wat": "baz"
+                },
+                "operation": "count",
+            }
+        ))
+
+    @raises(KeyError)
+    def test_malformed_filter(self):
+        """ Test that an error is raised for malformed filters """
+        criteria = fedbadges.models.Criteria(dict(
+            datanommer={
+                "filter": {
+                    "topics": ["{topic}"],
+                    "wat": "baz"
+                },
+                "operation": "count",
+                "condition": {
+                    "greater than or equal to": 500,
+                }
+            }
+        ))
+
 
 class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
     def setUp(self):
         self.criteria = fedbadges.models.Criteria(dict(
             datanommer={
                 "filter": {
-                    "topic": "{topic}",
+                    "topics": ["{topic}"],
                 },
                 "operation": "count",
                 "condition": {
@@ -42,7 +73,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
             f.assert_called_once_with(
-                topic="org.fedoraproject.dev.something.sometopic",
+                topics=["org.fedoraproject.dev.something.sometopic"],
                 defer=True,
             )
 
@@ -55,7 +86,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
             f.assert_called_once_with(
-                topic="org.fedoraproject.dev.something.sometopic",
+                topics=["org.fedoraproject.dev.something.sometopic"],
                 defer=True,
             )
 
@@ -68,9 +99,8 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
             f.assert_called_once_with(
-                topic="org.fedoraproject.dev.something.sometopic",
+                topics=["org.fedoraproject.dev.something.sometopic"],
                 defer=True,
             )
 
     # TODO -- test more complicated combinations of filter and must be
-    # TODO -- test more malformed queries

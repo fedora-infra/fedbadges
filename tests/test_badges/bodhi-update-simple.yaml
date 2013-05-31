@@ -18,7 +18,8 @@ trigger:
 criteria:
   datanommer:
       filter:
-        topic: "{{topic}}"  # The topic of the message that triggered us.
+        topics:
+        - "{topic}"  # The topic of the message that triggered us.
       operation: count
       condition:
         greater than or equal to: 500

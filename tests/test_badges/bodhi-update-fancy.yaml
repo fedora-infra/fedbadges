@@ -26,13 +26,12 @@ trigger:
 criteria:
   datanommer:
       filter:
-        all:
-          topic: "{{topic}}"
-          raw_contains:
-            any:
-              - foo
-              - bar
-              - baz
+        topics:
+        - "{topic}"
+        #raw_contains:
+        #- foo
+        #- bar
+        #- baz
       operation: count
       condition:
         greater than or equal to: 1

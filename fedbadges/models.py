@@ -10,6 +10,7 @@ Authors:    Ralph Bean
 import abc
 import copy
 import functools
+import inspect
 
 import datanommer.models
 
@@ -182,6 +183,21 @@ class DatanommerCriteria(AbstractSpecializedComparator):
             raise ValueError("No more than one condition allowed.  "
                              "Use one of %r" % self.conditions)
 
+        # Determine what arguments datanommer..grep accepts
+        argspec = inspect.getargspec(datanommer.models.Message.grep)
+        irrelevant = set(['rows_per_page', 'page', 'defer'])
+        grep_arguments = set(argspec.args[1:]).difference(irrelevant)
+
+        # Validate the filter
+        argued_filter_fields = set(d['filter'].keys())
+        if not argued_filter_fields.issubset(grep_arguments):
+            raise KeyError(
+                "%r are not possible fields.  Choose from %r" % (
+                    argued_filter_fields.difference(grep_arguments),
+                    grep_arguments,
+                ))
+
+        # Validate the condition
         condition_key, condition_val = self._d['condition'].items()[0]
         if not condition_key in self.condition_callbacks:
             raise KeyError("%r is not a valid condition key.  Use one of %r" %
