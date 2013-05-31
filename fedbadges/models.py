@@ -89,11 +89,9 @@ class Trigger(BaseComparator):
 
         # Check if we should we recursively nest Triggers?
         if self.attribute in operator_fields:
-
             if not isinstance(self.expected_value, list):
                 raise TypeError("Operators only accept lists, not %r" %
-                                 type(self.expected_value))
-
+                                type(self.expected_value))
             self.children = [Trigger(child) for child in self.expected_value]
 
     def matches(self, msg):
