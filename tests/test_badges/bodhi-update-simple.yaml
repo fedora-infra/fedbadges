@@ -17,8 +17,8 @@ trigger:
 # Once the check has been triggered, this defines what we actually check.
 criteria:
   datanommer:
-    - filter:
+      filter:
         topic: "{{topic}}"  # The topic of the message that triggered us.
       operation: count
-      must be:
+      condition:
         greater than or equal to: 500

@@ -2,3 +2,4 @@ tahrir-api
 fedmsg
 fedmsg_meta_fedora_infrastructure
 PyYAML
+datanommer.models

@@ -8,8 +8,14 @@ Authors:    Ralph Bean
 """
 
 import abc
+import copy
+import functools
 
-operator_fields = set([
+import datanommer.models
+
+from fedbadges.utils import construct_substitutions, format_args
+
+operators = set([
     "all",
     "any",
     #"not",
@@ -52,10 +58,11 @@ class BadgeRule(object):
         return True
 
 
-class BaseComparator(object):
+class AbstractComparator(object):
     """ Base class for shared behavior between trigger and criteria. """
     __metaclass__ = abc.ABCMeta
     possible = required = set()
+    children = None
 
     def __init__(self, d):
         argued_fields = set(d.keys())
@@ -80,28 +87,31 @@ class BaseComparator(object):
         pass
 
 
-class Trigger(BaseComparator):
-    possible = set([
-        'topic',
-        'category',
-    ]).union(operator_fields)
-    children = None
-
+class AbstractTopLevelComparator(AbstractComparator):
     def __init__(self, d):
-        super(Trigger, self).__init__(d)
+        super(AbstractTopLevelComparator, self).__init__(d)
+        cls = type(self)
 
         if len(self._d) > 1:
             raise ValueError("No more than one trigger allowed.  "
-                             "Use an operator, one of %r" % operator_fields)
+                             "Use an operator, one of %r" % operators)
+
         self.attribute = self._d.keys()[0]
         self.expected_value = self._d[self.attribute]
 
-        # Check if we should we recursively nest Triggers?
-        if self.attribute in operator_fields:
+        # Check if we should we recursively nest Trigger/Criteria?
+        if self.attribute in operators:
             if not isinstance(self.expected_value, list):
                 raise TypeError("Operators only accept lists, not %r" %
                                 type(self.expected_value))
-            self.children = [Trigger(child) for child in self.expected_value]
+            self.children = [cls(child) for child in self.expected_value]
+
+
+class Trigger(AbstractTopLevelComparator):
+    possible = set([
+        'topic',
+        'category',
+    ]).union(operators)
 
     def matches(self, msg):
         # Check if we should just aggregate the results of our children.
@@ -117,10 +127,79 @@ class Trigger(BaseComparator):
             return msg[self.attribute] == self.expected_value
 
 
-class Criteria(BaseComparator):
+class Criteria(AbstractTopLevelComparator):
     possible = set([
         'datanommer',
-    ]).union(operator_fields)
+    ]).union(operators)
+
+    def __init__(self, d):
+        super(Criteria, self).__init__(d)
+
+        if not self.children:
+            # Then, by AbstractComparator rules, I am a leaf node.  Specialize!
+            self._specialize()
+
+    def _specialize(self):
+        if self.attribute == 'datanommer':
+            self.specialization = DatanommerCriteria(self.expected_value)
+        # TODO -- expand this with other "backends" as necessary
+        #elif self.attribute == 'fas'
+        else:
+            raise RuntimeError("This should be impossible to reach.")
 
     def matches(self, msg):
-        raise NotImplementedError("need to write this")
+        if self.children:
+            return __builtins__[self.attribute]([
+                child.matches(msg) for child in self.children
+            ])
+        else:
+            return self.specialization.matches(msg)
+
+
+class AbstractSpecializedComparator(AbstractComparator):
+    pass
+
+
+class DatanommerCriteria(AbstractSpecializedComparator):
+    required = possible = set([
+        'filter',
+        'operation',
+        'condition',
+    ])
+
+    condition_callbacks = {
+        'greater than or equal to': lambda t, v: v >= t,
+        'greater than': lambda t, v: v > t,
+        'less than or equal to': lambda t, v: v <= t,
+        'less than': lambda t, v: v < t,
+        'equal to': lambda t, v: v == t,
+        'is not': lambda t, v: v != t,
+    }
+
+    def __init__(self, d):
+        super(DatanommerCriteria, self).__init__(d)
+        if len(self._d['condition']) > 1:
+            raise ValueError("No more than one condition allowed.  "
+                             "Use one of %r" % self.conditions)
+
+        condition_key, condition_val = self._d['condition'].items()[0]
+        if not condition_key in self.condition_callbacks:
+            raise KeyError("%r is not a valid condition key.  Use one of %r" %
+                           (condition_key, self.condition_callbacks.keys()))
+
+        # Construct a condition callable for later
+        self.condition = functools.partial(
+            self.condition_callbacks[condition_key], condition_val)
+
+    def construct_query(self, msg):
+        subs = construct_substitutions(msg)
+        kwargs = format_args(copy.copy(self._d['filter']), subs)
+        kwargs['defer'] = True
+        total, pages, query = datanommer.models.Message.grep(**kwargs)
+        return query
+
+    def matches(self, msg):
+        query = self.construct_query(msg)
+        operation = getattr(query, self._d['operation'])
+        result = operation()
+        return self.condition(result)
