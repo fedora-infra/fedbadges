@@ -190,8 +190,9 @@ class DatanommerCriteria(AbstractSpecializedComparator):
     def __init__(self, d):
         super(DatanommerCriteria, self).__init__(d)
         if len(self._d['condition']) > 1:
+            conditions = self.condition_callbacks.keys()
             raise ValueError("No more than one condition allowed.  "
-                             "Use one of %r" % self.conditions)
+                             "Use one of %r" % conditions)
 
         # Determine what arguments datanommer..grep accepts
         argspec = inspect.getargspec(datanommer.models.Message.grep)
