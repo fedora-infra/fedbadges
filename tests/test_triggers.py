@@ -52,6 +52,26 @@ class TestTriggerMatching(unittest.TestCase):
         )
         assert(not trigger.matches(message))
 
+    def test_lambdas_pass(self):
+        """ Test that lambdas match correctly """
+        trigger = fedbadges.models.Trigger({
+            "lambda": "'s3kr3t' in json.dumps(msg)",
+        })
+        message = dict(
+            msg=dict(nested=dict(something="s3kr3t"))
+        )
+        assert(trigger.matches(message))
+
+    def test_lambdas_fail(self):
+        """ Test that lambdas fail correctly """
+        trigger = fedbadges.models.Trigger({
+            "lambda": "'one string' in json.dumps(msg)",
+        })
+        message = dict(
+            msg=dict(nested=dict(something="another string"))
+        )
+        assert(not trigger.matches(message))
+
     @raises(TypeError)
     def test_invalid_nesting(self):
         """ Test that invalid nesting is detected and excepted. """

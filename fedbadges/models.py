@@ -9,6 +9,8 @@ Authors:    Ralph Bean
 
 import abc
 import copy
+import json
+import types
 import functools
 import inspect
 
@@ -20,6 +22,9 @@ operators = set([
     "all",
     "any",
     #"not",
+])
+lambdas = set([
+    "lambda",
 ])
 # TODO -- lambdas?
 
@@ -112,7 +117,7 @@ class Trigger(AbstractTopLevelComparator):
     possible = set([
         'topic',
         'category',
-    ]).union(operators)
+    ]).union(operators).union(lambdas)
 
     def matches(self, msg):
         # Check if we should just aggregate the results of our children.
@@ -121,6 +126,11 @@ class Trigger(AbstractTopLevelComparator):
             return __builtins__[self.attribute]([
                 child.matches(msg) for child in self.children
             ])
+        elif self.attribute == 'lambda':
+            source = "lambda msg: " + self.expected_value
+            code = compile(source, __file__, "eval")
+            func = types.LambdaType(code, globals())()
+            return func(msg)
         elif self.attribute == 'category':
             # TODO -- use fedmsg.meta.msg2processor(msg).__name__.lower()
             return msg['topic'].split('.')[3] == self.expected_value
