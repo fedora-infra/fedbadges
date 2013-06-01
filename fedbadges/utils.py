@@ -2,6 +2,12 @@
 
 import types
 
+# These are here just so they're available in globals()
+# for compiling lambda expressions
+import fedmsg.config
+import fedmsg.encoding
+import fedmsg.meta
+
 
 def construct_substitutions(msg):
     """ Convert a fedmsg message into a dict of substitutions. """
@@ -31,8 +37,28 @@ def format_args(obj, subs):
     return obj
 
 
-def single_argument_lambda_factory(expression, value):
+def single_argument_lambda_factory(expression, argument, name='value'):
     """ Compile and execute a lambda expression with a single argument """
-    code = compile("lambda value: " + expression, __file__, "eval")
+
+    code = compile("lambda %s: %s" % (name, expression), __file__, "eval")
     func = types.LambdaType(code, globals())()
-    return func(value)
+    return func(argument)
+
+
+def recursive_lambda_factory(obj, arg, name='value'):
+    """ Given a dict, find any lambdas, compile, and execute them. """
+
+    if isinstance(obj, dict):
+        for key in obj:
+            if key == 'lambda':
+                # If so, *replace* the parent dict with the result of the expr
+                obj = single_argument_lambda_factory(obj[key], arg, name)
+                break
+            else:
+                obj[key] = recursive_lambda_factory(obj[key], arg, name)
+    elif isinstance(obj, list):
+        return [recursive_lambda_factory(e, arg, name) for e in obj]
+    else:
+        pass
+
+    return obj

@@ -14,12 +14,16 @@ import types
 import functools
 import inspect
 
+import fedmsg.config
+import fedmsg.meta
+import fedmsg.encoding
 import datanommer.models
 
 from fedbadges.utils import (
     construct_substitutions,
     format_args,
     single_argument_lambda_factory,
+    recursive_lambda_factory,
 )
 
 operators = set([
@@ -30,7 +34,9 @@ operators = set([
 lambdas = set([
     "lambda",
 ])
-# TODO -- lambdas?
+
+fedmsg_config = fedmsg.config.load_config()
+fedmsg.meta.make_processors(**fedmsg_config)
 
 
 class BadgeRule(object):
@@ -226,6 +232,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
     def construct_query(self, msg):
         subs = construct_substitutions(msg)
         kwargs = format_args(copy.copy(self._d['filter']), subs)
+        kwargs = recursive_lambda_factory(kwargs, msg, name='msg')
         kwargs['defer'] = True
         total, pages, query = datanommer.models.Message.grep(**kwargs)
         return query
