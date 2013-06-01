@@ -16,7 +16,11 @@ import inspect
 
 import datanommer.models
 
-from fedbadges.utils import construct_substitutions, format_args
+from fedbadges.utils import (
+    construct_substitutions,
+    format_args,
+    single_argument_lambda_factory,
+)
 
 operators = set([
     "all",
@@ -185,6 +189,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         'less than': lambda t, v: v < t,
         'equal to': lambda t, v: v == t,
         'is not': lambda t, v: v != t,
+        'lambda': single_argument_lambda_factory,
     }
 
     def __init__(self, d):

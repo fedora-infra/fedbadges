@@ -43,6 +43,7 @@ class TestCriteriaMatching(unittest.TestCase):
         ))
 
 
+
 class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
     def setUp(self):
         self.criteria = fedbadges.models.Criteria(dict(
@@ -103,4 +104,51 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
                 defer=True,
             )
 
-    # TODO -- test more complicated combinations of filter and must be
+
+class TestCriteriaLambdaConditions(unittest.TestCase):
+    def setUp(self):
+        self.criteria = fedbadges.models.Criteria(dict(
+            datanommer={
+                "filter": {
+                    "topics": ["{topic}"],
+                },
+                "operation": "count",
+                "condition": {
+                    "lambda": "value >= 500",
+                }
+            }
+        ))
+        self.message = dict(
+            topic="org.fedoraproject.dev.something.sometopic",
+        )
+        class MockQuery(object):
+            def count(query):
+                return self.returned_count
+        self.mock_query = MockQuery()
+
+    def test_datanommer_with_lambdas_query_undershoot(self):
+        self.returned_count = 499
+        expectation = False
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = None, None, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+    def test_datanommer_with_lambdas_query_spot_on(self):
+        self.returned_count = 500
+        expectation = True
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = None, None, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+    def test_datanommer_with_lambdas_query_overshoot(self):
+        self.returned_count = 501
+        expectation = True
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = None, None, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
