@@ -1,7 +1,19 @@
 import unittest
 from nose.tools import eq_
 
-from fedbadges.utils import construct_substitutions, format_args
+from fedbadges.utils import (
+    construct_substitutions,
+    format_args,
+    single_argument_lambda_factory,
+)
+
+
+class TestLambdaFactory(unittest.TestCase):
+    def test_basic(self):
+        expression = "value + 2"
+        target = 4
+        actual = single_argument_lambda_factory(expression, 2)
+        eq_(actual, target)
 
 
 class TestSubsitutions(unittest.TestCase):

@@ -1,5 +1,7 @@
 """ Utilities for fedbadges that don't quite fit anywhere else. """
 
+import types
+
 
 def construct_substitutions(msg):
     """ Convert a fedmsg message into a dict of substitutions. """
@@ -27,3 +29,10 @@ def format_args(obj, subs):
         obj = obj.format(**subs)
 
     return obj
+
+
+def single_argument_lambda_factory(expression, value):
+    """ Compile and execute a lambda expression with a single argument """
+    code = compile("lambda value: " + expression, __file__, "eval")
+    func = types.LambdaType(code, globals())()
+    return func(value)
