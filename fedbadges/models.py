@@ -49,6 +49,13 @@ class BadgeRule(object):
         'criteria',
     ])
 
+    banned_usernames = set([
+        'bodhi',
+        'oscar',
+        'apache',
+        'koji',
+    ])
+
     def __init__(self, badge_dict):
         argued_fields = set(badge_dict.keys())
         if not self.required.issubset(argued_fields):
@@ -68,10 +75,15 @@ class BadgeRule(object):
 
     def matches(self, msg):
         if not self.trigger.matches(msg):
-            return False
+            return []
+
         if not self.criteria.matches(msg):
-            return False
-        return True
+            return []
+
+        # Otherwise
+        usernames = fedmsg.meta.msg2usernames(msg)
+        awardees = usernames.difference(self.banned_usernames)
+        return awardees
 
 
 class AbstractComparator(object):

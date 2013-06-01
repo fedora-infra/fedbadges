@@ -24,5 +24,156 @@ class TestRuleMatching(unittest.TestCase):
             trigger=dict(topic="test_topic"),
         ))
 
-    # TODO test integrated trigger and criteria matching
-    # TODO test that matches is false if user already has the badge.
+
+    def test_full_simple_success(self):
+        """ A simple integration test for messages with zero users """
+        rule = fedbadges.models.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            trigger=dict(category="bodhi"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            ))
+        ))
+
+        msg = _example_real_bodhi_message
+
+        class MockQuery(object):
+            def count(self):
+                return 1
+
+        query = MockQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = None, None, query
+            eq_(rule.matches(msg), set(['hadess']))
+
+    def test_full_simple_match_almost_succeed(self):
+        """ A simple integration test for messages with zero users """
+        rule = fedbadges.models.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            trigger=dict(category="bodhi"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            ))
+        ))
+
+        # This message has zero users associated with it, so even if trigger
+        # and criteria are met, there's noone to award the badge to -- and so,
+        # we should *fail* the ``matches`` call.
+        msg = {
+            'topic': "org.fedoraproject.prod.bodhi.mashtask.complete",
+            'msg': {'success': False}
+        }
+
+        class MockQuery(object):
+            def count(self):
+                return 1
+
+        query = MockQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = None, None, query
+            eq_(rule.matches(msg), set())
+
+
+_example_real_bodhi_message = {
+    "topic": "org.fedoraproject.prod.bodhi.update.request.testing",
+    "msg": {
+        'agent': 'lmacken',
+        "update": {
+            "status": "pending",
+            "critpath": False,
+            "stable_karma": 3,
+            "date_pushed": None,
+            "title": "gnome-settings-daemon-3.6.1-1.fc18," +
+            "control-center-3.6.1-1.fc18",
+            "nagged": None,
+            "comments": [
+            {
+                "group": None,
+                "author": "bodhi",
+                "text": "This update has been submitted for "
+                "testing by hadess. ",
+                "karma": 0,
+                "anonymous": False,
+                "timestamp": 1349718539.0,
+                "update_title": "gnome-settings-daemon-3.6.1-1.fc18," +
+                "control-center-3.6.1-1.fc18"
+            }
+            ],
+            "updateid": None,
+            "type": "bugfix",
+            "close_bugs": True,
+            "date_submitted": 1349718534.0,
+            "unstable_karma": -3,
+            "release": {
+                "dist_tag": "f18",
+                "locked": True,
+                "long_name": "Fedora 18",
+                "name": "F18",
+                "id_prefix": "FEDORA"
+            },
+            "approved": None,
+            "builds": [
+            {
+                "nvr": "gnome-settings-daemon-3.6.1-1.fc18",
+                "package": {
+                    "suggest_reboot": False,
+                    "committers": [
+                        "hadess",
+                        "ofourdan",
+                        "mkasik",
+                        "cosimoc"
+                    ],
+                    "name": "gnome-settings-daemon"
+                }
+            }, {
+                "nvr": "control-center-3.6.1-1.fc18",
+                "package": {
+                    "suggest_reboot": False,
+                    "committers": [
+                        "ctrl-center-team",
+                        "ofourdan",
+                        "ssp",
+                        "ajax",
+                        "alexl",
+                        "jrb",
+                        "mbarnes",
+                        "caolanm",
+                        "davidz",
+                        "mclasen",
+                        "rhughes",
+                        "hadess",
+                        "johnp",
+                        "caillon",
+                        "whot",
+                        "rstrode"
+                    ],
+                    "name": "control-center"
+                }
+            }
+            ],
+            "date_modified": None,
+            "notes": "This update fixes numerous bugs in the new Input " +
+            "Sources support, the Network panel and adds a help " +
+            "screen accessible via Wacom tablets's buttons.",
+            "request": "testing",
+            "bugs": [],
+            "critpath_approved": False,
+            "karma": 0,
+            "submitter": "hadess"
+        }
+    },
+    "i": 2,
+    "timestamp": 1349718539.0,
+}
