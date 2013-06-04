@@ -93,21 +93,46 @@ class BadgeRule(object):
         return self._d[key]
 
     def matches(self, msg):
+
+        # First, do a lightweight check to see if the msg matches a pattern.
         if not self.trigger.matches(msg):
-            return []
+            return set()
 
-        if not self.criteria.matches(msg):
-            return []
-
-        # Otherwise
+        # Before proceeding further, let's see who would get this badge if
+        # our more heavyweight checks matched up.  If the user specifies a
+        # recipient_key, we can use that to extract the potential awardee.  If
+        # that is not specified, we just use `msg2usernames`.
         if self.recipient_key:
             key = self.recipient_key.replace('.', '_')
             subs = construct_substitutions(msg)
-            return set([subs[key]])
+            awardees = set([subs[key]])
         else:
             usernames = fedmsg.meta.msg2usernames(msg)
             awardees = usernames.difference(self.banned_usernames)
+
+        # If no-one would get the badge by default, then no reason to waste
+        # time doing any further checks.  No need to query the Tahrir DB.
+        if not awardees:
             return awardees
+
+        # Limit awardees to only those who do not already have this badge.
+        # Do this only if we have an active connection to the Tahrir DB.
+        if self.tahrir:
+            awardees = set([user for user in awardees
+                            if not self.tahrir.assertion_exists(
+                                self.badge_id, "%s@fedoraproject.org" % user
+                            )])
+
+        # If no-one would get the badge at this point, then no reason to waste
+        # time doing any further checks.  No need to query datanommer.
+        if not awardees:
+            return awardees
+
+        # Check our backend criteria -- likely, perform datanommer queries.
+        if not self.criteria.matches(msg):
+            return set()
+
+        return awardees
 
 
 class AbstractComparator(object):
