@@ -42,9 +42,12 @@ fedmsg.meta.make_processors(**fedmsg_config)
 class BadgeRule(object):
     required = set([
         'name',
+        'image_url',
         'description',
         'creator',
         'discussion',
+        'issuer_id',
+
         'trigger',
         'criteria',
     ])
@@ -56,8 +59,9 @@ class BadgeRule(object):
         'koji',
     ])
 
-    def __init__(self, badge_dict):
+    def __init__(self, badge_dict, tahrir_database):
         argued_fields = set(badge_dict.keys())
+
         if not self.required.issubset(argued_fields):
             raise ValueError(
                 "BadgeRule requires %r.  Missing %r" % (
@@ -66,6 +70,20 @@ class BadgeRule(object):
                 ))
 
         self._d = badge_dict
+
+        self.tahrir = tahrir_database
+        if self.tahrir:
+            # If the badge already exists in the tahrir DB, this just returns
+            # False.  We don't care.  We just want it to exist from this point
+            # on.
+            self.badge_id = self._d['name'].lower().replace(" ", "-")
+            self.tahrir.add_badge(
+                name=self._d['name'],
+                image=self._d['image_url'],
+                desc=self._d['description'],
+                criteria=self._d['discussion'],
+                issuer_id=self._d.get('issuer_id', "fedora-project"),
+            )
 
         self.trigger = Trigger(self._d['trigger'])
         self.criteria = Criteria(self._d['criteria'])

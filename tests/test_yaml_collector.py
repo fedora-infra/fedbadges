@@ -29,10 +29,11 @@ class MockHub(object):
 
 class TestYamlCollector(unittest.TestCase):
 
-    def setUp(self):
+    @patch('tahrir_api.dbapi.TahrirDatabase.add_issuer')
+    @patch('tahrir_api.dbapi.TahrirDatabase.add_badge')
+    def setUp(self, add_issuer, add_badge):
         hub = MockHub()
-        with patch.object(tahrir_api.dbapi.TahrirDatabase, 'add_issuer'):
-            self.consumer = fedbadges.consumers.FedoraBadgesConsumer(hub)
+        self.consumer = fedbadges.consumers.FedoraBadgesConsumer(hub)
 
     def test_load_badges_number(self):
         """ Determine that we can load badges from file. """

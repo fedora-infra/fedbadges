@@ -11,7 +11,7 @@ class TestRuleMatching(unittest.TestCase):
     @raises(ValueError)
     def test_metadata_validation(self):
         """ Test for failure if not enough metadata """
-        rule = fedbadges.models.BadgeRule(dict(name="Test"))
+        rule = fedbadges.models.BadgeRule(dict(name="Test"), None)
 
     @raises(ValueError)
     def test_full_specification(self):
@@ -21,8 +21,10 @@ class TestRuleMatching(unittest.TestCase):
             description="Doesn't matter...",
             creator="Somebody",
             discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
             trigger=dict(topic="test_topic"),
-        ))
+        ), None)
 
 
     def test_full_simple_success(self):
@@ -32,13 +34,15 @@ class TestRuleMatching(unittest.TestCase):
             description="Doesn't matter...",
             creator="Somebody",
             discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
             trigger=dict(category="bodhi"),
             criteria=dict(datanommer=dict(
                 filter=dict(categories=["pkgdb"]),
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ))
+        ), None)
 
         msg = _example_real_bodhi_message
 
@@ -59,13 +63,15 @@ class TestRuleMatching(unittest.TestCase):
             description="Doesn't matter...",
             creator="Somebody",
             discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
             trigger=dict(category="bodhi"),
             criteria=dict(datanommer=dict(
                 filter=dict(categories=["pkgdb"]),
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ))
+        ), None)
 
         # This message has zero users associated with it, so even if trigger
         # and criteria are met, there's noone to award the badge to -- and so,
@@ -100,6 +106,8 @@ class TestRuleMatching(unittest.TestCase):
             description="Doesn't matter...",
             creator="Somebody",
             discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
             trigger=dict(category="fas"),
             criteria=dict(datanommer=dict(
                 filter=dict(categories=["pkgdb"]),
@@ -107,7 +115,7 @@ class TestRuleMatching(unittest.TestCase):
                 condition={"greater than or equal to": 1}
             )),
             recipient="msg.agent.username",
-        ))
+        ), None)
 
         msg = {
             u'topic': u'org.fedoraproject.stg.fas.role.update',
@@ -137,13 +145,15 @@ class TestRuleMatching(unittest.TestCase):
             description="Doesn't matter...",
             creator="Somebody",
             discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
             trigger=dict(category="fas"),
             criteria=dict(datanommer=dict(
                 filter=dict(categories=["pkgdb"]),
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ))
+        ), None)
 
         msg = {
             u'topic': u'org.fedoraproject.stg.fas.role.update',
