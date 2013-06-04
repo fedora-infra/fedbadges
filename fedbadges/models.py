@@ -92,6 +92,9 @@ class BadgeRule(object):
     def __getitem__(self, key):
         return self._d[key]
 
+    def __repr__(self):
+        return "<fedbadges.models.BadgeRule: %r>" % self._d
+
     def matches(self, msg):
 
         # First, do a lightweight check to see if the msg matches a pattern.
