@@ -22,7 +22,7 @@ class FedoraBadgesConsumer(FedmsgConsumer):
     config_key = "fedmsg.consumers.badges.enabled"
 
     def __init__(self, hub):
-        self.badges = []
+        self.badge_rules = []
         self.hub = hub
         self.DBSession = None
 
@@ -46,7 +46,7 @@ class FedoraBadgesConsumer(FedmsgConsumer):
         )
 
         directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
-        self.badges = self._load_badges_from_yaml(directory)
+        self.badge_rules = self._load_badges_from_yaml(directory)
 
     def _load_badges_from_yaml(self, directory):
         # badges indexed by trigger
@@ -80,25 +80,25 @@ class FedoraBadgesConsumer(FedmsgConsumer):
             log.error("Loading %r failed with %r" % (fname, e))
             return None
 
-    def award_badge(self, email, badge_id, issued_on=None):
+    def award_badge(self, username, badge_id):
         """ A high level way to issue a badge to a Person.
 
         It adds the person if they don't exist, and creates an assertion for
         them.
 
-        :type email: str
-        :param email: This person's email addr
+        :type username: str
+        :param username: This person's username.
 
         :type badge_id: str
         :param badge_id: the id of the badge being awarded
-
-        :type issued_on: DateTime
-        :param issued_on: A datetime object with the time this badge was issued
         """
 
+        email = "%s@fedoraproject.org" % username
+
         self.tahrir.add_person(email)
-        self.tahrir.add_assertion(badge_id, email, issued_on)
+        self.tahrir.add_assertion(badge_id, email)
 
     def consume(self, msg):
-        raise NotImplementError("I haven't written this yet")
-        self.award_badge(email, badge_id)
+        for badge_rule in self.badge_rules:
+            for recipient in badge_rule.matches(msg):
+                self.award_badge(email, badge_rule.badge_id)

@@ -37,11 +37,11 @@ class TestYamlCollector(unittest.TestCase):
 
     def test_load_badges_number(self):
         """ Determine that we can load badges from file. """
-        eq_(len(self.consumer.badges), 2)
+        eq_(len(self.consumer.badge_rules), 2)
 
     def test_load_badges_contents(self):
         """ Determine that we can load badges from file. """
-        names = set([badge['name'] for badge in self.consumer.badges])
+        names = set([badge['name'] for badge in self.consumer.badge_rules])
         eq_(names, set([
             'Like a Rock',
             'The Zen of Foo Bar Baz',
