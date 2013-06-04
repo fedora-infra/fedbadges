@@ -7,7 +7,9 @@ Authors:  Ross Delinger
 
 import os.path
 import yaml
+import traceback
 
+import fedmsg
 import fedbadges.models
 from paste.deploy.converters import asbool
 from fedmsg.consumers import FedmsgConsumer
@@ -93,12 +95,31 @@ class FedoraBadgesConsumer(FedmsgConsumer):
         :param badge_id: the id of the badge being awarded
         """
 
+        log.info("Awarding badge %r to %r" % (badge_id, username))
         email = "%s@fedoraproject.org" % username
 
         self.tahrir.add_person(email)
         self.tahrir.add_assertion(badge_id, email)
 
+        fedmsg.publish(topic="badge.award",
+                       msg=dict(badge_id=badge_id, username=username))
+
     def consume(self, msg):
-        for badge_rule in self.badge_rules:
-            for recipient in badge_rule.matches(msg):
-                self.award_badge(email, badge_rule.badge_id)
+
+        # Strip the moksha envelope
+        msg = msg['body']
+
+        # Define this so we can refer to it in error handling below
+        badge_rule = None
+
+        # Award every badge as appropriate.
+        try:
+            log.info("Received %r." % msg['topic'])
+            for badge_rule in self.badge_rules:
+                for recipient in badge_rule.matches(msg):
+                    self.award_badge(email, badge_rule.badge_id)
+        except Exception as e:
+            log.error("Failure in badge awarder! %r Details to follow:" % e)
+            log.error("Considering badge: %r" % badge_rule)
+            log.error("Received Message: %r" % msg)
+            log.error(traceback.format_exc())
