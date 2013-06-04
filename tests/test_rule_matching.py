@@ -85,6 +85,86 @@ class TestRuleMatching(unittest.TestCase):
             f.return_value = None, None, query
             eq_(rule.matches(msg), set())
 
+    def test_yaml_specified_awardee_success(self):
+        """ Test that when we can override msg2usernames. """
+        # For instance, fas.group.member.remove contains two users,
+        # the one being removed from a group, and the one doing the removing.
+        # a badge YAML definition needs to be able to specify *which* of these
+        # two users should receive its badge.  The dotted substitution
+        # notation should suffice for this.  If this is specified, use it.
+        # If not, use fedmsg.meta.msg2usernames for convenience.  It will do
+        # in most all cases.
+
+        rule = fedbadges.models.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            trigger=dict(category="fas"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            )),
+            recipient="msg.agent.username",
+        ))
+
+        msg = {
+            u'topic': u'org.fedoraproject.stg.fas.role.update',
+            u'msg': {
+                u'group': {u'name': u'ambassadors'},
+                u'user': {u'username': u'ralph'},
+                u'agent': {u'username': u'toshio'},
+            }
+        }
+
+
+        class MockQuery(object):
+            def count(self):
+                return 1
+
+        query = MockQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = None, None, query
+            eq_(rule.matches(msg), set(['toshio']))
+
+    def test_yaml_specified_awardee_failure(self):
+        """ Test that when we don't override msg2usernames, we get 2 awardees.
+        """
+        rule = fedbadges.models.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            trigger=dict(category="fas"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            ))
+        ))
+
+        msg = {
+            u'topic': u'org.fedoraproject.stg.fas.role.update',
+            u'msg': {
+                u'group': {u'name': u'ambassadors'},
+                u'user': {u'username': u'ralph'},
+                u'agent': {u'username': u'toshio'},
+            }
+        }
+
+
+        class MockQuery(object):
+            def count(self):
+                return 1
+
+        query = MockQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = None, None, query
+            eq_(rule.matches(msg), set(['toshio', 'ralph']))
+
 
 _example_real_bodhi_message = {
     "topic": "org.fedoraproject.prod.bodhi.update.request.testing",

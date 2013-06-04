@@ -69,6 +69,7 @@ class BadgeRule(object):
 
         self.trigger = Trigger(self._d['trigger'])
         self.criteria = Criteria(self._d['criteria'])
+        self.recipient_key = self._d.get('recipient')
 
     def __getitem__(self, key):
         return self._d[key]
@@ -81,9 +82,14 @@ class BadgeRule(object):
             return []
 
         # Otherwise
-        usernames = fedmsg.meta.msg2usernames(msg)
-        awardees = usernames.difference(self.banned_usernames)
-        return awardees
+        if self.recipient_key:
+            key = self.recipient_key.replace('.', '_')
+            subs = construct_substitutions(msg)
+            return set([subs[key]])
+        else:
+            usernames = fedmsg.meta.msg2usernames(msg)
+            awardees = usernames.difference(self.banned_usernames)
+            return awardees
 
 
 class AbstractComparator(object):
