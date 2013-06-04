@@ -175,6 +175,52 @@ class TestRuleMatching(unittest.TestCase):
             f.return_value = None, None, query
             eq_(rule.matches(msg), set(['toshio', 'ralph']))
 
+    def test_against_duplicates(self):
+        """ Test that matching fails if user already has the badge. """
+
+        class MockTahrirDB(object):
+            def assertion_exists(self, badge_id, email):
+                return email == 'toshio@fedoraproject.org'
+
+            def add_badge(self, name, image, desc, criteria, issuer_id):
+                pass
+
+        tahrir_db = MockTahrirDB()
+
+        rule = fedbadges.models.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
+            trigger=dict(category="fas"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            ))
+        ), tahrir_db)
+
+        msg = {
+            u'topic': u'org.fedoraproject.stg.fas.role.update',
+            u'msg': {
+                u'group': {u'name': u'ambassadors'},
+                u'user': {u'username': u'ralph'},
+                u'agent': {u'username': u'toshio'},
+            }
+        }
+
+        class MockDatanommerQuery(object):
+            def count(self):
+                return 1
+
+        datanommer_query = MockDatanommerQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = None, None, datanommer_query
+            eq_(rule.matches(msg), set(['ralph']))
+
 
 _example_real_bodhi_message = {
     "topic": "org.fedoraproject.prod.bodhi.update.request.testing",
