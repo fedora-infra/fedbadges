@@ -26,7 +26,6 @@ class TestRuleMatching(unittest.TestCase):
             trigger=dict(topic="test_topic"),
         ), None)
 
-
     def test_full_simple_success(self):
         """ A simple integration test for messages with zero users """
         rule = fedbadges.models.BadgeRule(dict(
@@ -126,7 +125,6 @@ class TestRuleMatching(unittest.TestCase):
             }
         }
 
-
         class MockQuery(object):
             def count(self):
                 return 1
@@ -163,7 +161,6 @@ class TestRuleMatching(unittest.TestCase):
                 u'agent': {u'username': u'toshio'},
             }
         }
-
 
         class MockQuery(object):
             def count(self):
