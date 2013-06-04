@@ -10,16 +10,17 @@ import yaml
 import traceback
 
 import fedmsg
+import fedmsg.consumers
+import tahrir_api.dbapi
+import datanommer.models
+
 import fedbadges.models
-from paste.deploy.converters import asbool
-from fedmsg.consumers import FedmsgConsumer
-from tahrir_api.dbapi import TahrirDatabase
 
 import logging
 log = logging.getLogger("moksha.hub")
 
 
-class FedoraBadgesConsumer(FedmsgConsumer):
+class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
     topic = "org.fedoraproject.*"
     config_key = "fedmsg.consumers.badges.enabled"
 
@@ -30,13 +31,30 @@ class FedoraBadgesConsumer(FedmsgConsumer):
 
         super(FedoraBadgesConsumer, self).__init__(hub)
 
-        global_settings = hub.config.get("badges_global", {})
+        # Three things need doing at start up time
+        # 1) Initialize our connection to the tahrir DB and perform some
+        #    administrivia.
+        # 2) Initialize our connection to the datanommer DB.
+        # 3) Load our badge definitions and rules from YAML.
+
+        # Tahrir stuff
+        self._initialize_tahrir_connection()
+
+        # Datanommer stuff
+        self._initialize_datanommer_connection()
+
+        # Load badge definitions
+        directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
+        self.badge_rules = self._load_badges_from_yaml(directory)
+
+    def _initialize_tahrir_connection(self):
+        global_settings = self.hub.config.get("badges_global", {})
 
         database_uri = global_settings.get('database_uri')
         if not database_uri:
             raise ValueError('Badges consumer requires a database uri')
 
-        self.tahrir = TahrirDatabase(database_uri)
+        self.tahrir = tahrir_api.dbapi.TahrirDatabase(database_uri)
         self.DBSession = self.tahrir.session_maker
         issuer = global_settings.get('badge_issuer')
 
@@ -47,8 +65,8 @@ class FedoraBadgesConsumer(FedmsgConsumer):
             issuer.get('issuer_contact')
         )
 
-        directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
-        self.badge_rules = self._load_badges_from_yaml(directory)
+    def _initialize_datanommer_connection(self):
+        datanommer.models.init(self.hub.config['datanommer.sqlalchemy.url'])
 
     def _load_badges_from_yaml(self, directory):
         # badges indexed by trigger
@@ -99,7 +117,7 @@ class FedoraBadgesConsumer(FedmsgConsumer):
         email = "%s@fedoraproject.org" % username
 
         self.tahrir.add_person(email)
-        self.tahrir.add_assertion(badge_id, email)
+        self.tahrir.add_assertion(badge_id, email, None)
 
         fedmsg.publish(topic="badge.award",
                        msg=dict(badge_id=badge_id, username=username))
@@ -117,7 +135,7 @@ class FedoraBadgesConsumer(FedmsgConsumer):
             log.info("Received %r." % msg['topic'])
             for badge_rule in self.badge_rules:
                 for recipient in badge_rule.matches(msg):
-                    self.award_badge(email, badge_rule.badge_id)
+                    self.award_badge(recipient, badge_rule.badge_id)
         except Exception as e:
             log.error("Failure in badge awarder! %r Details to follow:" % e)
             log.error("Considering badge: %r" % badge_rule)
