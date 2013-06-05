@@ -38,7 +38,7 @@ a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
   considered.  This typically involves a more expensive query to the
   `datanommer <https://github.com/fedora-infra/datanommer>`_ database.
 
-  In english, a BadgeRule ``criteria`` may read something like "$user has
+  A BadgeRule ``criteria`` may read something like "$user has
   pushed 200 bodhi updates to stable" or "$user chaired an IRC meeting".
 
   **Aside:** Although datanommer is the only currently supported backend, we
