@@ -4,7 +4,7 @@
 # based on messages on the bu
 
 from fedmsg.commands import BaseCommand
-from fedbadges.consumers.ExampleBadge import ExampleBadgesConsumer
+from fedbadges.consumers import FedoraBadgesConsumer
 
 
 class BadgesCommand(BaseCommand):
@@ -20,13 +20,13 @@ class BadgesCommand(BaseCommand):
             ),
         )
         self.config.update(moksha_options)
-        self.config['fedmsg.consumers.badges.examplebadge.enabled'] = True
+        self.config['fedmsg.consumers.badges.enabled'] = True
 
         from moksha.hub import main
         main(
             options=self.config,
             # If you omit this argument, it will pick up *all* consumers.
-            consumers=[ExampleBadgesConsumer],
+            consumers=[FedoraBadgesConsumer],
             producers=[],
         )
 
