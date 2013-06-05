@@ -14,7 +14,7 @@ import fedmsg.consumers
 import tahrir_api.dbapi
 import datanommer.models
 
-import fedbadges.models
+import fedbadges.rules
 
 import logging
 log = logging.getLogger("moksha.hub")
@@ -82,7 +82,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
                     continue
 
                 try:
-                    badge_rule = fedbadges.models.BadgeRule(badge, self.tahrir)
+                    badge_rule = fedbadges.rules.BadgeRule(badge, self.tahrir)
                     badges.append(badge_rule)
                 except ValueError as e:
                     log.error("Initializing rule for %r failed with %r" % (
