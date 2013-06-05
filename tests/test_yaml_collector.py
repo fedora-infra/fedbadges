@@ -21,6 +21,7 @@ class MockHub(object):
                 issuer_contact='rdelinge@redhat.com'
             ),
         },
+        "datanommer.sqlalchemy.url": "sqlite://",
     }
 
     def subscribe(self, topic, callback):
