@@ -28,11 +28,11 @@ a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
   match, then the current BadgeRule is discarded and processing moves to
   the next.
 
-  In english, a ``trigger`` is typically something like "any bodhi message"
+  A ``trigger`` is typically something like "any bodhi message"
   or "messages only from the failure of a koji build".  More on their
   specification below.
 
-* BadgeRules must also define a set of ``criteria`` -- more `heavyweight`
+* BadgeRules must also define a set of ``criteria`` -- a more `heavyweight`
   checks.  During the processing of a newly received message, if the
   message matches a BadgeRule's ``trigger``, the ``criteria`` is then
   considered.  This typically involves a more expensive query to the
@@ -212,16 +212,18 @@ if the user has pushed to the fedora git repos 50 or more times.
 You can do some fancy things with the **condition** of a datanommer
 filter.  Here's a list of the possible comparisons you can make:
 
-- ``"is greater than or equal to"``
-- ``"greater than or equal to"``
+- ``"is greater than or equal to"`` or alternatively
+  ``"greater than or equal to"``
 - ``"greater than"``
-- ``"is less than or equal to"``
-- ``"less than or equal to"``
+- ``"is less than or equal to"`` or alternatively
+  ``"less than or equal to"``
 - ``"less than"``
-- ``"equal to"``
-- ``"is equal to"``
-- ``"is not"``
-- ``"is not equal to"``
+- ``"equal to"`` or alternatively ``"is equal to"``
+- ``"is not"`` or alternatively ``"is not equal to"``
+
+As you can see, some of them are synonyms for each other.
+
+----
 
 If any of those don't meet your needs, you can specify a custom expression
 by using the ``lambda`` condition whereby fedbadges will compile whatever
