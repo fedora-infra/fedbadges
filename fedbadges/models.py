@@ -251,12 +251,20 @@ class DatanommerCriteria(AbstractSpecializedComparator):
     ])
 
     condition_callbacks = {
+        'is greater than or equal to': lambda t, v: v >= t,
         'greater than or equal to': lambda t, v: v >= t,
         'greater than': lambda t, v: v > t,
+
+        'is less than or equal to': lambda t, v: v <= t,
         'less than or equal to': lambda t, v: v <= t,
         'less than': lambda t, v: v < t,
+
         'equal to': lambda t, v: v == t,
+        'is equal to': lambda t, v: v == t,
+
         'is not': lambda t, v: v != t,
+        'is not equal to': lambda t, v: v != t,
+
         'lambda': single_argument_lambda_factory,
     }
 
