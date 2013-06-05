@@ -201,10 +201,8 @@ class Trigger(AbstractTopLevelComparator):
                 child.matches(msg) for child in self.children
             ])
         elif self.attribute == 'lambda':
-            source = "lambda msg: " + self.expected_value
-            code = compile(source, __file__, "eval")
-            func = types.LambdaType(code, globals())()
-            return func(msg)
+            return single_argument_lambda_factory(
+                expression=self.expected_value, argument=msg, name='msg')
         elif self.attribute == 'category':
             # TODO -- use fedmsg.meta.msg2processor(msg).__name__.lower()
             return msg['topic'].split('.')[3] == self.expected_value
