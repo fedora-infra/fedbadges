@@ -1,6 +1,6 @@
 import unittest
 
-import fedbadges.models
+import fedbadges.rules
 
 from mock import patch
 from nose.tools import eq_, raises
@@ -11,12 +11,12 @@ class TestRuleMatching(unittest.TestCase):
     @raises(ValueError)
     def test_metadata_validation(self):
         """ Test for failure if not enough metadata """
-        rule = fedbadges.models.BadgeRule(dict(name="Test"), None)
+        rule = fedbadges.rules.BadgeRule(dict(name="Test"), None)
 
     @raises(ValueError)
     def test_full_specification(self):
         """ Test for failure if no criteria specified. """
-        rule = fedbadges.models.BadgeRule(dict(
+        rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
             description="Doesn't matter...",
             creator="Somebody",
@@ -28,7 +28,7 @@ class TestRuleMatching(unittest.TestCase):
 
     def test_full_simple_success(self):
         """ A simple integration test for messages with zero users """
-        rule = fedbadges.models.BadgeRule(dict(
+        rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
             description="Doesn't matter...",
             creator="Somebody",
@@ -57,7 +57,7 @@ class TestRuleMatching(unittest.TestCase):
 
     def test_full_simple_match_almost_succeed(self):
         """ A simple integration test for messages with zero users """
-        rule = fedbadges.models.BadgeRule(dict(
+        rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
             description="Doesn't matter...",
             creator="Somebody",
@@ -100,7 +100,7 @@ class TestRuleMatching(unittest.TestCase):
         # If not, use fedmsg.meta.msg2usernames for convenience.  It will do
         # in most all cases.
 
-        rule = fedbadges.models.BadgeRule(dict(
+        rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
             description="Doesn't matter...",
             creator="Somebody",
@@ -138,7 +138,7 @@ class TestRuleMatching(unittest.TestCase):
     def test_yaml_specified_awardee_failure(self):
         """ Test that when we don't override msg2usernames, we get 2 awardees.
         """
-        rule = fedbadges.models.BadgeRule(dict(
+        rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
             description="Doesn't matter...",
             creator="Somebody",
@@ -184,7 +184,7 @@ class TestRuleMatching(unittest.TestCase):
 
         tahrir_db = MockTahrirDB()
 
-        rule = fedbadges.models.BadgeRule(dict(
+        rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
             description="Doesn't matter...",
             creator="Somebody",

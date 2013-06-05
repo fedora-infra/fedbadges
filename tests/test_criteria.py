@@ -2,21 +2,21 @@ import unittest
 import mock
 from nose.tools import raises, eq_
 
-import fedbadges.models
+import fedbadges.rules
 
 
 class TestCriteriaMatching(unittest.TestCase):
     @raises(KeyError)
     def test_malformed_criteria(self):
         """ Test that an error is raised when nonsense is provided. """
-        criteria = fedbadges.models.Criteria(dict(
+        criteria = fedbadges.rules.Criteria(dict(
             watwat="does not exist",
         ))
 
     @raises(ValueError)
     def test_underspecified_criteria(self):
         """ Test that an error is raised when condition is missing. """
-        criteria = fedbadges.models.Criteria(dict(
+        criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
                     "topics": ["{topic}"],
@@ -29,7 +29,7 @@ class TestCriteriaMatching(unittest.TestCase):
     @raises(KeyError)
     def test_malformed_filter(self):
         """ Test that an error is raised for malformed filters """
-        criteria = fedbadges.models.Criteria(dict(
+        criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
                     "topics": ["{topic}"],
@@ -45,7 +45,7 @@ class TestCriteriaMatching(unittest.TestCase):
 
 class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
     def setUp(self):
-        self.criteria = fedbadges.models.Criteria(dict(
+        self.criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
                     "topics": ["{topic}"],
@@ -107,7 +107,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
 
 class TestCriteriaLambdaConditions(unittest.TestCase):
     def setUp(self):
-        self.criteria = fedbadges.models.Criteria(dict(
+        self.criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
                     "topics": ["{topic}"],
@@ -157,7 +157,7 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
 
 class TestCriteriaLambdaFilters(unittest.TestCase):
     def setUp(self):
-        self.criteria = fedbadges.models.Criteria(dict(
+        self.criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
                     "users": {
