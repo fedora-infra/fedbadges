@@ -3,3 +3,5 @@
 *.pyo
 *.swp
 *.db
+dist
+build
