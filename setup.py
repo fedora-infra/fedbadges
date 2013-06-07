@@ -18,12 +18,15 @@ long_description = file("README.rst").read().strip()
 
 setup(
     name='fedbadges',
-    version='0.2.0',
+    version='0.2.1',
     description='fedmsg consumer for awarding open badges',
     long_description=long_description,
+    license='GPLv2+',
     author='Ross Delinger',
     author_email='rdelinge@redhat.com',
-    url='https://github.com/fedora-infra/fedbages',
+    maintainer='Ralph Bean',
+    maintainer_email='rbean@redhat.com',
+    url='https://github.com/fedora-infra/fedbadges',
     install_requires=get_requirements(),
     tests_require=[
         "nose",
