@@ -1,13 +1,7 @@
 Fedora Badges
 =============
 
-This repo contains the consumer and the command nessicary to hook the fedora
-trigger:
-  category:
-      any:
-            - bodhi
-                    - git
-
+This repo contains the consumer and the command nessicary to hook the
 badges stack (Tahrir, Tahrir-API, Tahrir-REST) into fedmsg.
 
 Architecture
