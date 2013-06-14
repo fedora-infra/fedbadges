@@ -207,7 +207,10 @@ class Trigger(AbstractTopLevelComparator):
             # TODO -- use fedmsg.meta.msg2processor(msg).__name__.lower()
             return msg['topic'].split('.')[3] == self.expected_value
         else:
-            return msg[self.attribute] == self.expected_value
+            if hasattr(msg[self.attribute], 'endswith'):
+                return msg[self.attribute].endswith(self.expected_value)
+            else:
+                return msg[self.attribute] == self.expected_value
 
 
 class Criteria(AbstractTopLevelComparator):
