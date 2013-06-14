@@ -100,7 +100,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             log.error("Loading %r failed with %r" % (fname, e))
             return None
 
-    def award_badge(self, username, badge_id):
+    def award_badge(self, username, badge_rule):
         """ A high level way to issue a badge to a Person.
 
         It adds the person if they don't exist, and creates an assertion for
@@ -109,18 +109,18 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         :type username: str
         :param username: This person's username.
 
-        :type badge_id: str
-        :param badge_id: the id of the badge being awarded
+        :type badge_rule: object
+        :param badge_rule: the badge_rule that triggered this.
         """
 
-        log.info("Awarding badge %r to %r" % (badge_id, username))
+        log.info("Awarding badge %r to %r" % (badge_rule.badge_id, username))
         email = "%s@fedoraproject.org" % username
 
         self.tahrir.add_person(email)
-        self.tahrir.add_assertion(badge_id, email, None)
+        self.tahrir.add_assertion(badge_rule.badge_id, email, None)
 
         fedmsg.publish(topic="badge.award",
-                       msg=dict(badge_id=badge_id, username=username))
+                       msg=dict(badge=badge_rule._d, username=username))
 
     def consume(self, msg):
 
@@ -135,7 +135,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             log.info("Received %r." % msg['topic'])
             for badge_rule in self.badge_rules:
                 for recipient in badge_rule.matches(msg):
-                    self.award_badge(recipient, badge_rule.badge_id)
+                    self.award_badge(recipient, badge_rule)
         except Exception as e:
             log.error("Failure in badge awarder! %r Details to follow:" % e)
             log.error("Considering badge: %r" % badge_rule)
