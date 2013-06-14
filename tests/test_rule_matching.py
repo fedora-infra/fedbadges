@@ -11,7 +11,7 @@ class TestRuleMatching(unittest.TestCase):
     @raises(ValueError)
     def test_metadata_validation(self):
         """ Test for failure if not enough metadata """
-        rule = fedbadges.rules.BadgeRule(dict(name="Test"), None)
+        rule = fedbadges.rules.BadgeRule(dict(name="Test"), None, None)
 
     @raises(ValueError)
     def test_full_specification(self):
@@ -24,7 +24,7 @@ class TestRuleMatching(unittest.TestCase):
             issuer_id="fedora-project",
             image_url="http://somelinke.com/something.png",
             trigger=dict(topic="test_topic"),
-        ), None)
+        ), None, None)
 
     def test_full_simple_success(self):
         """ A simple integration test for messages with zero users """
@@ -41,7 +41,7 @@ class TestRuleMatching(unittest.TestCase):
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ), None)
+        ), None, None)
 
         msg = _example_real_bodhi_message
 
@@ -70,7 +70,7 @@ class TestRuleMatching(unittest.TestCase):
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ), None)
+        ), None, None)
 
         # This message has zero users associated with it, so even if trigger
         # and criteria are met, there's noone to award the badge to -- and so,
@@ -114,7 +114,7 @@ class TestRuleMatching(unittest.TestCase):
                 condition={"greater than or equal to": 1}
             )),
             recipient="msg.agent.username",
-        ), None)
+        ), None, None)
 
         msg = {
             u'topic': u'org.fedoraproject.stg.fas.role.update',
@@ -151,7 +151,7 @@ class TestRuleMatching(unittest.TestCase):
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ), None)
+        ), None, None)
 
         msg = {
             u'topic': u'org.fedoraproject.stg.fas.role.update',
@@ -197,7 +197,7 @@ class TestRuleMatching(unittest.TestCase):
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ), tahrir_db)
+        ), tahrir_db, None)
 
         msg = {
             u'topic': u'org.fedoraproject.stg.fas.role.update',
