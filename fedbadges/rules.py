@@ -59,7 +59,7 @@ class BadgeRule(object):
         'koji',
     ])
 
-    def __init__(self, badge_dict, tahrir_database):
+    def __init__(self, badge_dict, tahrir_database, issuer_id):
         argued_fields = set(badge_dict.keys())
 
         if not self.required.issubset(argued_fields):
@@ -82,7 +82,7 @@ class BadgeRule(object):
                 image=self._d['image_url'],
                 desc=self._d['description'],
                 criteria=self._d['discussion'],
-                issuer_id=self._d.get('issuer_id', "fedora-project"),
+                issuer_id=issuer_id,
             )
 
         self.trigger = Trigger(self._d['trigger'])
