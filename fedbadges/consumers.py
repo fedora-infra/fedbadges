@@ -82,7 +82,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
                     continue
 
                 try:
-                    badge_rule = fedbadges.rules.BadgeRule(badge, self.tahrir)
+                    badge_rule = fedbadges.rules.BadgeRule(
+                        badge, self.tahrir, self.issuer_id)
                     badges.append(badge_rule)
                 except ValueError as e:
                     log.error("Initializing rule for %r failed with %r" % (
