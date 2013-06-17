@@ -31,11 +31,12 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         super(FedoraBadgesConsumer, self).__init__(hub)
 
-        # Three things need doing at start up time
+        # Four things need doing at start up time
         # 1) Initialize our connection to the tahrir DB and perform some
         #    administrivia.
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
+        # 4) Initialize fedmsg so that those listening to us can handshake.
 
         # Tahrir stuff
         self._initialize_tahrir_connection()
@@ -46,6 +47,9 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         # Load badge definitions
         directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
         self.badge_rules = self._load_badges_from_yaml(directory)
+
+        # Initialize fedmsg
+        fedmsg.init()
 
     def _initialize_tahrir_connection(self):
         global_settings = self.hub.config.get("badges_global", {})
