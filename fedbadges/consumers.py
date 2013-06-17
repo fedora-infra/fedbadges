@@ -121,7 +121,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         log.info("Awarding badge %r to %r" % (badge_rule.badge_id, username))
         email = "%s@fedoraproject.org" % username
 
-        user_id = self.tahrir.add_person(email)
+        self.tahrir.add_person(email)
+        user_id = self.tahrir.get_person(email)
         self.tahrir.add_assertion(badge_rule.badge_id, email, None)
 
         fedmsg.publish(topic="badge.award",
