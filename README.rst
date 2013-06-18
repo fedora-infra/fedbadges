@@ -172,13 +172,13 @@ Here's an example of a simple criteria definition::
     criteria:
       filter:
         topics:
-        - "{topic}"
+        - "%(topic)s"
       operation: count
       condition:
         greater than or equal to: 2
 
 The above criteria will match if there is more than one message in datanommer
-with the same topic as the incoming message being handled.  Here, ``"{topic}"``
+with the same topic as the incoming message being handled.  Here, ``"%(topic)s"``
 is a `template variable`.  Template variables will have their values
 substituted before the expensive check is made against datanommer.
 
@@ -194,7 +194,7 @@ Here's a more interesting criteria definition::
         topics:
         - org.fedoraproject.prod.git.receive
         usernames:
-        - "{msg.commit.username}"
+        - "%(msg.commit.username)s"
       operation: count
       condition:
         greater than or equal to: 50
@@ -233,7 +233,7 @@ statement you provide into a callable and use that at runtime.  For example::
         topics:
         - org.fedoraproject.prod.git.receive
         usernames:
-        - "{msg.commit.username}"
+        - "%(msg.commit.username)s"
       operation: count
       condition:
         lambda: value != 0 and ((value & (value - 1)) == 0)
@@ -275,8 +275,8 @@ handle the fas case we described above::
     criteria:
       filter:
         topics:
-        - "{topic}"
+        - "%(topic)s"
       operation: count
       condition:
         greater than or equal to: 1
-    recipient: msg.agent.username
+    recipient: "%(msg.agent.username)s"

@@ -113,7 +113,7 @@ class TestRuleMatching(unittest.TestCase):
                 operation="count",
                 condition={"greater than or equal to": 1}
             )),
-            recipient="msg.agent.username",
+            recipient="%(msg.agent.username)s",
         ), None, None)
 
         msg = {

@@ -117,9 +117,8 @@ class BadgeRule(object):
         # recipient_key, we can use that to extract the potential awardee.  If
         # that is not specified, we just use `msg2usernames`.
         if self.recipient_key:
-            key = self.recipient_key.replace('.', '_')
             subs = construct_substitutions(msg)
-            awardees = set([subs[key]])
+            awardees = set([format_args(self.recipient_key, subs)])
         else:
             usernames = fedmsg.meta.msg2usernames(msg)
             awardees = usernames.difference(self.banned_usernames)

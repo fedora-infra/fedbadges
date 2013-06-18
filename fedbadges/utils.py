@@ -16,7 +16,7 @@ def construct_substitutions(msg):
     for key1 in msg:
         if isinstance(msg[key1], dict):
             subs.update(dict([
-                ('_'.join([key1, key2]), val2)
+                ('.'.join([key1, key2]), val2)
                 for key2, val2 in construct_substitutions(msg[key1]).items()
             ]))
         else:
@@ -33,7 +33,7 @@ def format_args(obj, subs):
     elif isinstance(obj, list):
         return [format_args(item, subs) for item in obj]
     else:
-        obj = obj.format(**subs)
+        obj = obj % subs
 
     return obj
 

@@ -19,7 +19,7 @@ class TestCriteriaMatching(unittest.TestCase):
         criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
-                    "topics": ["{topic}"],
+                    "topics": ["%(topic)s"],
                     "wat": "baz"
                 },
                 "operation": "count",
@@ -32,7 +32,7 @@ class TestCriteriaMatching(unittest.TestCase):
         criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
-                    "topics": ["{topic}"],
+                    "topics": ["%(topic)s"],
                     "wat": "baz"
                 },
                 "operation": "count",
@@ -48,7 +48,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
         self.criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
-                    "topics": ["{topic}"],
+                    "topics": ["%(topic)s"],
                 },
                 "operation": "count",
                 "condition": {
@@ -110,7 +110,7 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
         self.criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
-                    "topics": ["{topic}"],
+                    "topics": ["%(topic)s"],
                 },
                 "operation": "count",
                 "condition": {
@@ -227,7 +227,9 @@ class TestCriteriaDottedFilter(unittest.TestCase):
         self.criteria = fedbadges.rules.Criteria(dict(
             datanommer={
                 "filter": {
-                    "users": "{msg.commit.username}",
+                    "users": [
+                        "%(msg.commit.username)s",
+                    ]
                 },
                 "operation": "count",
                 "condition": {
