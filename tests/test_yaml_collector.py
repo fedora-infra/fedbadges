@@ -30,9 +30,10 @@ class MockHub(object):
 
 class TestYamlCollector(unittest.TestCase):
 
+    @patch('fedmsg.init')
     @patch('tahrir_api.dbapi.TahrirDatabase.add_issuer')
     @patch('tahrir_api.dbapi.TahrirDatabase.add_badge')
-    def setUp(self, add_issuer, add_badge):
+    def setUp(self, fedmsg_init, add_issuer, add_badge):
         hub = MockHub()
         self.consumer = fedbadges.consumers.FedoraBadgesConsumer(hub)
 
