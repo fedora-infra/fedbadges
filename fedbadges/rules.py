@@ -52,6 +52,10 @@ class BadgeRule(object):
         'criteria',
     ])
 
+    possible = required.union([
+        'recipient',
+    ])
+
     banned_usernames = set([
         'bodhi',
         'oscar',
@@ -61,6 +65,13 @@ class BadgeRule(object):
 
     def __init__(self, badge_dict, tahrir_database, issuer_id):
         argued_fields = set(badge_dict.keys())
+
+        if not argued_fields.issubset(self.possible):
+            raise KeyError(
+                "%r are not possible fields.  Choose from %r" % (
+                    argued_fields.difference(self.possible),
+                    self.possible
+                ))
 
         if not self.required.issubset(argued_fields):
             raise ValueError(
