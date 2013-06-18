@@ -220,3 +220,66 @@ class TestCriteriaLambdaFilters(unittest.TestCase):
             f.return_value = None, None, self.mock_query
             result = self.criteria.matches(self.message)
             f.assert_called_once_with(users=['ralph'], defer=True)
+
+
+class TestCriteriaDottedFilter(unittest.TestCase):
+    def setUp(self):
+        self.criteria = fedbadges.rules.Criteria(dict(
+            datanommer={
+                "filter": {
+                    "users": "{msg.commit.username}",
+                },
+                "operation": "count",
+                "condition": {
+                    "greater than or equal to": 0,
+                }
+            }
+        ))
+
+        # Here we use a real message so we can test fedmsg.meta integration
+        self.message = {
+            "i": 1,
+            "timestamp": 1368046115.802794,
+            "topic": "org.fedoraproject.prod.trac.git.receive",
+            "msg": {
+                "commit": {
+                    "username": "ralph",
+                    "stats": {
+                        "files": {
+                            "README.rst": {
+                                "deletions": 0,
+                                "lines": 1,
+                                "insertions": 1
+                            }
+                        },
+                        "total": {
+                            "deletions": 0,
+                            "files": 1,
+                            "insertions": 1,
+                            "lines": 1
+                        }
+                    },
+                    "name": "Ralph Bean",
+                    "rev": "24bcd20d08a68320f82951ce20959bc6a1a6e79c",
+                    "agent": "ralph",
+                    "summary": "Another commit to test fedorahosted fedmsg.",
+                    "repo": "moksha",
+                    "branch": "dev",
+                    "message": "Another commit to test fedorahosted fedmsg.\n",
+                    "email": "rbean@redhat.com"
+                }
+            }
+        }
+
+        class MockQuery(object):
+            def count(query):
+                return self.returned_count
+        self.mock_query = MockQuery()
+
+    def test_datanommer_with_lambda_filter(self):
+        self.returned_count = 0
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = None, None, self.mock_query
+            result = self.criteria.matches(self.message)
+            f.assert_called_once_with(users=['ralph'], defer=True)
