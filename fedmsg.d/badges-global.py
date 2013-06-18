@@ -6,6 +6,11 @@ config = {
     # may be a relative or an absolute path on the file system.
     "badges.yaml.directory": "tests/test_badges",
 
+    # Number of seconds to delay before consuming a message for our event loop.
+    # This is here to help us mitigate distributed race conditions between
+    # fedbadges and datanommer.
+    "badges.consume_delay": 1,
+
     # This is a dictionary of tahrir-related configuration
     "badges_global": {
 

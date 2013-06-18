@@ -8,9 +8,12 @@ Authors:  Ross Delinger
 import os.path
 import yaml
 import traceback
+import functools
 
 import fedmsg
 import fedmsg.consumers
+import moksha.hub
+
 import tahrir_api.dbapi
 import datanommer.models
 
@@ -23,6 +26,7 @@ log = logging.getLogger("moksha.hub")
 class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
     topic = "org.fedoraproject.*"
     config_key = "fedmsg.consumers.badges.enabled"
+    consume_delay = 3
 
     def __init__(self, hub):
         self.badge_rules = []
@@ -30,6 +34,9 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         self.DBSession = None
 
         super(FedoraBadgesConsumer, self).__init__(hub)
+
+        self.consume_delay = int(self.hub.get('badges.consume_delay',
+                                              self.consume_delay))
 
         # Four things need doing at start up time
         # 1) Initialize our connection to the tahrir DB and perform some
@@ -134,7 +141,10 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
                            )))
 
     def consume(self, msg):
+        func = functools.partial(self.deferred_consume, msg)
+        moksha.hub.reactor.reactor.callLater(self.consume_delay, func)
 
+    def deferred_consume(self, msg):
         # Strip the moksha envelope
         msg = msg['body']
 
