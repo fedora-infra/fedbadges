@@ -51,7 +51,7 @@ a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
 
   That is usually correct -- but sometimes, a BadgeRule needs to specify
   that one particular user (not all related users) should be recipients of
-  the badge.  In this case, the BadgeRule may define a ``recipient_key``
+  the badge.  In this case, the BadgeRule may define a ``recipient``
   in dot-notation that instructs the ``Consumer`` how to extract the
   recipient's username from the received message.
 
@@ -264,7 +264,7 @@ remove inactive users from groups.  We don't want to inadvertently award
 that badge to the persons who *were removed*, only to those who *removed
 them*.
 
-To allow for this scenario, badges may optionally define a ``recipient_key``
+To allow for this scenario, badges may optionally define a ``recipient``
 in dotted notation that tells fedbadges where to find the username of the
 recipient in the originating message.  For instance, the following would
 handle the fas case we described above::
@@ -279,4 +279,4 @@ handle the fas case we described above::
       operation: count
       condition:
         greater than or equal to: 1
-    recipient_key: msg.agent.username
+    recipient: msg.agent.username
