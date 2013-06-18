@@ -129,7 +129,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         email = "%s@fedoraproject.org" % username
 
         self.tahrir.add_person(email)
-        user_id = self.tahrir.get_person(email)
+        user = self.tahrir.get_person(email)
         self.tahrir.add_assertion(badge_rule.badge_id, email, None)
 
         fedmsg.publish(topic="badge.award",
@@ -137,7 +137,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
                            badge=badge_rule._d,
                            user=dict(
                                username=username,
-                               badges_user_id=user_id,
+                               badges_user_id=user.id,
                            )))
 
     def consume(self, msg):
