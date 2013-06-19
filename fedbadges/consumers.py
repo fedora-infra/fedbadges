@@ -35,8 +35,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         super(FedoraBadgesConsumer, self).__init__(hub)
 
-        self.consume_delay = int(self.hub.get('badges.consume_delay',
-                                              self.consume_delay))
+        self.consume_delay = int(self.hub.config.get('badges.consume_delay',
+                                                     self.consume_delay))
 
         # Four things need doing at start up time
         # 1) Initialize our connection to the tahrir DB and perform some
