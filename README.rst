@@ -247,9 +247,8 @@ Specifying Recipients
 
 By default, if the trigger and criteria match, fedbadges will award badges
 to all the users returned by a call to ``fedmsg.meta.msg2usernames(msg)``.
-This *usually* corresponds with "what users are responsible" for this message
-which in turn *usually* corresponds to a notion of responsibility.  That
-is *usually* what we want to award badges for.
+This *usually* corresponds with "what users are responsible" for this message.
+That is *usually* what we want to award badges for.
 
 There are some instances for which that is not what we want.
 
