@@ -152,13 +152,13 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         badge_rule = None
 
         # Award every badge as appropriate.
-        try:
-            log.info("Received %r." % msg['topic'])
-            for badge_rule in self.badge_rules:
+        log.info("Received %r." % msg['topic'])
+        for badge_rule in self.badge_rules:
+            try:
                 for recipient in badge_rule.matches(msg):
                     self.award_badge(recipient, badge_rule)
-        except Exception as e:
-            log.error("Failure in badge awarder! %r Details to follow:" % e)
-            log.error("Considering badge: %r" % badge_rule)
-            log.error("Received Message: %r" % msg)
-            log.error(traceback.format_exc())
+            except Exception as e:
+                log.error("Failure in badge awarder! %r Details to follow:" % e)
+                log.error("Considering badge: %r" % badge_rule)
+                log.error("Received Message: %r" % msg)
+                log.error(traceback.format_exc())
