@@ -113,19 +113,18 @@ class TestFormatArgs(unittest.TestCase):
         actual = format_args(obj, subs)
         eq_(actual, target)
 
-    # TODO -- this would be cool.
-    #def test_numeric(self):
-    #    subs = {
-    #        "foo.bar.baz": 42,
-    #    }
-    #    obj = {
-    #        "something should be": "%(foo.bar.baz)i",
-    #    }
-    #    target = {
-    #        "something should be": 42,
-    #    }
-    #    actual = format_args(obj, subs)
-    #    eq_(actual, target)
+    def test_numeric(self):
+        subs = {
+            "foo.bar.baz": 42,
+        }
+        obj = {
+            "something should be": "%(foo.bar.baz)i",
+        }
+        target = {
+            "something should be": 42,
+        }
+        actual = format_args(obj, subs)
+        eq_(actual, target)
 
     def test_nested(self):
         subs = {

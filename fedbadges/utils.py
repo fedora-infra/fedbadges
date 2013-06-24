@@ -37,6 +37,8 @@ def format_args(obj, subs):
             obj[key] = format_args(obj[key], subs)
     elif isinstance(obj, list):
         return [format_args(item, subs) for item in obj]
+    elif isinstance(obj, basestring) and obj[2:-2] in subs:
+        obj = subs[obj[2:-2]]
     else:
         obj = obj % subs
 
