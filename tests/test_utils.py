@@ -152,3 +152,16 @@ class TestFormatArgs(unittest.TestCase):
         }
         actual = format_args(obj, subs)
         eq_(actual, target)
+
+    def test_nested_subs(self):
+        subs = {
+            'wat': dict(foo="bar")
+        }
+        obj = {
+            'envelope': "%(wat)s",
+        }
+        target = {
+            'envelope': dict(foo="bar"),
+        }
+        actual = format_args(obj, subs)
+        eq_(actual, target)
