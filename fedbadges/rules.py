@@ -24,6 +24,7 @@ from fedbadges.utils import (
     format_args,
     single_argument_lambda_factory,
     recursive_lambda_factory,
+    graceful,
 )
 
 operators = set([
@@ -209,6 +210,7 @@ class Trigger(AbstractTopLevelComparator):
         'category',
     ]).union(operators).union(lambdas)
 
+    @graceful(set())
     def matches(self, msg):
         # Check if we should just aggregate the results of our children.
         # Otherwise, we are a leaf-node doing a straightforward comparison.
@@ -249,6 +251,7 @@ class Criteria(AbstractTopLevelComparator):
         else:
             raise RuntimeError("This should be impossible to reach.")
 
+    @graceful(set())
     def matches(self, msg):
         if self.children:
             return __builtins__[self.attribute]([

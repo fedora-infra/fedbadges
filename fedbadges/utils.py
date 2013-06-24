@@ -9,6 +9,9 @@ import fedmsg.config
 import fedmsg.encoding
 import fedmsg.meta
 
+import logging
+log = logging.getLogger("moksha.hub")
+
 
 def construct_substitutions(msg):
     """ Convert a fedmsg message into a dict of substitutions. """
@@ -65,3 +68,17 @@ def recursive_lambda_factory(obj, arg, name='value'):
         pass
 
     return obj
+
+def graceful(default_return_value):
+    """ A decorator that gracefully handles exceptions. """
+    def decorate(method):
+        def inner(self, *args, **kwargs):
+            try:
+                return method(self, *args, **kwargs)
+            except Exception as e:
+                log.exception(e)
+                log.error("From method: %r self: %r args: %r kwargs: %r" % (
+                    method, self, args, kwargs))
+                return default_return_value
+        return inner
+    return decorate

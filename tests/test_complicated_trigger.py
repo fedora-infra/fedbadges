@@ -1,10 +1,13 @@
 import unittest
+import logging
 
 import tahrir_api.dbapi
 import fedbadges.consumers
 
-from mock import patch
+from mock import patch, Mock
 from nose.tools import eq_
+
+from StringIO import StringIO
 
 # Utils for tests
 import utils
@@ -52,4 +55,8 @@ class TestComplicatedTrigger(unittest.TestCase):
                 'user': None
             },
         }
+
+        log = logging.getLogger('moksha.hub')
+        log.error = Mock()
         eq_(self.rule.matches(msg), set())
+        log.error.assert_called_once()
