@@ -21,7 +21,7 @@ class TestYamlCollector(unittest.TestCase):
 
     def test_load_badges_number(self):
         """ Determine that we can load badges from file. """
-        eq_(len(self.consumer.badge_rules), 3)
+        eq_(len(self.consumer.badge_rules), 4)
 
     def test_load_badges_contents(self):
         """ Determine that we can load badges from file. """
@@ -30,4 +30,5 @@ class TestYamlCollector(unittest.TestCase):
             'Like a Rock',
             'The Zen of Foo Bar Baz',
             'Junior Tagger (Tagger I)',
-            ]))
+            'Speak Up!',
+        ]))

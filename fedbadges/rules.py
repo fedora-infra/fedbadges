@@ -124,7 +124,10 @@ class BadgeRule(object):
         # that is not specified, we just use `msg2usernames`.
         if self.recipient_key:
             subs = construct_substitutions(msg)
-            awardees = set([format_args(self.recipient_key, subs)])
+            obj = format_args(self.recipient_key, subs)
+            if isinstance(obj, (basestring, int, float)):
+                obj = [obj]
+            awardees = set(obj)
         else:
             usernames = fedmsg.meta.msg2usernames(msg)
             awardees = usernames.difference(self.banned_usernames)
