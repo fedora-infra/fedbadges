@@ -19,7 +19,11 @@ class TestLambdaFactory(unittest.TestCase):
 class TestSubsitutions(unittest.TestCase):
     def test_basic(self):
         msg = dict(a=dict(b=dict(c=42)))
-        target = {"a.b.c": 42}
+        target = {
+            "a": dict(b=dict(c=42)),
+            "a.b": dict(c=42),
+            "a.b.c": 42,
+        }
         actual = construct_substitutions(msg)
         eq_(actual, target)
 
@@ -55,26 +59,54 @@ class TestSubsitutions(unittest.TestCase):
             "timestamp": 1359947640.986208
         }
         target = {
-            'i': 2,
-            'msg.agent': 'ralph',
-            'msg.created': False,
-            'msg.diff': '<p>alskdfj... the diff is actually here',
-            'msg.newly_mentioned_users': [],
-            'msg.post.comment_count': 0,
-            'msg.post.pk': 2,
-            'msg.post.post_type': 'question',
-            'msg.post.summary': 'alskdfjalskdjf alkjasdalskdjf ...',
-            'msg.post.text': 'alskdfjalskdjf alkjasdalskdjf ...',
-            'msg.post.vote_down_count': 0,
-            'msg.post.vote_up_count': 0,
-            'msg.thread.pk': 2,
-            'msg.thread.tagnames': ['town'],
-            'msg.thread.title': 'alskdjflaksjdf lakjsf a',
-            'msg.timestamp': 1359947640.0,
-            'msg.topmost_post_id': 2,
-            'timestamp': 1359947640.986208,
-            'topic': 'org.fedoraproject.dev.askbot.post.edit',
             'username': 'threebean',
+            'msg.post.text': 'alskdfjalskdjf alkjasdalskdjf ...',
+            'msg.thread.title': 'alskdjflaksjdf lakjsf a',
+            'msg.post.vote_down_count': 0,
+            'msg.post.post_type': 'question',
+            'msg.thread.pk': 2,
+            'msg.newly_mentioned_users': [],
+            'msg.diff': '<p>alskdfj... the diff is actually here',
+            'topic': 'org.fedoraproject.dev.askbot.post.edit',
+            'msg.agent': 'ralph',
+            'msg.post.comment_count': 0,
+            'msg.post': {
+                'vote_up_count': 0,
+
+                'text': 'alskdfjalskdjf alkjasdalskdjf ...',
+                'summary': 'alskdfjalskdjf alkjasdalskdjf ...',
+                'comment_count': 0,
+                'vote_down_count': 0,
+                'pk': 2,
+                'post_type': 'question'},
+            'msg.timestamp': 1359947640.0,
+            'timestamp': 1359947640.986208,
+            'msg.topmost_post_id': 2,
+            'i': 2,
+            'msg.post.pk': 2,
+            'msg.post.vote_up_count': 0,
+            'msg.post.summary': 'alskdfjalskdjf alkjasdalskdjf ...',
+            'msg.thread.tagnames': ['town'],
+            'msg.thread': {'tagnames': ['town'],
+                           'pk': 2,
+                           'title': 'alskdjflaksjdf lakjsf a'},
+            'msg': {'newly_mentioned_users': [],
+                    'thread': {'tagnames': ['town'],
+                               'pk': 2,
+                               'title': 'alskdjflaksjdf lakjsf a'},
+                    'created': False,
+                    'topmost_post_id': 2,
+                    'timestamp': 1359947640.0,
+                    'post': {'vote_up_count': 0,
+                             'text': 'alskdfjalskdjf alkjasdalskdjf ...',
+                             'summary': 'alskdfjalskdjf alkjasdalskdjf ...',
+                             'comment_count': 0,
+                             'vote_down_count': 0,
+                             'pk': 2,
+                             'post_type': 'question'},
+                    'diff': '<p>alskdfj... the diff is actually here',
+                    'agent': 'ralph'},
+            'msg.created': False,
         }
         actual = construct_substitutions(msg)
         eq_(actual, target)

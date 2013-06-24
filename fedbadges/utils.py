@@ -22,6 +22,7 @@ def construct_substitutions(msg):
                 ('.'.join([key1, key2]), val2)
                 for key2, val2 in construct_substitutions(msg[key1]).items()
             ]))
+            subs[key1] = msg[key1]
         elif isinstance(msg[key1], basestring):
             subs[key1] = msg[key1].lower()
         else:
