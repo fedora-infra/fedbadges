@@ -158,7 +158,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
                 for recipient in badge_rule.matches(msg):
                     self.award_badge(recipient, badge_rule)
             except Exception as e:
-                log.error("Failure in badge awarder! %r Details to follow:" % e)
+                log.error("Failure in badge awarder! %r Details follow:" % e)
                 log.error("Considering badge: %r" % badge_rule)
                 log.error("Received Message: %r" % msg)
                 log.error(traceback.format_exc())

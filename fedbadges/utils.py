@@ -69,8 +69,10 @@ def recursive_lambda_factory(obj, arg, name='value'):
 
     return obj
 
+
 def graceful(default_return_value):
     """ A decorator that gracefully handles exceptions. """
+
     def decorate(method):
         def inner(self, *args, **kwargs):
             try:
