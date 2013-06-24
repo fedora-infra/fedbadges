@@ -96,8 +96,8 @@ class BadgeRule(object):
                 issuer_id=issuer_id,
             )
 
-        self.trigger = Trigger(self._d['trigger'])
-        self.criteria = Criteria(self._d['criteria'])
+        self.trigger = Trigger(self._d['trigger'], self)
+        self.criteria = Criteria(self._d['criteria'], self)
         self.recipient_key = self._d.get('recipient')
 
     def __getitem__(self, key):
@@ -154,7 +154,7 @@ class AbstractComparator(object):
     possible = required = set()
     children = None
 
-    def __init__(self, d):
+    def __init__(self, d, parent=None):
         argued_fields = set(d.keys())
         if not argued_fields.issubset(self.possible):
             raise KeyError(
@@ -171,6 +171,12 @@ class AbstractComparator(object):
                 ))
 
         self._d = d
+        self.parent = parent
+
+    def __repr__(self):
+        return "<%s: %r> which is a child of %s" % (
+            type(self).__name__, self._d, repr(self.parent)
+        )
 
     @abc.abstractmethod
     def matches(self, msg):
@@ -178,8 +184,8 @@ class AbstractComparator(object):
 
 
 class AbstractTopLevelComparator(AbstractComparator):
-    def __init__(self, d):
-        super(AbstractTopLevelComparator, self).__init__(d)
+    def __init__(self, *args, **kwargs):
+        super(AbstractTopLevelComparator, self).__init__(*args, **kwargs)
         cls = type(self)
 
         if len(self._d) > 1:
@@ -194,7 +200,7 @@ class AbstractTopLevelComparator(AbstractComparator):
             if not isinstance(self.expected_value, list):
                 raise TypeError("Operators only accept lists, not %r" %
                                 type(self.expected_value))
-            self.children = [cls(child) for child in self.expected_value]
+            self.children = [cls(child, self) for child in self.expected_value]
 
 
 class Trigger(AbstractTopLevelComparator):
@@ -228,8 +234,8 @@ class Criteria(AbstractTopLevelComparator):
         'datanommer',
     ]).union(operators)
 
-    def __init__(self, d):
-        super(Criteria, self).__init__(d)
+    def __init__(self, *args, **kwargs):
+        super(Criteria, self).__init__(*args, **kwargs)
 
         if not self.children:
             # Then, by AbstractComparator rules, I am a leaf node.  Specialize!
@@ -281,8 +287,8 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         'lambda': single_argument_lambda_factory,
     }
 
-    def __init__(self, d):
-        super(DatanommerCriteria, self).__init__(d)
+    def __init__(self, *args, **kwargs):
+        super(DatanommerCriteria, self).__init__(*args, **kwargs)
         if len(self._d['condition']) > 1:
             conditions = self.condition_callbacks.keys()
             raise ValueError("No more than one condition allowed.  "
@@ -294,7 +300,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         grep_arguments = set(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
-        argued_filter_fields = set(d['filter'].keys())
+        argued_filter_fields = set(self._d['filter'].keys())
         if not argued_filter_fields.issubset(grep_arguments):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
