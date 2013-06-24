@@ -1,0 +1,39 @@
+%YAML 1.2
+---
+
+# This is some metadata about the badge
+name:           Junior Tagger (Tagger I)
+description:    Voted on 10 tags for packages in Fedora Tagger.
+creator:        ralph
+
+# This is a link to the discussion about adopting this as a for-real badge.
+discussion:     https://github.com/oddshocks/badges/pull/8
+
+# A link to the image for the badge
+image_url:      http://upload.wikimedia.org/wikipedia/commons/5/53/PSM_V37_D209_Fisher_island_sound_rock_forming_natural_breakwater.jpg
+
+# That's us!
+issuer_id:      fedora-project
+
+# We'll perform our more costly check (defined below) only when
+# we receive messages that match this 'trigger'
+trigger:
+  all:
+  - any:
+    - topic: fedoratagger.tag.create
+    - topic: fedoratagger.tag.update
+  - lambda:  not msg.get('msg', {}).get('user', {}).get('anonymous', True)
+
+# Once the check has been triggered, this defines what we actually check.
+criteria:
+  datanommer:
+      filter:
+        categories:
+        - "fedoratagger"
+        users:
+        - "%(msg.user.username)s"
+      operation: count
+      condition:
+        greater than or equal to: 10
+
+recipient: "%(msg.user.username)s"
