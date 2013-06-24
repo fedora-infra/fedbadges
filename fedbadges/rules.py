@@ -36,6 +36,11 @@ lambdas = set([
     "lambda",
 ])
 
+operator_lookup = {
+    "any": any,
+    "all": all,
+}
+
 fedmsg_config = fedmsg.config.load_config()
 fedmsg.meta.make_processors(**fedmsg_config)
 
@@ -215,9 +220,9 @@ class Trigger(AbstractTopLevelComparator):
         # Check if we should just aggregate the results of our children.
         # Otherwise, we are a leaf-node doing a straightforward comparison.
         if self.children:
-            return __builtins__[self.attribute]([
+            return operator_lookup[self.attribute]((
                 child.matches(msg) for child in self.children
-            ])
+            ))
         elif self.attribute == 'lambda':
             return single_argument_lambda_factory(
                 expression=self.expected_value, argument=msg, name='msg')
@@ -254,9 +259,9 @@ class Criteria(AbstractTopLevelComparator):
     @graceful(set())
     def matches(self, msg):
         if self.children:
-            return __builtins__[self.attribute]([
+            return operator_lookup[self.attribute]((
                 child.matches(msg) for child in self.children
-            ])
+            ))
         else:
             return self.specialization.matches(msg)
 
