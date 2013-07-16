@@ -18,7 +18,7 @@ long_description = file("README.rst").read().strip()
 
 setup(
     name='fedbadges',
-    version='0.2.1',
+    version='0.2.2',
     description='fedmsg consumer for awarding open badges',
     long_description=long_description,
     license='GPLv2+',
