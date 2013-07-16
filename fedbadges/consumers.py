@@ -9,6 +9,7 @@ import os.path
 import yaml
 import traceback
 import functools
+import transaction
 
 import fedmsg
 import fedmsg.consumers
@@ -16,6 +17,10 @@ import moksha.hub
 
 import tahrir_api.dbapi
 import datanommer.models
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, scoped_session
+from zope.sqlalchemy import ZopeTransactionExtension
 
 import fedbadges.rules
 
@@ -31,7 +36,6 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
     def __init__(self, hub):
         self.badge_rules = []
         self.hub = hub
-        self.DBSession = None
 
         super(FedoraBadgesConsumer, self).__init__(hub)
 
@@ -65,8 +69,15 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         if not database_uri:
             raise ValueError('Badges consumer requires a database uri')
 
-        self.tahrir = tahrir_api.dbapi.TahrirDatabase(database_uri)
-        self.DBSession = self.tahrir.session_maker
+        session_cls = scoped_session(sessionmaker(
+            extension=ZopeTransactionExtension(),
+            bind=create_engine(database_uri),
+        ))
+
+        self.tahrir = tahrir_api.dbapi.TahrirDatabase(
+            session=session_cls(),
+            autocommit=False,
+        )
         issuer = global_settings.get('badge_issuer')
 
         self.issuer_id = self.tahrir.add_issuer(
@@ -155,8 +166,9 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         log.info("Received %r." % msg['topic'])
         for badge_rule in self.badge_rules:
             try:
-                for recipient in badge_rule.matches(msg):
-                    self.award_badge(recipient, badge_rule)
+                with transaction.TransactionManager():
+                    for recipient in badge_rule.matches(msg):
+                        self.award_badge(recipient, badge_rule)
             except Exception as e:
                 log.error("Failure in badge awarder! %r Details follow:" % e)
                 log.error("Considering badge: %r" % badge_rule)
