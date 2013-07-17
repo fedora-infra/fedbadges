@@ -13,6 +13,7 @@ import json
 import types
 import functools
 import inspect
+import transaction
 
 import fedmsg.config
 import fedmsg.meta
@@ -90,6 +91,7 @@ class BadgeRule(object):
 
         self.tahrir = tahrir_database
         if self.tahrir:
+            transaction.begin()
             self.badge_id = self.tahrir.add_badge(
                 name=self._d['name'],
                 image=self._d['image_url'],
@@ -97,6 +99,7 @@ class BadgeRule(object):
                 criteria=self._d['discussion'],
                 issuer_id=issuer_id,
             )
+            transaction.commit()
 
         self.trigger = Trigger(self._d['trigger'], self)
         self.criteria = Criteria(self._d['criteria'], self)

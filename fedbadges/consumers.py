@@ -80,12 +80,14 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         )
         issuer = global_settings.get('badge_issuer')
 
+        transaction.begin()
         self.issuer_id = self.tahrir.add_issuer(
             issuer.get('issuer_origin'),
             issuer.get('issuer_name'),
             issuer.get('issuer_org'),
             issuer.get('issuer_contact')
         )
+        transaction.commit()
 
     def _initialize_datanommer_connection(self):
         datanommer.models.init(self.hub.config['datanommer.sqlalchemy.url'])
@@ -139,9 +141,23 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         log.info("Awarding badge %r to %r" % (badge_rule.badge_id, username))
         email = "%s@fedoraproject.org" % username
 
-        self.tahrir.add_person(email)
+        try:
+            transaction.begin()
+            self.tahrir.add_person(email)
+            transaction.commit()
+        except:
+            transaction.abort()
+            raise
+
         user = self.tahrir.get_person(email)
-        self.tahrir.add_assertion(badge_rule.badge_id, email, None)
+
+        try:
+            transaction.begin()
+            self.tahrir.add_assertion(badge_rule.badge_id, email, None)
+            transaction.commit()
+        except:
+            transaction.abort()
+            raise
 
         fedmsg.publish(topic="badge.award",
                        msg=dict(
@@ -166,9 +182,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         log.info("Received %r." % msg['topic'])
         for badge_rule in self.badge_rules:
             try:
-                with transaction.TransactionManager():
-                    for recipient in badge_rule.matches(msg):
-                        self.award_badge(recipient, badge_rule)
+                for recipient in badge_rule.matches(msg):
+                    self.award_badge(recipient, badge_rule)
             except Exception as e:
                 log.error("Failure in badge awarder! %r Details follow:" % e)
                 log.error("Considering badge: %r" % badge_rule)
