@@ -92,7 +92,7 @@ class BadgeRule(object):
         self.tahrir = tahrir_database
         if self.tahrir:
             transaction.begin()
-            self.badge_id = self.tahrir.add_badge(
+            self.badge_id = self._d['badge_id'] = self.tahrir.add_badge(
                 name=self._d['name'],
                 image=self._d['image_url'],
                 desc=self._d['description'],
