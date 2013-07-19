@@ -28,6 +28,17 @@ from fedbadges.utils import (
     graceful,
 )
 
+import logging
+log = logging.getLogger('moksha.hub')
+
+
+nick2fas = None
+try:
+    from fedmsg_meta_fedora_infrastructure.fasshim import nick2fas
+except ImportError as e:
+    log.warn("Could not import nick2fas: %r" % e)
+
+
 operators = set([
     "all",
     "any",
@@ -104,6 +115,12 @@ class BadgeRule(object):
         self.trigger = Trigger(self._d['trigger'], self)
         self.criteria = Criteria(self._d['criteria'], self)
         self.recipient_key = self._d.get('recipient')
+        self.recipient_nick2fas = self._d.get('recipient_nick2fas')
+
+        # A sanity check before we kick things off.
+        if self.recipient_nick2fas and not nick2fas:
+            raise ImportError("recipient_nick2fas specified, but "
+                              "nick2fas is not available.")
 
     def __getitem__(self, key):
         return self._d[key]
@@ -124,8 +141,13 @@ class BadgeRule(object):
         if self.recipient_key:
             subs = construct_substitutions(msg)
             obj = format_args(self.recipient_key, subs)
+
             if isinstance(obj, (basestring, int, float)):
                 obj = [obj]
+
+            if self.recipient_nick2fas:
+                awardees = map(nick2fas, awardees)
+
             awardees = set(obj)
         else:
             usernames = fedmsg.meta.msg2usernames(msg)
