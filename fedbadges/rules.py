@@ -145,10 +145,12 @@ class BadgeRule(object):
             if isinstance(obj, (basestring, int, float)):
                 obj = [obj]
 
-            if self.recipient_nick2fas:
-                awardees = map(nick2fas, awardees)
-
             awardees = set(obj)
+
+            if self.recipient_nick2fas:
+                awardees = set([
+                    nick2fas(nick, **fedmsg_config) for nick in awardees
+                ])
         else:
             usernames = fedmsg.meta.msg2usernames(msg)
             awardees = usernames.difference(self.banned_usernames)
