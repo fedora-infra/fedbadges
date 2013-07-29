@@ -2,6 +2,9 @@
 
 import types
 
+import logging
+log = logging.getLogger("moksha.hub")
+
 # These are here just so they're available in globals()
 # for compiling lambda expressions
 import json
@@ -9,8 +12,10 @@ import fedmsg.config
 import fedmsg.encoding
 import fedmsg.meta
 
-import logging
-log = logging.getLogger("moksha.hub")
+try:
+    from fedmsg_meta_fedora_infrastructure.fasshim import nick2fas
+except ImportError as e:
+    log.warn("Could not import nick2fas: %r" % e)
 
 
 def construct_substitutions(msg):
