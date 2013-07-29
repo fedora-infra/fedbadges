@@ -168,6 +168,12 @@ class BadgeRule(object):
                                 self.badge_id, "%s@fedoraproject.org" % user
                             )])
 
+            # Also, exclude any potential awardees who have opted out.
+            awardees = set([user for user in awardees
+                            if not self.tahrir.person_opted_out(
+                                "%s@fedoraproject.org" % user
+                            )])
+
         # If no-one would get the badge at this point, then no reason to waste
         # time doing any further checks.  No need to query datanommer.
         if not awardees:
