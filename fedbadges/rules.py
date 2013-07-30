@@ -72,6 +72,7 @@ class BadgeRule(object):
 
     possible = required.union([
         'recipient',
+        'recipient_nick2fas',
     ])
 
     banned_usernames = set([
