@@ -109,6 +109,7 @@ class BadgeRule(object):
                 image=self._d['image_url'],
                 desc=self._d['description'],
                 criteria=self._d['discussion'],
+                tags=','.join(self._d.get('tags', [])),
                 issuer_id=issuer_id,
             )
             transaction.commit()
