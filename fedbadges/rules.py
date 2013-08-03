@@ -366,10 +366,13 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         kwargs = recursive_lambda_factory(kwargs, msg, name='msg')
         kwargs['defer'] = True
         total, pages, query = datanommer.models.Message.grep(**kwargs)
-        return query
+        return total, pages, query
 
     def matches(self, msg):
-        query = self.construct_query(msg)
-        operation = getattr(query, self._d['operation'])
-        result = operation()
+        total, pages, query = self.construct_query(msg)
+        if self._d['operation'] == 'count':
+            result = total
+        else:
+            operation = getattr(query, self._d['operation'])
+            result = operation()
         return self.condition(result)
