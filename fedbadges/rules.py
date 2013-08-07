@@ -161,7 +161,7 @@ class BadgeRule(object):
         awardees = set([
             user for user in awardees if not (
                 user.startswith('192.168.') or
-                user.startswith('10.') or
+                user.startswith('10.')
             )
         ])
 
