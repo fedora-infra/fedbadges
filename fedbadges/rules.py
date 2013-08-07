@@ -157,6 +157,14 @@ class BadgeRule(object):
             usernames = fedmsg.meta.msg2usernames(msg)
             awardees = usernames.difference(self.banned_usernames)
 
+        # Strip anyone who is an IP address
+        awardees = set([
+            user for user in awardees if not (
+                user.startswith('192.168.') or
+                user.startswith('10.') or
+            )
+        ])
+
         # If no-one would get the badge by default, then no reason to waste
         # time doing any further checks.  No need to query the Tahrir DB.
         if not awardees:
