@@ -31,4 +31,4 @@ class TestYamlCollector(unittest.TestCase):
             'The Zen of Foo Bar Baz',
             'Junior Tagger (Tagger I)',
             'Speak Up!',
-        ]))
+            ]))
