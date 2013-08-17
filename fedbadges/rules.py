@@ -346,7 +346,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
 
         # Determine what arguments datanommer..grep accepts
         argspec = inspect.getargspec(datanommer.models.Message.grep)
-        irrelevant = set(['rows_per_page', 'page', 'defer'])
+        irrelevant = set(['defer'])
         grep_arguments = set(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
