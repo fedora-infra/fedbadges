@@ -179,8 +179,12 @@ class TestRuleMatching(unittest.TestCase):
             def assertion_exists(self, badge_id, email):
                 return email == 'toshio@fedoraproject.org'
 
-            def add_badge(self, name, image, desc, criteria, issuer_id):
+            def add_badge(self, name, image, desc,
+                          criteria, issuer_id, tags=None):
                 pass
+
+            def person_opted_out(self, *args, **kwargs):
+                return False
 
         tahrir_db = MockTahrirDB()
 
