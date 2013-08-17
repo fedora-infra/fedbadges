@@ -70,7 +70,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
         expectation = False
 
         with mock.patch('datanommer.models.Message.grep') as f:
-            f.return_value = None, None, self.mock_query
+            f.return_value = self.returned_count, 1, self.mock_query
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
             f.assert_called_once_with(
@@ -83,7 +83,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
         expectation = True
 
         with mock.patch('datanommer.models.Message.grep') as f:
-            f.return_value = None, None, self.mock_query
+            f.return_value = self.returned_count, 1, self.mock_query
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
             f.assert_called_once_with(
@@ -96,7 +96,7 @@ class TestCriteriaCountGreaterThanOrEqualTo(unittest.TestCase):
         expectation = True
 
         with mock.patch('datanommer.models.Message.grep') as f:
-            f.return_value = None, None, self.mock_query
+            f.return_value = self.returned_count, 1, self.mock_query
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
             f.assert_called_once_with(
@@ -125,6 +125,7 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
         class MockQuery(object):
             def count(query):
                 return self.returned_count
+
         self.mock_query = MockQuery()
 
     def test_datanommer_with_lambda_condition_query_undershoot(self):
@@ -132,7 +133,7 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
         expectation = False
 
         with mock.patch('datanommer.models.Message.grep') as f:
-            f.return_value = None, None, self.mock_query
+            f.return_value = self.returned_count, 1, self.mock_query
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
 
@@ -141,7 +142,7 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
         expectation = True
 
         with mock.patch('datanommer.models.Message.grep') as f:
-            f.return_value = None, None, self.mock_query
+            f.return_value = self.returned_count, 1, self.mock_query
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
 
@@ -150,7 +151,7 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
         expectation = True
 
         with mock.patch('datanommer.models.Message.grep') as f:
-            f.return_value = None, None, self.mock_query
+            f.return_value = self.returned_count, 1, self.mock_query
             result = self.criteria.matches(self.message)
             eq_(result, expectation)
 
