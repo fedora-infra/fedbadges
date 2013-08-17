@@ -52,7 +52,7 @@ class TestRuleMatching(unittest.TestCase):
         query = MockQuery()
 
         with patch("datanommer.models.Message.grep") as f:
-            f.return_value = None, None, query
+            f.return_value = 1, 1, query
             eq_(rule.matches(msg), set(['hadess']))
 
     def test_full_simple_match_almost_succeed(self):
@@ -91,7 +91,7 @@ class TestRuleMatching(unittest.TestCase):
             eq_(rule.matches(msg), set())
 
     def test_yaml_specified_awardee_success(self):
-        """ Test that when we can override msg2usernames. """
+        """ Test that we can override msg2usernames. """
         # For instance, fas.group.member.remove contains two users,
         # the one being removed from a group, and the one doing the removing.
         # a badge YAML definition needs to be able to specify *which* of these
@@ -132,7 +132,7 @@ class TestRuleMatching(unittest.TestCase):
         query = MockQuery()
 
         with patch("datanommer.models.Message.grep") as f:
-            f.return_value = None, None, query
+            f.return_value = 1, 1, query
             eq_(rule.matches(msg), set(['toshio']))
 
     def test_yaml_specified_awardee_failure(self):
@@ -169,7 +169,7 @@ class TestRuleMatching(unittest.TestCase):
         query = MockQuery()
 
         with patch("datanommer.models.Message.grep") as f:
-            f.return_value = None, None, query
+            f.return_value = 1, 1, query
             eq_(rule.matches(msg), set(['toshio', 'ralph']))
 
     def test_against_duplicates(self):
@@ -219,7 +219,7 @@ class TestRuleMatching(unittest.TestCase):
         datanommer_query = MockDatanommerQuery()
 
         with patch("datanommer.models.Message.grep") as f:
-            f.return_value = None, None, datanommer_query
+            f.return_value = 1, 1, datanommer_query
             eq_(rule.matches(msg), set(['ralph']))
 
 
