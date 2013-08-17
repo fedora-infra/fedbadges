@@ -106,8 +106,11 @@ class TestComplicatedTrigger(unittest.TestCase):
             def count(self):
                 return float("inf")  # Master tagger
 
+        class MockPerson(object):
+            opt_out = False
+
         grep.return_value = float("inf"), 1, MockQuery()
-        get_person.return_value = "doesn't matter... just something."
+        get_person.return_value = MockPerson()
         assertion_exists.return_value = False
 
         eq_(self.rule.matches(msg), set(['ralph']))
