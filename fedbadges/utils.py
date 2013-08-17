@@ -8,6 +8,7 @@ log = logging.getLogger("moksha.hub")
 # These are here just so they're available in globals()
 # for compiling lambda expressions
 import json
+import re
 import fedmsg.config
 import fedmsg.encoding
 import fedmsg.meta
