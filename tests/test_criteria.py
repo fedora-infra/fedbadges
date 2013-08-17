@@ -156,6 +156,59 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
             eq_(result, expectation)
 
 
+class TestCriteriaLambdaOperationsAndConditions(unittest.TestCase):
+    def setUp(self):
+        self.criteria = fedbadges.rules.Criteria(dict(
+            datanommer={
+                "filter": {
+                    "topics": ["%(topic)s"],
+                },
+                "operation": {
+                    "lambda": "query.count() - 5",
+                },
+                "condition": {
+                    "lambda": "value >= 495",
+                }
+            }
+        ))
+        self.message = dict(
+            topic="org.fedoraproject.dev.something.sometopic",
+        )
+
+        class MockQuery(object):
+            def count(query):
+                return self.returned_count
+
+        self.mock_query = MockQuery()
+
+    def test_datanommer_with_lambda_operation_query_undershoot(self):
+        self.returned_count = 499
+        expectation = False
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = self.returned_count, 1, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+    def test_datanommer_with_lambda_operation_query_spot_on(self):
+        self.returned_count = 500
+        expectation = True
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = self.returned_count, 1, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+    def test_datanommer_with_lambda_operation_query_overshoot(self):
+        self.returned_count = 501
+        expectation = True
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = self.returned_count, 1, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+
 class TestCriteriaLambdaFilters(unittest.TestCase):
     def setUp(self):
         self.criteria = fedbadges.rules.Criteria(dict(

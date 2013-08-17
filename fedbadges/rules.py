@@ -380,6 +380,10 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         total, pages, query = self.construct_query(msg)
         if self._d['operation'] == 'count':
             result = total
+        elif isinstance(self._d['operation'], dict):
+            expression = self._d['operation']['lambda']
+            result = single_argument_lambda_factory(
+                expression=expression, argument=query, name='query')
         else:
             operation = getattr(query, self._d['operation'])
             result = operation()
