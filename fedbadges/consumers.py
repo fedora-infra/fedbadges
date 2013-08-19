@@ -171,14 +171,6 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             transaction.abort()
             raise
 
-        fedmsg.publish(topic="badge.award",
-                       msg=dict(
-                           badge=badge_rule._d,
-                           user=dict(
-                               username=username,
-                               badges_user_id=user.id,
-                           )))
-
     def consume(self, msg):
         func = functools.partial(self.deferred_consume, msg)
         moksha.hub.reactor.reactor.callLater(self.consume_delay, func)
