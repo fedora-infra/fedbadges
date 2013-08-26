@@ -11,7 +11,6 @@ import traceback
 import functools
 import transaction
 
-import fedmsg
 import fedmsg.consumers
 import moksha.hub
 
@@ -23,6 +22,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from zope.sqlalchemy import ZopeTransactionExtension
 
 import fedbadges.rules
+import fedbadges.utils
 
 import logging
 log = logging.getLogger("moksha.hub")
@@ -59,9 +59,6 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
         self.badge_rules = self._load_badges_from_yaml(directory)
 
-        # Initialize fedmsg
-        fedmsg.init()
-
     def _initialize_tahrir_connection(self):
         global_settings = self.hub.config.get("badges_global", {})
 
@@ -77,6 +74,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         self.tahrir = tahrir_api.dbapi.TahrirDatabase(
             session=session_cls(),
             autocommit=False,
+            notification_callback=fedbadges.utils.notification_callback,
         )
         issuer = global_settings.get('badge_issuer')
 
@@ -158,14 +156,6 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         except:
             transaction.abort()
             raise
-
-        fedmsg.publish(topic="badge.award",
-                       msg=dict(
-                           badge=badge_rule._d,
-                           user=dict(
-                               username=username,
-                               badges_user_id=user.id,
-                           )))
 
     def consume(self, msg):
         func = functools.partial(self.deferred_consume, msg)
