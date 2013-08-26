@@ -5,6 +5,8 @@ import types
 import logging
 log = logging.getLogger("moksha.hub")
 
+import fedmsg
+
 # These are here just so they're available in globals()
 # for compiling lambda expressions
 import json
@@ -93,3 +95,15 @@ def graceful(default_return_value):
                 return default_return_value
         return inner
     return decorate
+
+
+def notification_callback(topic, msg):
+    """ This is a callback called by tahrir_api whenever something
+    it deems important has happened.
+
+    It is just used to publish fedmsg messages.
+    """
+    fedmsg.publish(
+        topic=topic,
+        msg=msg,
+    )
