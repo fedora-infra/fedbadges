@@ -59,9 +59,6 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         directory = hub.config.get("badges.yaml.directory", "badges_yaml_dir")
         self.badge_rules = self._load_badges_from_yaml(directory)
 
-        # Initialize fedmsg
-        fedmsg.init()
-
     def _initialize_tahrir_connection(self):
         global_settings = self.hub.config.get("badges_global", {})
 
