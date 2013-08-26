@@ -11,7 +11,6 @@ import traceback
 import functools
 import transaction
 
-import fedmsg
 import fedmsg.consumers
 import moksha.hub
 
@@ -23,6 +22,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from zope.sqlalchemy import ZopeTransactionExtension
 
 import fedbadges.rules
+import fedbadges.utils
 
 import logging
 log = logging.getLogger("moksha.hub")
@@ -74,7 +74,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         self.tahrir = tahrir_api.dbapi.TahrirDatabase(
             session=session_cls(),
             autocommit=False,
-            notification_callback=self.notification_callback,
+            notification_callback=fedbadges.utils.notification_callback,
         )
         issuer = global_settings.get('badge_issuer')
 
@@ -122,17 +122,6 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         except Exception as e:
             log.error("Loading %r failed with %r" % (fname, e))
             return None
-
-    def notification_callback(self, topic, msg):
-        """ This is a callback called by tahrir_api whenever something
-        it deems important has happened.
-
-        It is just used to publish fedmsg messages.
-        """
-        fedmsg.publish(
-            topic=topic,
-            msg=msg,
-        )
 
     def award_badge(self, username, badge_rule):
         """ A high level way to issue a badge to a Person.
