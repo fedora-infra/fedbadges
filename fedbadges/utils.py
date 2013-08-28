@@ -48,6 +48,8 @@ def format_args(obj, subs):
         return [format_args(item, subs) for item in obj]
     elif isinstance(obj, basestring) and obj[2:-2] in subs:
         obj = subs[obj[2:-2]]
+    elif isinstance(obj, (int, float)):
+        pass
     else:
         obj = obj % subs
 
