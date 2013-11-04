@@ -17,7 +17,7 @@ and a set of ``BadgeRules`` (more on that later) and then sit quietly
 listening to the fedmsg bus.  Each rule (composed of some metadata,
 a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
 
-* When a new message comes long, our ``Consumer`` looks to see if it matches
+* When a new message comes along, our ``Consumer`` looks to see if it matches
   any of the ``BadgeRules`` it has registered.
 
 * Each BadgeRule must define a ``trigger`` -- a `lightweight` check.
