@@ -2,7 +2,13 @@ Fedora Badges
 =============
 
 This repo contains the consumer and the command necessary to hook the
-badges stack (Tahrir, Tahrir-API, Tahrir-REST) into fedmsg.
+badges stack (Tahrir, Tahrir-API, Tahrir-REST) into fedmsg.  It is the process
+that runs in the background, monitoring activity of Fedora contributors, and is
+responsible for awarding badges for activity as it happens.  It is separate
+from and sometimes confused with the *frontend* of the badges system; that web
+application is called `tahrir <https://github.com/fedora-infra/tahrir>`_.  This
+project (fedbadges) writes to a database that the web frontend (tahrir) reads
+from.
 
 The *actual badge rules* that we act on in Fedora Infrastructure can be
 found `here <https://git.fedorahosted.org/cgit/badges.git>`_
