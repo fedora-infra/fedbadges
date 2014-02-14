@@ -381,7 +381,9 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         if self._d['operation'] == 'count':
             result = total
         elif isinstance(self._d['operation'], dict):
-            expression = self._d['operation']['lambda']
+            subs = construct_substitutions(msg)
+            kwargs = format_args(copy.copy(self._d['operation']), subs)
+            expression = kwargs['lambda']
             result = single_argument_lambda_factory(
                 expression=expression, argument=query, name='query')
         else:
