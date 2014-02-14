@@ -156,6 +156,62 @@ class TestCriteriaLambdaConditions(unittest.TestCase):
             eq_(result, expectation)
 
 
+class TestCriteriaLambdaOperationWithFormatting(unittest.TestCase):
+    def setUp(self):
+        self.criteria = fedbadges.rules.Criteria(dict(
+            datanommer={
+                "filter": {
+                    "topics": ["%(topic)s"],
+                },
+                "operation": {
+                    "lambda": "query.count() == %(msg.some_value)s",
+                },
+                "condition": {
+                    "lambda": "value",
+                }
+            }
+        ))
+        self.message = dict(
+            topic="org.fedoraproject.dev.something.sometopic",
+            msg=dict(
+                some_value=5,
+            ),
+        )
+
+        class MockQuery(object):
+            def count(query):
+                return self.returned_count
+
+        self.mock_query = MockQuery()
+
+    def test_datanommer_formatted_operations_undershoot(self):
+        self.returned_count = 4
+        expectation = False
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = self.returned_count, 1, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+    def test_datanommer_formatted_operations_overshoot(self):
+        self.returned_count = 6
+        expectation = False
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = self.returned_count, 1, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+    def test_datanommer_formatted_operations_righton(self):
+        self.returned_count = 5
+        expectation = True
+
+        with mock.patch('datanommer.models.Message.grep') as f:
+            f.return_value = self.returned_count, 1, self.mock_query
+            result = self.criteria.matches(self.message)
+            eq_(result, expectation)
+
+
 class TestCriteriaLambdaOperationsAndConditions(unittest.TestCase):
     def setUp(self):
         self.criteria = fedbadges.rules.Criteria(dict(
