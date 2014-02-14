@@ -368,7 +368,15 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         self.condition = functools.partial(
             self.condition_callbacks[condition_key], condition_val)
 
-    def construct_query(self, msg):
+    def _construct_query(self, msg):
+        """ Construct a datanommer query for this message.
+
+        The "filter" section of this criteria object will be used.  It will
+        first be formatted with any substitutions present in the incoming
+        message.  This is used, for instance, to construct a query like "give
+        me all the messages bearing the same topic as the message that just
+        arrived".
+        """
         subs = construct_substitutions(msg)
         kwargs = format_args(copy.copy(self._d['filter']), subs)
         kwargs = recursive_lambda_factory(kwargs, msg, name='msg')
@@ -376,14 +384,34 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         total, pages, query = datanommer.models.Message.grep(**kwargs)
         return total, pages, query
 
+    def _format_lambda_operation(self, msg):
+        """ Format the string representation of a lambda operation.
+
+        The lambda operation can be formatted here to include strings that
+        appear in the message being evaluated like
+        %(msg.comment.update_submitter)s.  Placeholders like that will have
+        their value substituted with whatever appears in the incoming message.
+        """
+        subs = construct_substitutions(msg)
+        operation = format_args(copy.copy(self._d['operation']), subs)
+        return operation['lambda']
+
     def matches(self, msg):
-        total, pages, query = self.construct_query(msg)
+        """ A datanommer criteria check is composed of three steps.
+
+        - A datanommer query is constructed by combining our yaml definition
+          with the incoming fedmsg message that triggered us.
+        - An operation in python is constructed by comining our yaml definition
+          with the incoming fedmsg message that triggered us.  That operation
+          is then executed against the datanommer query object.
+        - A condition, derived from our yaml definition, is evaluated with the
+          result of the operation from the previous step and is returned.
+        """
+        total, pages, query = self._construct_query(msg)
         if self._d['operation'] == 'count':
             result = total
         elif isinstance(self._d['operation'], dict):
-            subs = construct_substitutions(msg)
-            kwargs = format_args(copy.copy(self._d['operation']), subs)
-            expression = kwargs['lambda']
+            expression = self._format_lambda_operation(msg)
             result = single_argument_lambda_factory(
                 expression=expression, argument=query, name='query')
         else:
