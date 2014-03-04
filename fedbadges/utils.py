@@ -144,7 +144,7 @@ def get_pkgdb_packages_for(config, username):
 def _get_pkgdb2_packages_for(config, username):
     log.debug("Requesting pkgdb2 packages for user %r" % username)
     req = requests.get('{0}/packager/acl/{1}'.format(
-        config['fedbadges.rules.utils.pkgdb2_api_url'], username))
+        config['fedbadges.rules.utils.pkgdb_url'], username))
     if not req.status_code == 200:
         return set()
     data = json.loads(req.text)
@@ -160,7 +160,7 @@ def _get_pkgdb2_packages_for(config, username):
 # TODO -- delete this once pkgdb2 goes live.
 def _get_pkgdb1_packages_for(config, username):
     log.debug("Requesting pkgdb1 packages for user %r" % username)
-    pkgdb1_base_url = 'https://admin.fedoraproject.org/pkgdb'
+    pkgdb1_base_url = config['fedbadges.rules.utils.pkgdb_url']
     req = requests.get('{0}/users/packages/{1}?tg_format=json'.format(
         pkgdb1_base_url, username))
     if not req.status_code == 200:
