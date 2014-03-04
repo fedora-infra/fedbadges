@@ -235,8 +235,7 @@ _example_real_bodhi_message = {
             "title": "gnome-settings-daemon-3.6.1-1.fc18," +
             "control-center-3.6.1-1.fc18",
             "nagged": None,
-            "comments": [
-            {
+            "comments": [{
                 "group": None,
                 "author": "bodhi",
                 "text": "This update has been submitted for "
@@ -246,8 +245,7 @@ _example_real_bodhi_message = {
                 "timestamp": 1349718539.0,
                 "update_title": "gnome-settings-daemon-3.6.1-1.fc18," +
                 "control-center-3.6.1-1.fc18"
-            }
-            ],
+            }],
             "updateid": None,
             "type": "bugfix",
             "close_bugs": True,
@@ -261,8 +259,7 @@ _example_real_bodhi_message = {
                 "id_prefix": "FEDORA"
             },
             "approved": None,
-            "builds": [
-            {
+            "builds": [{
                 "nvr": "gnome-settings-daemon-3.6.1-1.fc18",
                 "package": {
                     "suggest_reboot": False,
@@ -298,8 +295,7 @@ _example_real_bodhi_message = {
                     ],
                     "name": "control-center"
                 }
-            }
-            ],
+            }],
             "date_modified": None,
             "notes": "This update fixes numerous bugs in the new Input " +
             "Sources support, the Network panel and adds a help " +
