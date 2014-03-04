@@ -21,11 +21,15 @@ import fedmsg.encoding
 import datanommer.models
 
 from fedbadges.utils import (
+    # These are all in-process utilities
     construct_substitutions,
     format_args,
     single_argument_lambda_factory,
     recursive_lambda_factory,
     graceful,
+
+    # This makes a network API call
+    get_pkgdb_packages_for,
 )
 
 import logging
@@ -42,7 +46,7 @@ except ImportError as e:
 operators = set([
     "all",
     "any",
-    #"not",
+    "not",
 ])
 lambdas = set([
     "lambda",
@@ -51,6 +55,7 @@ lambdas = set([
 operator_lookup = {
     "any": any,
     "all": all,
+    "not": lambda x: all([not item for item in x])
 }
 
 fedmsg_config = fedmsg.config.load_config()
@@ -243,7 +248,13 @@ class AbstractTopLevelComparator(AbstractComparator):
         self.attribute = self._d.keys()[0]
         self.expected_value = self._d[self.attribute]
 
-        # Check if we should we recursively nest Trigger/Criteria?
+        ### Check if we should we recursively nest Trigger/Criteria?
+
+        # First, trick negation into thinking it is not a unary operator.
+        if self.attribute == 'not':
+            self.expected_value = [self.expected_value]
+
+        # Then, treat everything as if it accepts an arbitrary # of args.
         if self.attribute in operators:
             if not isinstance(self.expected_value, list):
                 raise TypeError("Operators only accept lists, not %r" %
@@ -281,6 +292,7 @@ class Trigger(AbstractTopLevelComparator):
 class Criteria(AbstractTopLevelComparator):
     possible = set([
         'datanommer',
+        'pkgdb',
     ]).union(operators)
 
     def __init__(self, *args, **kwargs):
@@ -293,6 +305,8 @@ class Criteria(AbstractTopLevelComparator):
     def _specialize(self):
         if self.attribute == 'datanommer':
             self.specialization = DatanommerCriteria(self.expected_value)
+        elif self.attribute == 'pkgdb':
+            self.specialization = PkgdbCriteria(self.expected_value)
         # TODO -- expand this with other "backends" as necessary
         #elif self.attribute == 'fas'
         else:
@@ -310,6 +324,52 @@ class Criteria(AbstractTopLevelComparator):
 
 class AbstractSpecializedComparator(AbstractComparator):
     pass
+
+
+class PkgdbCriteria(AbstractSpecializedComparator):
+    required = possible = set([
+        'owns',
+    ])
+
+    def __init__(self, *args, **kwargs):
+        super(PkgdbCriteria, self).__init__(*args, **kwargs)
+
+        # Validate the owns dict
+        if not isinstance(self._d['owns'], dict):
+            raise ValueError("'owns' must be a dict")
+
+        owns_fields = set(['user', 'packages'])
+        argued_fields = set(self._d['owns'].keys())
+
+        if not argued_fields.issubset(owns_fields):
+            raise KeyError(
+                "%r are not possible fields.  Choose from %r" % (
+                    argued_fields.difference(owns_fields),
+                    owns_fields,
+                ))
+
+        if not owns_fields.issubset(argued_fields):
+            raise KeyError(
+                "%r are missing required fields." % (
+                    owns_fields.difference(argued_fields),
+                ))
+
+        if not isinstance(self._d['owns']['packages'], list):
+            raise ValueError("'packages' must be a list")
+
+    def matches(self, msg):
+        """ A pkgdb criteria check checks if a user owns some packages. """
+
+        subs = construct_substitutions(msg)
+        expectation = format_args(copy.copy(self._d['owns']), subs)
+        expectation = recursive_lambda_factory(expectation, msg, name='msg')
+
+        actual_packages = get_pkgdb_packages_for(
+            config=fedmsg_config,
+            user=expectation['user'],
+        )
+
+        return set(expectation['packages']).issubset(actual_packages)
 
 
 class DatanommerCriteria(AbstractSpecializedComparator):

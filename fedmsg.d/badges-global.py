@@ -28,4 +28,16 @@ config = {
             issuer_contact='badges@fedoraproject.org',
         ),
     },
+
+    # Some configuration for the pkgdb criteria handler
+    "fedbadges.rules.utils.use_pkgdb2": False,
+    "fedbadges.rules.utils.pkgdb_url": 'https://admin.fedoraproject.org/pkgdb',
+    #"fedbadges.rules.utils.pkgdb_url": "http://209.132.184.188/api/",
+    "fedbadges.rules.cache": {
+        "backend": "dogpile.cache.dbm",
+        "expiration_time": 300,
+        "arguments": {
+            "filename": "/var/tmp/fedbadges-cache.dbm",
+        },
+    },
 }
