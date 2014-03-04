@@ -160,9 +160,13 @@ def _get_pkgdb2_packages_for(config, username):
 # TODO -- delete this once pkgdb2 goes live.
 def _get_pkgdb1_packages_for(config, username):
     log.debug("Requesting pkgdb1 packages for user %r" % username)
+
     pkgdb1_base_url = config['fedbadges.rules.utils.pkgdb_url']
-    req = requests.get('{0}/users/packages/{1}?tg_format=json'.format(
-        pkgdb1_base_url, username))
+    query_string = "tg_format=json&pkgs_tgp_limit=10000"
+
+    req = requests.get('{0}/users/packages/{1}?{2}'.format(
+        pkgdb1_base_url, username, query_string))
+
     if not req.status_code == 200:
         return set()
     data = json.loads(req.text)
