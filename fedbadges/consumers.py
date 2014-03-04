@@ -123,7 +123,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             log.error("Loading %r failed with %r" % (fname, e))
             return None
 
-    def award_badge(self, username, badge_rule):
+    def award_badge(self, username, badge_rule, link=None):
         """ A high level way to issue a badge to a Person.
 
         It adds the person if they don't exist, and creates an assertion for
@@ -151,7 +151,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         try:
             transaction.begin()
-            self.tahrir.add_assertion(badge_rule.badge_id, email, None)
+            self.tahrir.add_assertion(badge_rule.badge_id, email, None, link)
             transaction.commit()
         except:
             transaction.abort()
@@ -165,6 +165,10 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         # Strip the moksha envelope
         msg = msg['body']
 
+        default = "https://apps.fedoraproject.org/datagrepper"
+        link = self.hub.config.get('fedbadges.datagrepper_url', default) + \
+            "/id?id=%s&is_raw=True&size=extra-large" % msg['msg_id']
+
         # Define this so we can refer to it in error handling below
         badge_rule = None
 
@@ -173,7 +177,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         for badge_rule in self.badge_rules:
             try:
                 for recipient in badge_rule.matches(msg):
-                    self.award_badge(recipient, badge_rule)
+                    self.award_badge(recipient, badge_rule, link)
             except Exception as e:
                 log.error("Failure in badge awarder! %r Details follow:" % e)
                 log.error("Considering badge: %r" % badge_rule)
