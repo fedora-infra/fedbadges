@@ -29,6 +29,8 @@ config = {
         ),
     },
 
+    "fedbadges.datagrepper_url": "https://apps.fedoraproject.org/datagrepper",
+
     # Some configuration for the pkgdb criteria handler
     "fedbadges.rules.utils.use_pkgdb2": False,
     "fedbadges.rules.utils.pkgdb_url": 'https://admin.fedoraproject.org/pkgdb',
