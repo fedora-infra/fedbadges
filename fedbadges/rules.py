@@ -42,7 +42,7 @@ except ImportError as e:
 operators = set([
     "all",
     "any",
-    #"not",
+    "not",
 ])
 lambdas = set([
     "lambda",
@@ -51,6 +51,7 @@ lambdas = set([
 operator_lookup = {
     "any": any,
     "all": all,
+    "not": lambda x: all([not item for item in x])
 }
 
 fedmsg_config = fedmsg.config.load_config()
@@ -243,7 +244,13 @@ class AbstractTopLevelComparator(AbstractComparator):
         self.attribute = self._d.keys()[0]
         self.expected_value = self._d[self.attribute]
 
-        # Check if we should we recursively nest Trigger/Criteria?
+        ### Check if we should we recursively nest Trigger/Criteria?
+
+        # First, trick negation into thinking it is not a unary operator.
+        if self.attribute == 'not':
+            self.expected_value = [self.expected_value]
+
+        # Then, treat everything as if it accepts an arbitrary # of args.
         if self.attribute in operators:
             if not isinstance(self.expected_value, list):
                 raise TypeError("Operators only accept lists, not %r" %
