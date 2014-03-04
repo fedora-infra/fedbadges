@@ -117,11 +117,11 @@ def notification_callback(topic, msg):
     )
 
 
-def get_pkgdb_packages_for(config, username):
+def get_pkgdb_packages_for(config, user):
     """ Retrieve the list of packages where the specified user some acl.
 
     :arg config: a dict containing the fedmsg config
-    :arg username: the fas username of the packager whose packages are of
+    :arg user: the fas user of the packager whose packages are of
         interest.
     :return: a set listing all the packages where the specified user has
         some ACL.
@@ -132,13 +132,13 @@ def get_pkgdb_packages_for(config, username):
         _cache.configure(**config['fedbadges.rules.cache'])
 
     @_cache.cache_on_arguments()
-    def _getter(username):
+    def _getter(user):
         if config.get('fedbadges.rules.utils.use_pkgdb2', True):
-            return _get_pkgdb2_packages_for(config, username)
+            return _get_pkgdb2_packages_for(config, user)
         else:
-            return _get_pkgdb1_packages_for(config, username)
+            return _get_pkgdb1_packages_for(config, user)
 
-    return _getter(username)
+    return _getter(user)
 
 
 def _get_pkgdb2_packages_for(config, username):
