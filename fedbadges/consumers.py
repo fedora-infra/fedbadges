@@ -167,7 +167,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         default = "https://apps.fedoraproject.org/datagrepper"
         link = self.hub.config.get('fedbadges.datagrepper_url', default) + \
-            "/id?id=%s&is_raw=True&size=extra-large" % msg['msg_id']
+            "/id?id=%s&is_raw=true&size=extra-large" % msg['msg_id']
 
         # Define this so we can refer to it in error handling below
         badge_rule = None
