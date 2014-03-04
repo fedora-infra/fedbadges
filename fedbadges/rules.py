@@ -43,12 +43,12 @@ except ImportError as e:
     log.warn("Could not import nick2fas: %r" % e)
 
 
-operators = set([
+operators = frozenset([
     "all",
     "any",
     "not",
 ])
-lambdas = set([
+lambdas = frozenset([
     "lambda",
 ])
 
@@ -63,7 +63,7 @@ fedmsg.meta.make_processors(**fedmsg_config)
 
 
 class BadgeRule(object):
-    required = set([
+    required = frozenset([
         'name',
         'image_url',
         'description',
@@ -80,7 +80,7 @@ class BadgeRule(object):
         'recipient_nick2fas',
     ])
 
-    banned_usernames = set([
+    banned_usernames = frozenset([
         'bodhi',
         'oscar',
         'apache',
@@ -88,7 +88,7 @@ class BadgeRule(object):
     ])
 
     def __init__(self, badge_dict, tahrir_database, issuer_id):
-        argued_fields = set(badge_dict.keys())
+        argued_fields = frozenset(badge_dict.keys())
 
         if not argued_fields.issubset(self.possible):
             raise KeyError(
@@ -152,10 +152,10 @@ class BadgeRule(object):
             if isinstance(obj, (basestring, int, float)):
                 obj = [obj]
 
-            awardees = set(obj)
+            awardees = frozenset(obj)
 
             if self.recipient_nick2fas:
-                awardees = set([
+                awardees = frozenset([
                     nick2fas(nick, **fedmsg_config) for nick in awardees
                 ])
         else:
@@ -163,7 +163,7 @@ class BadgeRule(object):
             awardees = usernames.difference(self.banned_usernames)
 
         # Strip anyone who is an IP address
-        awardees = set([
+        awardees = frozenset([
             user for user in awardees if not (
                 user.startswith('192.168.') or
                 user.startswith('10.')
@@ -178,13 +178,13 @@ class BadgeRule(object):
         # Limit awardees to only those who do not already have this badge.
         # Do this only if we have an active connection to the Tahrir DB.
         if self.tahrir:
-            awardees = set([user for user in awardees
+            awardees = frozenset([user for user in awardees
                             if not self.tahrir.assertion_exists(
                                 self.badge_id, "%s@fedoraproject.org" % user
                             )])
 
             # Also, exclude any potential awardees who have opted out.
-            awardees = set([user for user in awardees
+            awardees = frozenset([user for user in awardees
                             if not self.tahrir.person_opted_out(
                                 "%s@fedoraproject.org" % user
                             )])
@@ -204,11 +204,11 @@ class BadgeRule(object):
 class AbstractComparator(object):
     """ Base class for shared behavior between trigger and criteria. """
     __metaclass__ = abc.ABCMeta
-    possible = required = set()
+    possible = required = frozenset()
     children = None
 
     def __init__(self, d, parent=None):
-        argued_fields = set(d.keys())
+        argued_fields = frozenset(d.keys())
         if not argued_fields.issubset(self.possible):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
@@ -263,7 +263,7 @@ class AbstractTopLevelComparator(AbstractComparator):
 
 
 class Trigger(AbstractTopLevelComparator):
-    possible = set([
+    possible = frozenset([
         'topic',
         'category',
     ]).union(operators).union(lambdas)
@@ -290,7 +290,7 @@ class Trigger(AbstractTopLevelComparator):
 
 
 class Criteria(AbstractTopLevelComparator):
-    possible = set([
+    possible = frozenset([
         'datanommer',
         'pkgdb',
     ]).union(operators)
@@ -327,7 +327,7 @@ class AbstractSpecializedComparator(AbstractComparator):
 
 
 class PkgdbCriteria(AbstractSpecializedComparator):
-    required = possible = set([
+    required = possible = frozenset([
         'owns',
     ])
 
@@ -338,8 +338,8 @@ class PkgdbCriteria(AbstractSpecializedComparator):
         if not isinstance(self._d['owns'], dict):
             raise ValueError("'owns' must be a dict")
 
-        owns_fields = set(['user', 'packages'])
-        argued_fields = set(self._d['owns'].keys())
+        owns_fields = frozenset(['user', 'packages'])
+        argued_fields = frozenset(self._d['owns'].keys())
 
         if not argued_fields.issubset(owns_fields):
             raise KeyError(
@@ -373,7 +373,7 @@ class PkgdbCriteria(AbstractSpecializedComparator):
 
 
 class DatanommerCriteria(AbstractSpecializedComparator):
-    required = possible = set([
+    required = possible = frozenset([
         'filter',
         'operation',
         'condition',
@@ -406,11 +406,11 @@ class DatanommerCriteria(AbstractSpecializedComparator):
 
         # Determine what arguments datanommer..grep accepts
         argspec = inspect.getargspec(datanommer.models.Message.grep)
-        irrelevant = set(['defer'])
-        grep_arguments = set(argspec.args[1:]).difference(irrelevant)
+        irrelevant = frozenset(['defer'])
+        grep_arguments = frozenset(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
-        argued_filter_fields = set(self._d['filter'].keys())
+        argued_filter_fields = frozenset(self._d['filter'].keys())
         if not argued_filter_fields.issubset(grep_arguments):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
