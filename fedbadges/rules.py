@@ -178,16 +178,18 @@ class BadgeRule(object):
         # Limit awardees to only those who do not already have this badge.
         # Do this only if we have an active connection to the Tahrir DB.
         if self.tahrir:
-            awardees = frozenset([user for user in awardees
-                            if not self.tahrir.assertion_exists(
-                                self.badge_id, "%s@fedoraproject.org" % user
-                            )])
+            awardees = frozenset([
+                user for user in awardees
+                if not self.tahrir.assertion_exists(
+                    self.badge_id, "%s@fedoraproject.org" % user
+                )])
 
             # Also, exclude any potential awardees who have opted out.
-            awardees = frozenset([user for user in awardees
-                            if not self.tahrir.person_opted_out(
-                                "%s@fedoraproject.org" % user
-                            )])
+            awardees = frozenset([
+                user for user in awardees
+                if not self.tahrir.person_opted_out(
+                    "%s@fedoraproject.org" % user
+                )])
 
         # If no-one would get the badge at this point, then no reason to waste
         # time doing any further checks.  No need to query datanommer.
