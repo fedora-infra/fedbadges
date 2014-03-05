@@ -189,7 +189,7 @@ def _get_pkgdb1_packages_for(config, username):
     if not req.status_code == 200:
         return set()
 
-    data = json.loads(req.text)
+    data = req.json()
     packages = set([pkg['name'] for pkg in data['pkgs']])
     log.debug("done talking with pkgdb1 for now.")
     return packages
