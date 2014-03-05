@@ -1,6 +1,5 @@
 """ Utilities for fedbadges that don't quite fit anywhere else. """
 
-import json
 import types
 
 import logging
