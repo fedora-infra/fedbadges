@@ -1,6 +1,22 @@
 Changelog
 =========
 
+0.4.1
+-----
+
+- fedbadges.rules is expecting this to be user, not username. `8dd27fa7a <https://github.com/fedora-infra/fedbadges/commit/8dd27fa7a4b528e95b31c4ae3bdc5ae6f1e3045c>`_
+- Use a large tg pagination value to really get all of the user's packages. `dea5f0cb7 <https://github.com/fedora-infra/fedbadges/commit/dea5f0cb7b88ce560c34e6959b5d4ee757e59e0a>`_
+- Datagrepper is expecting a lowercase "t" here. `347f23475 <https://github.com/fedora-infra/fedbadges/commit/347f23475c3ac15a29eda7af54a392fb35fcc3c2>`_
+- Merge pull request #34 from fedora-infra/feature/datagrepper-link-correction `b723ad079 <https://github.com/fedora-infra/fedbadges/commit/b723ad079e060f56590c24ccc87aabe1c7a7ae7b>`_
+- Merge pull request #32 from fedora-infra/feature/signature-mismatch `1d3a14039 <https://github.com/fedora-infra/fedbadges/commit/1d3a140395b6373d697b9ef8bd0b4f6fd315547f>`_
+- pkgdb2 pagination. `12d65d69a <https://github.com/fedora-infra/fedbadges/commit/12d65d69a7cfaab27fe64602a550a1fd12e0e6f9>`_
+- *sigh*, unrelated pep8. `7f2be375d <https://github.com/fedora-infra/fedbadges/commit/7f2be375da47e0b3bc35bad99a6e9227d7d11f8e>`_
+- Actually use "page" here, duh. `677c13994 <https://github.com/fedora-infra/fedbadges/commit/677c139949f3f79941688ec922a02a5e9a246240>`_
+- Simpler. `a6208075c <https://github.com/fedora-infra/fedbadges/commit/a6208075c2e3b80e1762165857eb8598c6bd25fc>`_
+- Simply simpler. `9c0e5349b <https://github.com/fedora-infra/fedbadges/commit/9c0e5349b50bd3a8b7cdcdfb84af633ee42719db>`_
+- ..and.. `0d2e1ed20 <https://github.com/fedora-infra/fedbadges/commit/0d2e1ed209ff085bdb6b828abd28403edfa40516>`_
+- Merge pull request #33 from fedora-infra/feature/tg-pagination `0709c0297 <https://github.com/fedora-infra/fedbadges/commit/0709c0297cc796a484e46134d81fde4383411ca8>`_
+
 0.4.0
 -----
 
