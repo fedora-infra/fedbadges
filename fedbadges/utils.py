@@ -146,7 +146,9 @@ def _get_pkgdb2_packages_for(config, username):
 
     def _get_page(page):
         req = requests.get('{0}/packager/acl/{1}'.format(
-            config['fedbadges.rules.utils.pkgdb_url'], username))
+            config['fedbadges.rules.utils.pkgdb_url'], username),
+            params=dict(page=page),
+        )
 
         if not req.status_code == 200:
             return set()
