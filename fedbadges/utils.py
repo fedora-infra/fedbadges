@@ -143,16 +143,33 @@ def get_pkgdb_packages_for(config, username):
 
 def _get_pkgdb2_packages_for(config, username):
     log.debug("Requesting pkgdb2 packages for user %r" % username)
-    req = requests.get('{0}/packager/acl/{1}'.format(
-        config['fedbadges.rules.utils.pkgdb_url'], username))
-    if not req.status_code == 200:
-        return set()
-    data = json.loads(req.text)
+
+    def _get_page(page):
+        req = requests.get('{0}/packager/acl/{1}'.format(
+            config['fedbadges.rules.utils.pkgdb_url'], username))
+
+        if not req.status_code == 200:
+            return set()
+
+        return json.loads(req.text)
+
+    # We have to request the first page of data to figure out the total number
+    data = _get_page(1)
+    pages = data['page_total']
+
     packages = set()
-    for pkgacl in data['acls']:
-        if pkgacl['status'] != 'Approved':
-            continue
-        packages.add(pkgacl['packagelist']['package']['name'])
+    for i in range(1, pages + 1):
+
+        # Avoid requesting the data twice the first time around
+        if i != 1:
+            data = _get_pages(i)
+
+        for pkgacl in data['acls']:
+            if pkgacl['status'] != 'Approved':
+                continue
+
+            packages.add(pkgacl['packagelist']['package']['name'])
+
     log.debug("done talking with pkgdb2 for now.")
     return packages
 
@@ -169,6 +186,7 @@ def _get_pkgdb1_packages_for(config, username):
 
     if not req.status_code == 200:
         return set()
+
     data = json.loads(req.text)
     packages = set([pkg['name'] for pkg in data['pkgs']])
     log.debug("done talking with pkgdb1 for now.")
