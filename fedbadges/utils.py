@@ -153,7 +153,7 @@ def _get_pkgdb2_packages_for(config, username):
         if not req.status_code == 200:
             return set()
 
-        return json.loads(req.text)
+        return req.json()
 
     # We have to request the first page of data to figure out the total number
     data = _get_page(1)
