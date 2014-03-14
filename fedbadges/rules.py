@@ -152,6 +152,14 @@ class BadgeRule(object):
             if isinstance(obj, (basestring, int, float)):
                 obj = [obj]
 
+            # On the way, it is possible for the fedmsg message to contain None
+            # for "agent".  A problem here though is that None is not iterable,
+            # so let's replace it with an equivalently empty iterable so code
+            # further down doesn't freak out.  An instance of this is when a
+            # user without a fas account comments on a bodhi update.
+            if obj is None:
+                obj = []
+
             awardees = frozenset(obj)
 
             if self.recipient_nick2fas:
