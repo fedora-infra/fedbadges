@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.4.2
+-----
+
+- Add some more verbosity to the fedbadges pkgdb caching logs. `617b3901a <https://github.com/fedora-infra/fedbadges/commit/617b3901a62db2b670d856fe5e68951bb1ff4622>`_
+- Some rules are expecting this to be in scope when they are compiled. `b7964226b <https://github.com/fedora-infra/fedbadges/commit/b7964226b8692fea58b0ec0b5d172155621749d7>`_
+- Handle None from the recipient_key. `40976161f <https://github.com/fedora-infra/fedbadges/commit/40976161fbcb59e3755cff0f26b662828d9b9a56>`_
+- Merge pull request #35 from fedora-infra/feature/handle-None `891b5a454 <https://github.com/fedora-infra/fedbadges/commit/891b5a4546f8941a592717274e135a98aeb3921e>`_
+
 0.4.1
 -----
 
