@@ -28,8 +28,9 @@ from fedbadges.utils import (
     recursive_lambda_factory,
     graceful,
 
-    # This makes a network API call
+    # These make networked API calls
     get_pkgdb_packages_for,
+    user_exists_in_fas,
 )
 
 import logging
@@ -207,6 +208,13 @@ class BadgeRule(object):
         # Check our backend criteria -- likely, perform datanommer queries.
         if not self.criteria.matches(msg):
             return set()
+
+        # Lastly, and this is probably most expensive.  Make sure the person
+        # actually has a FAS account before we award anything.
+        # https://github.com/fedora-infra/tahrir/issues/225
+        awardees = set([
+            u for u in awardees if user_exists_in_fas(fedmsg_config, u)
+        ])
 
         return awardees
 
