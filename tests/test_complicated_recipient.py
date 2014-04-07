@@ -62,4 +62,6 @@ class TestComplicatedRecipient(unittest.TestCase):
         get_person.return_value = MockPerson()
         assertion_exists.return_value = False
 
-        eq_(self.rule.matches(msg), set(['zodbot', 'threebean']))
+        with patch("fedbadges.rules.user_exists_in_fas") as g:
+            g.return_value = True
+            eq_(self.rule.matches(msg), set(['zodbot', 'threebean']))

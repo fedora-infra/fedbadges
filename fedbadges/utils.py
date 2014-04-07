@@ -6,6 +6,7 @@ import logging
 log = logging.getLogger("moksha.hub")
 
 import fedmsg
+import fedora.client.fas2
 import requests
 
 # This is used for our queries against pkgdb
@@ -115,6 +116,16 @@ def notification_callback(topic, msg):
         topic=topic,
         msg=msg,
     )
+
+
+def user_exists_in_fas(config, user):
+    """ Return true if the user exists in FAS. """
+
+    fas2 = fedora.client.fas2.AccountSystem(
+        username=config['fas_credentials']['username'],
+        password=config['fas_credentials']['password'],
+    )
+    return bool(fas2.person_by_username(user))
 
 
 def get_pkgdb_packages_for(config, user):

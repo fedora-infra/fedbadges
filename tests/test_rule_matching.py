@@ -53,7 +53,9 @@ class TestRuleMatching(unittest.TestCase):
 
         with patch("datanommer.models.Message.grep") as f:
             f.return_value = 1, 1, query
-            eq_(rule.matches(msg), set(['hadess']))
+            with patch("fedbadges.rules.user_exists_in_fas") as g:
+                g.return_value = True
+                eq_(rule.matches(msg), set(['hadess']))
 
     def test_full_simple_match_almost_succeed(self):
         """ A simple integration test for messages with zero users """
@@ -133,7 +135,9 @@ class TestRuleMatching(unittest.TestCase):
 
         with patch("datanommer.models.Message.grep") as f:
             f.return_value = 1, 1, query
-            eq_(rule.matches(msg), set(['toshio']))
+            with patch("fedbadges.rules.user_exists_in_fas") as g:
+                g.return_value = True
+                eq_(rule.matches(msg), set(['toshio']))
 
     def test_yaml_specified_awardee_failure(self):
         """ Test that when we don't override msg2usernames, we get 2 awardees.
@@ -170,7 +174,9 @@ class TestRuleMatching(unittest.TestCase):
 
         with patch("datanommer.models.Message.grep") as f:
             f.return_value = 1, 1, query
-            eq_(rule.matches(msg), set(['toshio', 'ralph']))
+            with patch("fedbadges.rules.user_exists_in_fas") as g:
+                g.return_value = True
+                eq_(rule.matches(msg), set(['toshio', 'ralph']))
 
     def test_against_duplicates(self):
         """ Test that matching fails if user already has the badge. """
@@ -220,7 +226,9 @@ class TestRuleMatching(unittest.TestCase):
 
         with patch("datanommer.models.Message.grep") as f:
             f.return_value = 1, 1, datanommer_query
-            eq_(rule.matches(msg), set(['ralph']))
+            with patch("fedbadges.rules.user_exists_in_fas") as g:
+                g.return_value = True
+                eq_(rule.matches(msg), set(['ralph']))
 
 
 _example_real_bodhi_message = {
