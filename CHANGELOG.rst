@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.4.3
+-----
+
+- Limit badges to only FAS usernames. `a14fd7826 <https://github.com/fedora-infra/fedbadges/commit/a14fd78269845cbaa497bb6c2bd5d2100d065491>`_
+- Merge pull request #36 from fedora-infra/feature/limit-to-fas `2ae084050 <https://github.com/fedora-infra/fedbadges/commit/2ae084050b8eec77f51378b735f1e44c093c595d>`_
+- Add an old forgotten test file for pkgdb stuff. `3870e951a <https://github.com/fedora-infra/fedbadges/commit/3870e951aca71a0b8c82a1adb023083db76002b7>`_
+- pkgdb2 fixes like we did for fmn. `88beb2f17 <https://github.com/fedora-infra/fedbadges/commit/88beb2f1751f2569f6852bd82b9834b4349770a0>`_
+- continue `9c21bd099 <https://github.com/fedora-infra/fedbadges/commit/9c21bd0997c749ef1c777996a610cc204dd36c6c>`_
+- Merge pull request #37 from fedora-infra/feature/pkgdb2-fixes `6edfa17c0 <https://github.com/fedora-infra/fedbadges/commit/6edfa17c03fa4b73685d0703d1e180fc05ac1e34>`_
+
 0.4.2
 -----
 
