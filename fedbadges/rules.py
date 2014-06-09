@@ -206,7 +206,11 @@ class BadgeRule(object):
             return awardees
 
         # Check our backend criteria -- likely, perform datanommer queries.
-        if not self.criteria.matches(msg):
+        try:
+            if not self.criteria.matches(msg):
+                return set()
+        except IOError as e:
+            log.exception(e)
             return set()
 
         # Lastly, and this is probably most expensive.  Make sure the person

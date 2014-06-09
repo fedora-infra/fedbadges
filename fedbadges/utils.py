@@ -159,7 +159,8 @@ def _get_pkgdb2_packages_for(config, username):
         )
 
         if not req.status_code == 200:
-            return None
+            raise IOError("Couldn't talk to pkgdb2 for %r, %r, %r" % (
+                username, req.status_code, req.text))
 
         return req.json()
 
@@ -177,9 +178,6 @@ def _get_pkgdb2_packages_for(config, username):
         # Avoid requesting the data twice the first time around
         if i != 1:
             data = _get_page(i)
-
-        if data is None:
-            continue
 
         for pkgacl in data['acls']:
             if pkgacl['status'] != 'Approved':
