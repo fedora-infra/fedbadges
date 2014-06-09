@@ -6,7 +6,7 @@ import logging
 log = logging.getLogger("moksha.hub")
 
 import fedmsg
-import fedora.client.fas2
+import fedora.client
 import requests
 
 # This is used for our queries against pkgdb
@@ -121,7 +121,7 @@ def notification_callback(topic, msg):
 def user_exists_in_fas(config, user):
     """ Return true if the user exists in FAS. """
 
-    fas2 = fedora.client.fas2.AccountSystem(
+    fas2 = fedora.client.AccountSystem(
         username=config['fas_credentials']['username'],
         password=config['fas_credentials']['password'],
     )
@@ -144,10 +144,7 @@ def get_pkgdb_packages_for(config, user):
 
     @_cache.cache_on_arguments()
     def _getter(user):
-        if config.get('fedbadges.rules.utils.use_pkgdb2', True):
-            return _get_pkgdb2_packages_for(config, user)
-        else:
-            return _get_pkgdb1_packages_for(config, user)
+        return _get_pkgdb2_packages_for(config, user)
 
     return _getter(user)
 
@@ -162,7 +159,8 @@ def _get_pkgdb2_packages_for(config, username):
         )
 
         if not req.status_code == 200:
-            return None
+            raise IOError("Couldn't talk to pkgdb2 for %r, %r, %r" % (
+                username, req.status_code, req.text))
 
         return req.json()
 
@@ -181,9 +179,6 @@ def _get_pkgdb2_packages_for(config, username):
         if i != 1:
             data = _get_page(i)
 
-        if data is None:
-            continue
-
         for pkgacl in data['acls']:
             if pkgacl['status'] != 'Approved':
                 continue
@@ -191,23 +186,4 @@ def _get_pkgdb2_packages_for(config, username):
             packages.add(pkgacl['packagelist']['package']['name'])
 
     log.debug("done talking with pkgdb2 for now. %r" % packages)
-    return packages
-
-
-# TODO -- delete this once pkgdb2 goes live.
-def _get_pkgdb1_packages_for(config, username):
-    log.debug("Requesting pkgdb1 packages for user %r" % username)
-
-    pkgdb1_base_url = config['fedbadges.rules.utils.pkgdb_url']
-    query_string = "tg_format=json&pkgs_tgp_limit=10000"
-
-    req = requests.get('{0}/users/packages/{1}?{2}'.format(
-        pkgdb1_base_url, username, query_string))
-
-    if not req.status_code == 200:
-        return set()
-
-    data = req.json()
-    packages = set([pkg['name'] for pkg in data['pkgs']])
-    log.debug("done talking with pkgdb1 for now. %r" % packages)
     return packages
