@@ -120,8 +120,9 @@ def notification_callback(topic, msg):
 
 def user_exists_in_fas(config, user):
     """ Return true if the user exists in FAS. """
-
-    fas2 = fedora.client.AccountSystem(
+    default_url = 'https://admin.fedoraproject.org/accounts/'
+    fas2 = fedora.client.fas2.AccountSystem(
+        base_url=config['fas_credentials'].get('base_url', default_url),
         username=config['fas_credentials']['username'],
         password=config['fas_credentials']['password'],
     )
