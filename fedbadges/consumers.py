@@ -158,10 +158,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             raise
 
     def consume(self, msg):
-        func = functools.partial(self.deferred_consume, msg)
-        moksha.hub.reactor.reactor.callLater(self.consume_delay, func)
+        time.sleep(self.consume_delay)
 
-    def deferred_consume(self, msg):
         # Strip the moksha envelope
         msg = msg['body']
 
