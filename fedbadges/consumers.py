@@ -158,10 +158,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             raise
 
     def consume(self, msg):
-        func = functools.partial(self.deferred_consume, msg)
-        moksha.hub.reactor.reactor.callLater(self.consume_delay, func)
+        time.sleep(self.consume_delay)
 
-    def deferred_consume(self, msg):
         # Strip the moksha envelope
         msg = msg['body']
 
@@ -173,13 +171,12 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         badge_rule = None
 
         # Award every badge as appropriate.
-        log.info("Received %r." % msg['topic'])
+        log.info("Received %s, %s" % (msg['topic'], msg['msg_id']))
         for badge_rule in self.badge_rules:
             try:
                 for recipient in badge_rule.matches(msg):
                     self.award_badge(recipient, badge_rule, link)
             except Exception as e:
-                log.error("Failure in badge awarder! %r Details follow:" % e)
-                log.error("Considering badge: %r" % badge_rule)
-                log.error("Received Message: %r" % msg)
-                log.error(traceback.format_exc())
+                log.exception("Rule: %r, message: %r" % (badge_rule, msg))
+
+        log.debug("Done with %s, %s" % (msg['topic'], msg['msg_id']))
