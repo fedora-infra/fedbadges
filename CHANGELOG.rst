@@ -1,6 +1,19 @@
 Changelog
 =========
 
+0.5.0
+-----
+
+- Apparently its supposed to work this way. `308a1031d <https://github.com/fedora-infra/fedbadges/commit/308a1031d6ed32678810f42bfe9db916bd6250d1>`_
+- Delete old pkgdb1 code. `37ebfa746 <https://github.com/fedora-infra/fedbadges/commit/37ebfa746c22887325680273159bf3eac4b1c524>`_
+- Don't let pkgdb2 errors turn into false positives. `afbb41efe <https://github.com/fedora-infra/fedbadges/commit/afbb41efe2aa82f06de15f4920b2769d0fe44ffe>`_
+- Merge pull request #38 from fedora-infra/feature/pkgdb2-fixes-mark-ii `2abbedcd0 <https://github.com/fedora-infra/fedbadges/commit/2abbedcd0c88360b56e044c42f4b17c77991cbef>`_
+- Allow a configurable FAS url for staging.. `dcfd724ba <https://github.com/fedora-infra/fedbadges/commit/dcfd724baeec07f6ac686817fb1b40209741e091>`_
+- Merge pull request #39 from fedora-infra/feature/configurable-fas-url `c7f6275c1 <https://github.com/fedora-infra/fedbadges/commit/c7f6275c138319148f06fa3df75b481ed28230a9>`_
+- Enhance logging around the main loop. `d36ca095b <https://github.com/fedora-infra/fedbadges/commit/d36ca095b2c36895366d105b782fa0a3d6e6aea6>`_
+- Rely on fedmsg-provided queue. `0c278f068 <https://github.com/fedora-infra/fedbadges/commit/0c278f0684c195391a44562c5687e15d9e1be0d0>`_
+- Merge pull request #40 from fedora-infra/feature/fedmsg-queueing `c6a771451 <https://github.com/fedora-infra/fedbadges/commit/c6a771451a8c8da58cc88cf637e33c3db1af0e71>`_
+
 0.4.3
 -----
 
