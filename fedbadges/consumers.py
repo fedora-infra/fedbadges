@@ -172,7 +172,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         badge_rule = None
 
         # Award every badge as appropriate.
-        log.info("Received %s, %s" % (msg['topic'], msg['msg_id']))
+        log.debug("Received %s, %s" % (msg['topic'], msg['msg_id']))
         for badge_rule in self.badge_rules:
             try:
                 for recipient in badge_rule.matches(msg):
