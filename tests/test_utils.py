@@ -199,6 +199,7 @@ class TestFormatArgs(unittest.TestCase):
         actual = format_args(obj, subs)
         eq_(actual, target)
 
+
 class TestPkgdb2(unittest.TestCase):
 
     @raises(IOError)
@@ -210,10 +211,10 @@ class TestPkgdb2(unittest.TestCase):
         packages = _get_pkgdb2_packages_for(config, 'ralph')
 
     # This is an integration test that won't run in KOJI
-    #def test_simple(self):
-    #    config = {
-    #        'fedbadges.rules.utils.pkgdb_url':
-    #            'https://admin.fedoraproject.org/pkgdb/api',
-    #    }
-    #    packages = _get_pkgdb2_packages_for(config, 'ralph')
-    #    self.assertIn('pkgwat', packages)
+    # def test_simple(self):
+    #     config = {
+    #         'fedbadges.rules.utils.pkgdb_url':
+    #             'https://admin.fedoraproject.org/pkgdb/api',
+    #     }
+    #     packages = _get_pkgdb2_packages_for(config, 'ralph')
+    #     self.assertIn('pkgwat', packages)
