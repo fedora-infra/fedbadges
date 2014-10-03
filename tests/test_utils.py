@@ -206,7 +206,7 @@ class TestPkgdb2(unittest.TestCase):
     def test_wrong_url(self):
         config = {
             'fedbadges.rules.utils.pkgdb_url':
-                'https://admin.fedoraproject.org/pkgdb',
+            'https://admin.fedoraproject.org/pkgdb',
         }
         packages = _get_pkgdb2_packages_for(config, 'ralph')
 
