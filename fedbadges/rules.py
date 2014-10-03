@@ -270,7 +270,7 @@ class AbstractTopLevelComparator(AbstractComparator):
         self.attribute = self._d.keys()[0]
         self.expected_value = self._d[self.attribute]
 
-        ### Check if we should we recursively nest Trigger/Criteria?
+        # XXX - Check if we should we recursively nest Trigger/Criteria?
 
         # First, trick negation into thinking it is not a unary operator.
         if self.attribute == 'not':
@@ -330,7 +330,7 @@ class Criteria(AbstractTopLevelComparator):
         elif self.attribute == 'pkgdb':
             self.specialization = PkgdbCriteria(self.expected_value)
         # TODO -- expand this with other "backends" as necessary
-        #elif self.attribute == 'fas'
+        # elif self.attribute == 'fas'
         else:
             raise RuntimeError("This should be impossible to reach.")
 
@@ -442,7 +442,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
 
         # Validate the condition
         condition_key, condition_val = self._d['condition'].items()[0]
-        if not condition_key in self.condition_callbacks:
+        if condition_key not in self.condition_callbacks:
             raise KeyError("%r is not a valid condition key.  Use one of %r" %
                            (condition_key, self.condition_callbacks.keys()))
 

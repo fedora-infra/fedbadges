@@ -7,10 +7,11 @@ Authors:  Ross Delinger
 
 import os.path
 import yaml
-import functools
-import time
 import traceback
+import functools
 import transaction
+import threading
+import time
 
 import fedmsg.consumers
 import moksha.hub
@@ -43,14 +44,18 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         self.consume_delay = int(self.hub.config.get('badges.consume_delay',
                                                      self.consume_delay))
 
-        # Four things need doing at start up time
+        # Five things need doing at start up time
+        # 0) Set up a request local to hang thread-safe db sessions on.
         # 1) Initialize our connection to the tahrir DB and perform some
         #    administrivia.
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
         # 4) Initialize fedmsg so that those listening to us can handshake.
 
-        # Tahrir stuff
+        # Thread-local stuff
+        self.l = threading.local()
+
+        # Tahrir stuff.
         self._initialize_tahrir_connection()
 
         # Datanommer stuff
@@ -61,6 +66,9 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         self.badge_rules = self._load_badges_from_yaml(directory)
 
     def _initialize_tahrir_connection(self):
+        if hasattr(self.l, 'tahrir'):
+            return
+
         global_settings = self.hub.config.get("badges_global", {})
 
         database_uri = global_settings.get('database_uri')
@@ -72,7 +80,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             bind=create_engine(database_uri),
         ))
 
-        self.tahrir = tahrir_api.dbapi.TahrirDatabase(
+        self.l.tahrir = tahrir_api.dbapi.TahrirDatabase(
             session=session_cls(),
             autocommit=False,
             notification_callback=fedbadges.utils.notification_callback,
@@ -80,7 +88,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         issuer = global_settings.get('badge_issuer')
 
         transaction.begin()
-        self.issuer_id = self.tahrir.add_issuer(
+        self.issuer_id = self.l.tahrir.add_issuer(
             issuer.get('issuer_origin'),
             issuer.get('issuer_name'),
             issuer.get('issuer_org'),
@@ -106,7 +114,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
                 try:
                     badge_rule = fedbadges.rules.BadgeRule(
-                        badge, self.tahrir, self.issuer_id)
+                        badge, self.l.tahrir, self.issuer_id)
                     badges.append(badge_rule)
                 except ValueError as e:
                     log.error("Initializing rule for %r failed with %r" % (
@@ -142,20 +150,22 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         try:
             transaction.begin()
-            self.tahrir.add_person(email)
+            self.l.tahrir.add_person(email)
             transaction.commit()
         except:
             transaction.abort()
+            self.l.tahrir.session.rollback()
             raise
 
-        user = self.tahrir.get_person(email)
+        user = self.l.tahrir.get_person(email)
 
         try:
             transaction.begin()
-            self.tahrir.add_assertion(badge_rule.badge_id, email, None, link)
+            self.l.tahrir.add_assertion(badge_rule.badge_id, email, None, link)
             transaction.commit()
         except:
             transaction.abort()
+            self.l.tahrir.session.rollback()
             raise
 
     def consume(self, msg):
@@ -170,6 +180,9 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         # Define this so we can refer to it in error handling below
         badge_rule = None
+
+        # Initialize our connection if this is the first time we are called.
+        self._initialize_tahrir_connection()
 
         # Award every badge as appropriate.
         log.debug("Received %s, %s" % (msg['topic'], msg['msg_id']))
