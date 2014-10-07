@@ -6,7 +6,7 @@ import logging
 log = logging.getLogger("moksha.hub")
 
 import fedmsg
-import fedora.client
+import fedora.client.fas2
 import requests
 
 # This is used for our queries against pkgdb
