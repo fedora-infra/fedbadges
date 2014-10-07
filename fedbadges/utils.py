@@ -6,7 +6,7 @@ import logging
 log = logging.getLogger("moksha.hub")
 
 import fedmsg
-import fedora.client.fas2
+import fedora.client
 import requests
 
 # This is used for our queries against pkgdb
@@ -121,7 +121,7 @@ def notification_callback(topic, msg):
 def user_exists_in_fas(config, user):
     """ Return true if the user exists in FAS. """
     default_url = 'https://admin.fedoraproject.org/accounts/'
-    fas2 = fedora.client.fas2.AccountSystem(
+    fas2 = fedora.client.AccountSystem(
         base_url=config['fas_credentials'].get('base_url', default_url),
         username=config['fas_credentials']['username'],
         password=config['fas_credentials']['password'],
