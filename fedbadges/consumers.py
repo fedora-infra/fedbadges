@@ -20,6 +20,7 @@ import tahrir_api.dbapi
 import datanommer.models
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker, scoped_session
 from zope.sqlalchemy import ZopeTransactionExtension
 
@@ -163,7 +164,29 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             transaction.begin()
             self.l.tahrir.add_assertion(badge_rule.badge_id, email, None, link)
             transaction.commit()
+        except IntegrityError:
+            # Here we handle two different kinds of errors due to the existence
+            # of a somewhat harmless race condition.
+            # Say that someone adds 2 tags to a package in fedora-tagger all at
+            # once.  That produces 2 different fedmsg messages that each hit
+            # this daemon.  Each message gets handed off to each of 2 worker
+            # threads that start working in parallel.  They both ask, does
+            # person X have the 'Awesome Tagger' badge?  The database responds
+            # "no", so they both start checking to see if the person meets all
+            # the criteria.  They do, so the first worker gets here and awards
+            # them the badge with add_assertion.  The second thread gets here
+            # and tries to award the badge, but it is already awarded by the
+            # other thread -- so it raises a 'duplicate primary key'
+            # IntegrityError.  We catch that here, and note it in the logs as a
+            # warning not an error.  It happens often enough and is harmless
+            # enough that we don't want to receive emails about it.
+            transaction.abort()
+            self.l.tahrir.session.rollback()
+            log.warn(traceback.format_exc())
         except:
+            # For all other errors, we rollback the transaction but we also
+            # re-raise the error so that it hits the fedmsg handling in the
+            # stack above and emails us about it.
             transaction.abort()
             self.l.tahrir.session.rollback()
             raise
