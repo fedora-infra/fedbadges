@@ -8,13 +8,11 @@ Authors:  Ross Delinger
 import os.path
 import yaml
 import traceback
-import functools
 import transaction
 import threading
 import time
 
 import fedmsg.consumers
-import moksha.hub
 
 import tahrir_api.dbapi
 import datanommer.models
