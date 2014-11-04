@@ -8,13 +8,11 @@ Authors:  Ross Delinger
 import os.path
 import yaml
 import traceback
-import functools
 import transaction
 import threading
 import time
 
 import fedmsg.consumers
-import moksha.hub
 
 import tahrir_api.dbapi
 import datanommer.models
@@ -35,6 +33,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
     topic = "org.fedoraproject.*"
     config_key = "fedmsg.consumers.badges.enabled"
     consume_delay = 3
+    delay_limit = 100
 
     def __init__(self, hub):
         self.badge_rules = []
@@ -44,6 +43,8 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         self.consume_delay = int(self.hub.config.get('badges.consume_delay',
                                                      self.consume_delay))
+        self.delay_limit = int(self.hub.config.get('badges.delay_limit',
+                                                   self.delay_limit))
 
         # Five things need doing at start up time
         # 0) Set up a request local to hang thread-safe db sessions on.
@@ -192,7 +193,23 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
             raise
 
     def consume(self, msg):
-        time.sleep(self.consume_delay)
+
+        # First thing, we receive the message, but we put ourselves to sleep to
+        # wait for a moment.  The reason for this is that, when things are
+        # 'calm' on the bus, we receive messages "too fast".  A message that
+        # arrives to the badge awarder triggers (usually) a check against
+        # datanommer to count messages.  But if we try to count them before
+        # this message arrives at datanommer, we'll get skewed results!  Race
+        # condition.  We go to sleep to allow ample time for datanommer to
+        # consume this one before we go and start doing checks on it.  When
+        # fedbadges was first released, this was absolutely necessary.
+        # Since that time, the fedmsg bus has become much more congested.  So,
+        # to improve our average speed at handling messages, we only do that
+        # sleep statement if we're not already backlogged.  If we know we have
+        # a huge workload ahead of us, then go ahead and start handling
+        # messages as fast as we can.
+        if self.incoming.qsize() < self.delay_limit:
+            time.sleep(self.consume_delay)
 
         # Strip the moksha envelope
         msg = msg['body']
