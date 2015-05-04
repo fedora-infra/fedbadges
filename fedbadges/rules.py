@@ -44,6 +44,13 @@ except ImportError as e:
     log.warn("Could not import nick2fas: %r" % e)
 
 
+email2fas = None
+try:
+    from fedmsg_meta_fedora_infrastructure.fasshim import email2fas
+except ImportError as e:
+    log.warn("Could not import email2fas: %r" % e)
+
+
 operators = frozenset([
     "all",
     "any",
@@ -79,6 +86,7 @@ class BadgeRule(object):
     possible = required.union([
         'recipient',
         'recipient_nick2fas',
+        'recipient_email2fas',
     ])
 
     banned_usernames = frozenset([
@@ -124,11 +132,16 @@ class BadgeRule(object):
         self.criteria = Criteria(self._d['criteria'], self)
         self.recipient_key = self._d.get('recipient')
         self.recipient_nick2fas = self._d.get('recipient_nick2fas')
+        self.recipient_email2fas = self._d.get('recipient_email2fas')
 
         # A sanity check before we kick things off.
         if self.recipient_nick2fas and not nick2fas:
             raise ImportError("recipient_nick2fas specified, but "
                               "nick2fas is not available.")
+
+        if self.recipient_email2fas and not email2fas:
+            raise ImportError("recipient_email2fas specified, but "
+                              "email2fas is not available.")
 
     def __getitem__(self, key):
         return self._d[key]
@@ -166,6 +179,11 @@ class BadgeRule(object):
             if self.recipient_nick2fas:
                 awardees = frozenset([
                     nick2fas(nick, **fedmsg_config) for nick in awardees
+                ])
+
+            if self.recipient_email2fas:
+                awardees = frozenset([
+                    email2fas(email, **fedmsg_config) for email in awardees
                 ])
         else:
             usernames = fedmsg.meta.msg2usernames(msg)

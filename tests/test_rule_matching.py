@@ -55,7 +55,7 @@ class TestRuleMatching(unittest.TestCase):
             f.return_value = 1, 1, query
             with patch("fedbadges.rules.user_exists_in_fas") as g:
                 g.return_value = True
-                eq_(rule.matches(msg), set(['hadess']))
+                eq_(rule.matches(msg), set(['lmacken', 'hadess']))
 
     def test_full_simple_match_almost_succeed(self):
         """ A simple integration test for messages with zero users """
