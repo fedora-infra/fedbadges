@@ -22,11 +22,6 @@ import fedmsg.config
 import fedmsg.encoding
 import fedmsg.meta
 
-try:
-    from fedmsg_meta_fedora_infrastructure.fasshim import nick2fas
-except ImportError as e:
-    log.warn("Could not import nick2fas: %r" % e)
-
 
 def construct_substitutions(msg):
     """ Convert a fedmsg message into a dict of substitutions. """
