@@ -30,7 +30,7 @@ log = logging.getLogger("moksha.hub")
 
 
 class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
-    topic = "org.fedoraproject.*"
+    topic = "*"
     config_key = "fedmsg.consumers.badges.enabled"
     consume_delay = 3
     delay_limit = 100
