@@ -1,6 +1,27 @@
 Changelog
 =========
 
+0.5.1
+-----
+
+- Add missing import. `302431e64 <https://github.com/fedora-infra/fedbadges/commit/302431e64bf425e246b69cfa945ec6ca7a1a274b>`_
+- Demote this log statement. `4a835748c <https://github.com/fedora-infra/fedbadges/commit/4a835748cf7b9341d374c28a821b4c35f06bd431>`_
+- Use threading.local to separate sessions. `d98a1ca6d <https://github.com/fedora-infra/fedbadges/commit/d98a1ca6d0db938a2168e3b93f94512ab90aeaab>`_
+- PEP8. `6c8f89d61 <https://github.com/fedora-infra/fedbadges/commit/6c8f89d619827a5f18fa6355fd0b52b4eac8566a>`_
+- PEP8. `602c6abb2 <https://github.com/fedora-infra/fedbadges/commit/602c6abb28e56c95828671f9700d642cd69a2e26>`_
+- Merge pull request #41 from fedora-infra/feature/race-conditions `0baa4599c <https://github.com/fedora-infra/fedbadges/commit/0baa4599c61469dc0d925131d517fba50edd6c80>`_
+- How did this work before...? `80eeeda53 <https://github.com/fedora-infra/fedbadges/commit/80eeeda53e515a0f8cb064ef2f18b9744195b150>`_
+- Icky. `8de7b563d <https://github.com/fedora-infra/fedbadges/commit/8de7b563da374110d04f09b0b264230d900320f9>`_
+- Suppress integrity errors. `4b69382af <https://github.com/fedora-infra/fedbadges/commit/4b69382af4494092f7e4764ba0fd8915f30d6bc8>`_
+- Merge pull request #42 from fedora-infra/feature/suppress-integrity-errors `f72d8d07b <https://github.com/fedora-infra/fedbadges/commit/f72d8d07bfd1998a4db99904560ddb821d0d371a>`_
+- Remove unused imports. `dc0691e92 <https://github.com/fedora-infra/fedbadges/commit/dc0691e9290c61167ddc582e0dfbd45fc06acd2b>`_
+- Turbo Mode `169142cb1 <https://github.com/fedora-infra/fedbadges/commit/169142cb1bc29d756219a472721a3a79751301f5>`_
+- Merge pull request #43 from fedora-infra/feature/turbo-mode `529fbdd27 <https://github.com/fedora-infra/fedbadges/commit/529fbdd271c6ce50d43ddb2a9395f592e9c33992>`_
+- Remove unused reference to nick2fas. `2a70f25b3 <https://github.com/fedora-infra/fedbadges/commit/2a70f25b3b774550719ee95335f6c487d29f337e>`_
+- Add a new email2fas flag modeled off the existing nick2fas flag. `49941717b <https://github.com/fedora-infra/fedbadges/commit/49941717b71a861a1661ab317c2a67f8d635beff>`_
+- Update test that changed since fedmsg_meta changed. `5e2a2305d <https://github.com/fedora-infra/fedbadges/commit/5e2a2305d4569ff30d64982859d3ef8fec1a13be>`_
+- Merge pull request #44 from fedora-infra/feature/email2fas `d922631b7 <https://github.com/fedora-infra/fedbadges/commit/d922631b7155b28b52249bebcf765fe307a39dc3>`_
+
 0.5.0
 -----
 
