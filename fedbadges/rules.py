@@ -94,6 +94,8 @@ class BadgeRule(object):
         'oscar',
         'apache',
         'koji',
+        'bodhi',
+        'taskotron',
     ])
 
     def __init__(self, badge_dict, tahrir_database, issuer_id):
