@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.5.2
+-----
+
+- Set the consumer to consume all topics. `e24b892f7 <https://github.com/fedora-infra/fedbadges/commit/e24b892f7a6d4887b7f2052053e2fe5330f8f7ff>`_
+- Merge pull request #45 from fedora-infra/feature/liberal-topic `5236b6e4e <https://github.com/fedora-infra/fedbadges/commit/5236b6e4e347d0c6f98484db890d063addb4bb3e>`_
+- Don't award badges to bodhi or taskotron.. `c81f57ecd <https://github.com/fedora-infra/fedbadges/commit/c81f57ecd4c0d5db3b395f0db9dde99806344df9>`_
+
 0.5.1
 -----
 
