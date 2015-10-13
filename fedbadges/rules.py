@@ -411,6 +411,9 @@ class PkgdbCriteria(AbstractSpecializedComparator):
             user=expectation['user'],
         )
 
+        # Force lowercase, https://github.com/fedora-infra/tahrir/issues/315
+        actual_packages = set(map(unicode.lower, actual_packages))
+
         return set(expectation['packages']).issubset(actual_packages)
 
 
