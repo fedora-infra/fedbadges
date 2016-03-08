@@ -8,19 +8,19 @@
                                                    awarded +-----------+   +-------+   are made to check criteria  | datanommer|
                                                   +--------|tahrir-api |   | rules |------------------------------>| db        |
                                                   |        +-----------+   +-------+                               |        {s}|
-users look at +------+  +------+  +----------+    |        |                       |                               +-----------+
-badges.fp.o   |tahrir|  |tahrir|  | tahrir   |    |        +-----------------------+
-------------->|wsgi  |->|api   |->| postgres |<---+
-              |app   |  |module|  | db   {s} |    |        +---------------------------------------+
-              +------+  +------+  +----------+    |badges  | cron                                  |
-                                                  |are     |                                       |
-                                                  |awarded +------------+  award-badges-dev        |--> github.com
-                                                  +--------| tahrir-api |  award-flock-paparazzi   |--> flickr and gplus
-                                                  |        |            |  award-libravatar-badge  |--> libravatar.org
-                                                  |        |            |  award-lifecycle-badges  |--> FAS
-                                                  |        |            |  award-mirror-badge      |--> mirrormanager
-                                                  |        +------------+  award-oldschool-badges  |--> FAS
-                                                  |        +---------------------------------------+
+users look at +----------+------+  +----------+   |        |                       |                               +-----------+
+badges.fp.o   |tahrir    |tahrir|  | tahrir   |   |        +-----------------------+
+------------->|wsgi      |api   |->| postgres |<--+
+              |app       |module|  | db   {s} |   |        +---------------------------------------+
+              |          +------+  +----------+   |badges  | cron                                  |
+              |                 |                 |are     |                                       |
+              +-----------------+                 |awarded +------------+  award-badges-dev        |--> github.com
+              | invitation links|                 +--------| tahrir-api |  award-flock-paparazzi   |--> flickr and gplus
+              +-----------------+                 |        |            |  award-libravatar-badge  |--> libravatar.org
+              | qrcodes         |                 |        |            |  award-lifecycle-badges  |--> FAS
+              +-----------------+                 |        |            |  award-mirror-badge      |--> mirrormanager
+              | admin panel     |                 |        +------------+  award-oldschool-badges  |
+              +-----------------+                 |        +---------------------------------------+
                                                   |
                                                   |        +---------------------------------------+
                                                   |stuff   | sysadmins (humans)                    |
