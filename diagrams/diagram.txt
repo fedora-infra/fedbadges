@@ -1,0 +1,33 @@
+
+                                                                                       fedmsg events         |
+                                                                                       come in, potentially  |
+                                                           +-----------------------+   triggering a check    |
+                                                           | fedmsg-hub            |<------------------------+
+                                                   badges  +-----------------------+
+                                                   are     |   fedbadges           |   datanommer db queries       +-----------+
+                                                   awarded +-----------+   +-------+   are made to check criteria  | datanommer|
+                                                  +--------|tahrir-api |   | rules |------------------------------>| db        |
+                                                  |        +-----------+   +-------+                               |        {s}|
+users look at +------+  +------+  +----------+    |        |                       |                               +-----------+
+badges.fp.o   |tahrir|  |tahrir|  | tahrir   |    |        +-----------------------+
+------------->|wsgi  |->|api   |->| postgres |<---+
+              |app   |  |module|  | db   {s} |    |        +---------------------------------------+
+              +------+  +------+  +----------+    |badges  | cron                                  |
+                                                  |are     |                                       |
+                                                  |awarded +------------+  award-badges-dev        |--> github.com
+                                                  +--------| tahrir-api |  award-flock-paparazzi   |--> flickr and gplus
+                                                  |        |            |  award-libravatar-badge  |--> libravatar.org
+                                                  |        |            |  award-lifecycle-badges  |--> FAS
+                                                  |        |            |  award-mirror-badge      |--> mirrormanager
+                                                  |        +------------+  award-oldschool-badges  |--> FAS
+                                                  |        +---------------------------------------+
+                                                  |
+                                                  |        +---------------------------------------+
+                                                  |stuff   | sysadmins (humans)                    |
+                                                  |happens +------------+                          |
+                                                  +--------| tahrir-api |  award-badge             |
+                                                           |            |  revoke-badge            |
+                                                           |            |  grant-authorization     |
+                                                           |            |  revoke-authorization    |
+                                                           +------------+                          |
+                                                           +---------------------------------------+
