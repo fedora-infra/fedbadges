@@ -147,6 +147,9 @@ def get_pkgdb_packages_for(config, user):
 
 def _get_pkgdb2_packages_for(config, username):
     log.debug("Requesting pkgdb2 packages for user %r" % username)
+    if '/' in username:
+        log.debug('Service user, has no packages')
+        return set()
 
     def _get_page(page):
         req = requests.get('{0}/packager/acl/{1}'.format(
