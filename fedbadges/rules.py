@@ -373,6 +373,10 @@ class PkgdbCriteria(AbstractSpecializedComparator):
         'owns',
     ])
 
+    banned_usernames = frozenset([
+        'mbs/mbs.fedoraproject.org',
+    ])
+
     def __init__(self, *args, **kwargs):
         super(PkgdbCriteria, self).__init__(*args, **kwargs)
 
@@ -406,9 +410,17 @@ class PkgdbCriteria(AbstractSpecializedComparator):
         expectation = format_args(copy.copy(self._d['owns']), subs)
         expectation = recursive_lambda_factory(expectation, msg, name='msg')
 
+        user = expectation['user']
+
+        # Exclude banned usernames
+        # https://github.com/fedora-infra/fedbadges/issues/53
+        if user in self.banned_usernames:
+            log.debug("%s is a banned username" % user)
+            return False
+
         actual_packages = get_pkgdb_packages_for(
             config=fedmsg_config,
-            user=expectation['user'],
+            user=user,
         )
 
         # Force lowercase, https://github.com/fedora-infra/tahrir/issues/315
