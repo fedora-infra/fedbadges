@@ -13,7 +13,7 @@ def get_requirements(filename='requirements.txt'):
         return [line for line in f.readlines()]
 
 
-long_description = file("README.rst").read().strip()
+long_description = open("README.rst").read().strip()
 
 
 setup(
