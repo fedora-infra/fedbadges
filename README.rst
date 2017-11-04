@@ -11,8 +11,7 @@ project (fedbadges) writes to a database that the web frontend (tahrir) reads
 from.
 
 The *actual badge rules* that we act on in Fedora Infrastructure can be
-found `here <https://git.fedorahosted.org/cgit/badges.git>`_
-in our ansible repository.
+found `here <https://pagure.io/Fedora-Badges>`.
 
 Architecture
 ------------
