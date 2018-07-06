@@ -14,6 +14,7 @@ import types
 import functools
 import inspect
 import transaction
+import re
 
 import fedmsg.config
 import fedmsg.meta
@@ -50,6 +51,12 @@ try:
 except ImportError as e:
     log.warn("Could not import email2fas: %r" % e)
 
+# Match OpenID agent strings, i.e. http://FAS.id.fedoraproject.org
+def openid2fas(openid, **config):
+    m = re.search('^https?://([a-z][a-z0-9]+)\.id\.fedoraproject\.org$', openid)
+    if m:
+        return m.group(1)
+    return openid
 
 operators = frozenset([
     "all",
@@ -87,6 +94,7 @@ class BadgeRule(object):
         'recipient',
         'recipient_nick2fas',
         'recipient_email2fas',
+        'recipient_openid2fas',
     ])
 
     banned_usernames = frozenset([
@@ -135,6 +143,7 @@ class BadgeRule(object):
         self.recipient_key = self._d.get('recipient')
         self.recipient_nick2fas = self._d.get('recipient_nick2fas')
         self.recipient_email2fas = self._d.get('recipient_email2fas')
+        self.recipient_openid2fas = self._d.get('recipient_openid2fas')
 
         # A sanity check before we kick things off.
         if self.recipient_nick2fas and not nick2fas:
@@ -186,6 +195,11 @@ class BadgeRule(object):
             if self.recipient_email2fas:
                 awardees = frozenset([
                     email2fas(email, **fedmsg_config) for email in awardees
+                ])
+
+            if self.recipient_openid2fas:
+                awardees = frozenset([
+                    openid2fas(openid, **fedmsg_config) for openid in awardees
                 ])
         else:
             usernames = fedmsg.meta.msg2usernames(msg)
