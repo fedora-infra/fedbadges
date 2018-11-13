@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.5.3
+-----
+
+- Force lowercase when comparing package names with pkgdb `#47 <https://github.com/fedora-infra/fedbadges/pull/47>`_
+- A diagram for how fedbadges relates to the other badges.fp.o pieces. `#48 <https://github.com/fedora-infra/fedbadges/pull/48>`_
+- Ignore service users (e.g. mbs/mbs.fedoraproject.org) `#55 <https://github.com/fedora-infra/fedbadges/pull/55>`_
+- Use open() rather than file() `#56 <https://github.com/fedora-infra/fedbadges/pull/56>`_
+- Add openid2fas resolution `#59 <https://github.com/fedora-infra/fedbadges/pull/59>`_
+
 0.5.2
 -----
 
