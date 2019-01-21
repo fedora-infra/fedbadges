@@ -58,7 +58,7 @@ class TestComplicatedTrigger(unittest.TestCase):
         log = logging.getLogger('moksha.hub')
         log.error = Mock()
         eq_(self.rule.matches(msg), set())
-        log.error.assert_called_once()
+        log.error.assert_called()
 
     @patch('datanommer.models.Message.grep')
     @patch('tahrir_api.dbapi.TahrirDatabase.get_person')
