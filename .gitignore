@@ -5,3 +5,4 @@
 *.db
 dist
 build
+.tox
