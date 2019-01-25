@@ -6,3 +6,5 @@ datanommer.models
 zope.sqlalchemy
 requests
 dogpile.cache
+psutil
+moksha

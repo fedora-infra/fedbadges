@@ -16,6 +16,7 @@ class MockHub(object):
             ),
         },
         "datanommer.sqlalchemy.url": "sqlite://",
+        "validate_signatures":"False"
     }
 
     def subscribe(self, topic, callback):
