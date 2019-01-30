@@ -7,10 +7,10 @@ import fedbadges.consumers
 from mock import patch, Mock
 from nose.tools import eq_
 
-from StringIO import StringIO
+from io import StringIO
 
 # Utils for tests
-import utils
+from . import utils
 
 
 class TestComplicatedTrigger(unittest.TestCase):

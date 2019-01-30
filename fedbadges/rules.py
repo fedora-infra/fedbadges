@@ -107,7 +107,7 @@ class BadgeRule(object):
     ])
 
     def __init__(self, badge_dict, tahrir_database, issuer_id):
-        argued_fields = frozenset(badge_dict.keys())
+        argued_fields = frozenset(list(badge_dict.keys()))
 
         if not argued_fields.issubset(self.possible):
             raise KeyError(
@@ -174,7 +174,7 @@ class BadgeRule(object):
             subs = construct_substitutions(msg)
             obj = format_args(self.recipient_key, subs)
 
-            if isinstance(obj, (basestring, int, float)):
+            if isinstance(obj, (str, int, float)):
                 obj = [obj]
 
             # On the way, it is possible for the fedmsg message to contain None
@@ -257,14 +257,13 @@ class BadgeRule(object):
         return awardees
 
 
-class AbstractComparator(object):
+class AbstractComparator(object, metaclass=abc.ABCMeta):
     """ Base class for shared behavior between trigger and criteria. """
-    __metaclass__ = abc.ABCMeta
     possible = required = frozenset()
     children = None
 
     def __init__(self, d, parent=None):
-        argued_fields = frozenset(d.keys())
+        argued_fields = frozenset(list(d.keys()))
         if not argued_fields.issubset(self.possible):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
@@ -301,7 +300,7 @@ class AbstractTopLevelComparator(AbstractComparator):
             raise ValueError("No more than one trigger allowed.  "
                              "Use an operator, one of %r" % operators)
 
-        self.attribute = self._d.keys()[0]
+        self.attribute = list(self._d.keys())[0]
         self.expected_value = self._d[self.attribute]
 
         # XXX - Check if we should we recursively nest Trigger/Criteria?
@@ -395,7 +394,7 @@ class PkgdbCriteria(AbstractSpecializedComparator):
             raise ValueError("'owns' must be a dict")
 
         owns_fields = frozenset(['user', 'packages'])
-        argued_fields = frozenset(self._d['owns'].keys())
+        argued_fields = frozenset(list(self._d['owns'].keys()))
 
         if not argued_fields.issubset(owns_fields):
             raise KeyError(
@@ -426,7 +425,7 @@ class PkgdbCriteria(AbstractSpecializedComparator):
         )
 
         # Force lowercase, https://github.com/fedora-infra/tahrir/issues/315
-        actual_packages = set(map(unicode.lower, actual_packages))
+        actual_packages = set(map(str.lower, actual_packages))
 
         return set(expectation['packages']).issubset(actual_packages)
 
@@ -459,7 +458,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
     def __init__(self, *args, **kwargs):
         super(DatanommerCriteria, self).__init__(*args, **kwargs)
         if len(self._d['condition']) > 1:
-            conditions = self.condition_callbacks.keys()
+            conditions = list(self.condition_callbacks.keys())
             raise ValueError("No more than one condition allowed.  "
                              "Use one of %r" % conditions)
 
@@ -469,7 +468,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         grep_arguments = frozenset(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
-        argued_filter_fields = frozenset(self._d['filter'].keys())
+        argued_filter_fields = frozenset(list(self._d['filter'].keys()))
         if not argued_filter_fields.issubset(grep_arguments):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
@@ -478,10 +477,10 @@ class DatanommerCriteria(AbstractSpecializedComparator):
                 ))
 
         # Validate the condition
-        condition_key, condition_val = self._d['condition'].items()[0]
+        condition_key, condition_val = list(self._d['condition'].items())[0]
         if condition_key not in self.condition_callbacks:
             raise KeyError("%r is not a valid condition key.  Use one of %r" %
-                           (condition_key, self.condition_callbacks.keys()))
+                           (condition_key, list(self.condition_callbacks.keys())))
 
         # Construct a condition callable for later
         self.condition = functools.partial(

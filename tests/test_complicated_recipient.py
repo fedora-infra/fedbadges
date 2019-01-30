@@ -7,10 +7,10 @@ import fedbadges.consumers
 from mock import patch, Mock
 from nose.tools import eq_
 
-from StringIO import StringIO
+from io import StringIO
 
 # Utils for tests
-import utils
+from . import utils
 
 
 class TestComplicatedRecipient(unittest.TestCase):
@@ -34,19 +34,19 @@ class TestComplicatedRecipient(unittest.TestCase):
                                         grep,
                                         ):
         msg = {
-            u'username': u'daemon',
-            u'i': 236,
-            u'timestamp': 1372103541.190249,
-            u'topic': u'org.fedoraproject.prod.meetbot.meeting.complete',
-            u'msg': {
-                u'meeting_topic': u'testing',
-                u'attendees': {u'zodbot': 2,
-                               u'threebean': 2},
-                u'chairs': {},
-                u'topic': u'',
-                u'url': u'fedora-meeting.2013-06-24-19.52',
-                u'owner': u'threebean',
-                u'channel': u'#fedora-meeting'
+            'username': 'daemon',
+            'i': 236,
+            'timestamp': 1372103541.190249,
+            'topic': 'org.fedoraproject.prod.meetbot.meeting.complete',
+            'msg': {
+                'meeting_topic': 'testing',
+                'attendees': {'zodbot': 2,
+                               'threebean': 2},
+                'chairs': {},
+                'topic': '',
+                'url': 'fedora-meeting.2013-06-24-19.52',
+                'owner': 'threebean',
+                'channel': '#fedora-meeting'
             }
         }
 

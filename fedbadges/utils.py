@@ -30,10 +30,10 @@ def construct_substitutions(msg):
         if isinstance(msg[key1], dict):
             subs.update(dict([
                 ('.'.join([key1, key2]), val2)
-                for key2, val2 in construct_substitutions(msg[key1]).items()
+                for key2, val2 in list(construct_substitutions(msg[key1]).items())
             ]))
             subs[key1] = msg[key1]
-        elif isinstance(msg[key1], basestring):
+        elif isinstance(msg[key1], str):
             subs[key1] = msg[key1].lower()
         else:
             subs[key1] = msg[key1]
@@ -48,7 +48,7 @@ def format_args(obj, subs):
             obj[key] = format_args(obj[key], subs)
     elif isinstance(obj, list):
         return [format_args(item, subs) for item in obj]
-    elif isinstance(obj, basestring) and obj[2:-2] in subs:
+    elif isinstance(obj, str) and obj[2:-2] in subs:
         obj = subs[obj[2:-2]]
     elif isinstance(obj, (int, float)):
         pass

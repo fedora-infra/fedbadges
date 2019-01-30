@@ -119,11 +119,11 @@ class TestRuleMatching(unittest.TestCase):
         ), None, None)
 
         msg = {
-            u'topic': u'org.fedoraproject.stg.fas.role.update',
-            u'msg': {
-                u'group': {u'name': u'ambassadors'},
-                u'user': {u'username': u'ralph'},
-                u'agent': {u'username': u'toshio'},
+            'topic': 'org.fedoraproject.stg.fas.role.update',
+            'msg': {
+                'group': {'name': 'ambassadors'},
+                'user': {'username': 'ralph'},
+                'agent': {'username': 'toshio'},
             }
         }
 
@@ -158,11 +158,11 @@ class TestRuleMatching(unittest.TestCase):
         ), None, None)
 
         msg = {
-            u'topic': u'org.fedoraproject.stg.fas.role.update',
-            u'msg': {
-                u'group': {u'name': u'ambassadors'},
-                u'user': {u'username': u'ralph'},
-                u'agent': {u'username': u'toshio'},
+            'topic': 'org.fedoraproject.stg.fas.role.update',
+            'msg': {
+                'group': {'name': 'ambassadors'},
+                'user': {'username': 'ralph'},
+                'agent': {'username': 'toshio'},
             }
         }
 
@@ -210,11 +210,11 @@ class TestRuleMatching(unittest.TestCase):
         ), tahrir_db, None)
 
         msg = {
-            u'topic': u'org.fedoraproject.stg.fas.role.update',
-            u'msg': {
-                u'group': {u'name': u'ambassadors'},
-                u'user': {u'username': u'ralph'},
-                u'agent': {u'username': u'toshio'},
+            'topic': 'org.fedoraproject.stg.fas.role.update',
+            'msg': {
+                'group': {'name': 'ambassadors'},
+                'user': {'username': 'ralph'},
+                'agent': {'username': 'toshio'},
             }
         }
 
