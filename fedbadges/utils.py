@@ -9,11 +9,6 @@ import fedmsg
 import fedora.client
 import requests
 
-# This is used for our queries against pkgdb
-from dogpile.cache import make_region
-_cache = make_region()
-
-
 # These are here just so they're available in globals()
 # for compiling lambda expressions
 import json
@@ -122,67 +117,3 @@ def user_exists_in_fas(config, user):
         password=config['fas_credentials']['password'],
     )
     return bool(fas2.person_by_username(user))
-
-
-def get_pkgdb_packages_for(config, user):
-    """ Retrieve the list of packages where the specified user some acl.
-
-    :arg config: a dict containing the fedmsg config
-    :arg user: the fas user of the packager whose packages are of
-        interest.
-    :return: a set listing all the packages where the specified user has
-        some ACL.
-
-    """
-
-    if not hasattr(_cache, 'backend'):
-        _cache.configure(**config['fedbadges.rules.cache'])
-
-    @_cache.cache_on_arguments()
-    def _getter(user):
-        return _get_pkgdb2_packages_for(config, user)
-
-    return _getter(user)
-
-
-def _get_pkgdb2_packages_for(config, username):
-    log.debug("Requesting pkgdb2 packages for user %r" % username)
-    if '/' in username:
-        log.debug('Service user, has no packages')
-        return set()
-
-    def _get_page(page):
-        req = requests.get('{0}/packager/acl/{1}'.format(
-            config['fedbadges.rules.utils.pkgdb_url'], username),
-            params=dict(page=page),
-        )
-
-        if not req.status_code == 200:
-            raise IOError("Couldn't talk to pkgdb2 for %r, %r, %r" % (
-                username, req.status_code, req.text))
-
-        return req.json()
-
-    packages = set()
-
-    # We have to request the first page of data to figure out the total number
-    data = _get_page(1)
-    if data is None:
-        return packages
-
-    pages = data['page_total']
-
-    for i in range(1, pages + 1):
-
-        # Avoid requesting the data twice the first time around
-        if i != 1:
-            data = _get_page(i)
-
-        for pkgacl in data['acls']:
-            if pkgacl['status'] != 'Approved':
-                continue
-
-            packages.add(pkgacl['packagelist']['package']['name'])
-
-    log.debug("done talking with pkgdb2 for now. %r" % packages)
-    return packages
