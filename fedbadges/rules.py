@@ -176,6 +176,22 @@ class BadgeRule(object):
             if isinstance(obj, (basestring, int, float)):
                 obj = [obj]
 
+            # It is possible to recieve a list of dictionary containing the name
+            # of the recipient, this is the case in the pagure's fedmsg.
+            # In that case we create a new list containing the names taken from the
+            # dictionnary.
+            # If the "name" was not available in the dictionary we raise an exception.
+            new_obj = []
+            for item in obj:
+                if isinstance(item, dict):
+                    try:
+                        new_obj.append(item["name"])
+                    except KeyError:
+                        raise Exception("Multiple recipients : name not found in the message")
+            if new_obj:
+                obj = new_obj
+
+
             # On the way, it is possible for the fedmsg message to contain None
             # for "agent".  A problem here though is that None is not iterable,
             # so let's replace it with an equivalently empty iterable so code
