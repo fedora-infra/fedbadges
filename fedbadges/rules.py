@@ -30,7 +30,6 @@ from fedbadges.utils import (
     graceful,
 
     # These make networked API calls
-    get_pkgdb_packages_for,
     user_exists_in_fas,
 )
 
@@ -348,7 +347,6 @@ class Trigger(AbstractTopLevelComparator):
 class Criteria(AbstractTopLevelComparator):
     possible = frozenset([
         'datanommer',
-        'pkgdb',
     ]).union(operators)
 
     def __init__(self, *args, **kwargs):
@@ -361,8 +359,6 @@ class Criteria(AbstractTopLevelComparator):
     def _specialize(self):
         if self.attribute == 'datanommer':
             self.specialization = DatanommerCriteria(self.expected_value)
-        elif self.attribute == 'pkgdb':
-            self.specialization = PkgdbCriteria(self.expected_value)
         # TODO -- expand this with other "backends" as necessary
         # elif self.attribute == 'fas'
         else:
@@ -380,56 +376,6 @@ class Criteria(AbstractTopLevelComparator):
 
 class AbstractSpecializedComparator(AbstractComparator):
     pass
-
-
-class PkgdbCriteria(AbstractSpecializedComparator):
-    required = possible = frozenset([
-        'owns',
-    ])
-
-    def __init__(self, *args, **kwargs):
-        super(PkgdbCriteria, self).__init__(*args, **kwargs)
-
-        # Validate the owns dict
-        if not isinstance(self._d['owns'], dict):
-            raise ValueError("'owns' must be a dict")
-
-        owns_fields = frozenset(['user', 'packages'])
-        argued_fields = frozenset(self._d['owns'].keys())
-
-        if not argued_fields.issubset(owns_fields):
-            raise KeyError(
-                "%r are not possible fields.  Choose from %r" % (
-                    argued_fields.difference(owns_fields),
-                    owns_fields,
-                ))
-
-        if not owns_fields.issubset(argued_fields):
-            raise KeyError(
-                "%r are missing required fields." % (
-                    owns_fields.difference(argued_fields),
-                ))
-
-        if not isinstance(self._d['owns']['packages'], list):
-            raise ValueError("'packages' must be a list")
-
-    def matches(self, msg):
-        """ A pkgdb criteria check checks if a user owns some packages. """
-
-        subs = construct_substitutions(msg)
-        expectation = format_args(copy.copy(self._d['owns']), subs)
-        expectation = recursive_lambda_factory(expectation, msg, name='msg')
-
-        actual_packages = get_pkgdb_packages_for(
-            config=fedmsg_config,
-            user=expectation['user'],
-        )
-
-        # Force lowercase, https://github.com/fedora-infra/tahrir/issues/315
-        actual_packages = set(map(unicode.lower, actual_packages))
-
-        return set(expectation['packages']).issubset(actual_packages)
-
 
 class DatanommerCriteria(AbstractSpecializedComparator):
     required = possible = frozenset([

@@ -5,7 +5,6 @@ from fedbadges.utils import (
     construct_substitutions,
     format_args,
     single_argument_lambda_factory,
-    _get_pkgdb2_packages_for,
 )
 
 
@@ -199,22 +198,3 @@ class TestFormatArgs(unittest.TestCase):
         actual = format_args(obj, subs)
         eq_(actual, target)
 
-
-class TestPkgdb2(unittest.TestCase):
-
-    @raises(IOError)
-    def test_wrong_url(self):
-        config = {
-            'fedbadges.rules.utils.pkgdb_url':
-            'https://admin.fedoraproject.org/pkgdb',
-        }
-        packages = _get_pkgdb2_packages_for(config, 'ralph')
-
-    # This is an integration test that won't run in KOJI
-    # def test_simple(self):
-    #     config = {
-    #         'fedbadges.rules.utils.pkgdb_url':
-    #             'https://admin.fedoraproject.org/pkgdb/api',
-    #     }
-    #     packages = _get_pkgdb2_packages_for(config, 'ralph')
-    #     self.assertIn('pkgwat', packages)
