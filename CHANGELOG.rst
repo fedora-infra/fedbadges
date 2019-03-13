@@ -1,6 +1,14 @@
 Changelog
 =========
 
+1.0.0
+-----
+
+ - Handle authors from pagure messages `#67 <https://github.com/fedora-infra/fedbadges/pull/67>`_
+ - Remove the pkgdb criteria `#66 <https://github.com/fedora-infra/fedbadges/pull/66>`_
+ - Add cico.pipeline to run tests in CentOS CI `#63 <https://github.com/fedora-infra/fedbadges/pull/63>`_
+ - Add support for tox runner `#62 <https://github.com/fedora-infra/fedbadges/pull/62>`_
+
 0.5.3
 -----
 
