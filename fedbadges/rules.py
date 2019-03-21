@@ -165,6 +165,14 @@ class BadgeRule(object):
         if not self.trigger.matches(msg):
             return set()
 
+        # On the way, it is possible for the fedmsg message to contain None
+        # for "agent".  A problem here though is that None is not iterable,
+        # so let's replace it with an equivalently empty iterable so code
+        # further down doesn't freak out.  An instance of this is when a
+        # user without a fas account comments on a bodhi update.
+        if obj is None:
+            obj = []
+
         # Before proceeding further, let's see who would get this badge if
         # our more heavyweight checks matched up.  If the user specifies a
         # recipient_key, we can use that to extract the potential awardee.  If
@@ -190,15 +198,6 @@ class BadgeRule(object):
                         raise Exception("Multiple recipients : name not found in the message")
             if new_obj:
                 obj = new_obj
-
-
-            # On the way, it is possible for the fedmsg message to contain None
-            # for "agent".  A problem here though is that None is not iterable,
-            # so let's replace it with an equivalently empty iterable so code
-            # further down doesn't freak out.  An instance of this is when a
-            # user without a fas account comments on a bodhi update.
-            if obj is None:
-                obj = []
 
             awardees = frozenset(obj)
 
