@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.0.1
+-----
+
+ - Bug Fix: Make sure the fedmsg is iterable in the rules matches function `5e3476c <https://github.com/fedora-infra/fedbadges/commit/5e3476cebd3204c58089141a8ea872c0eb692849>`_
+
+
 1.0.0
 -----
 
