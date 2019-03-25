@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.2
+-----
+
+- Get the list of authors form pagure to query datanommer `#69 <https://github.com/fedora-infra/fedbadges/pull/69>`_
+
 1.0.1
 -----
 
