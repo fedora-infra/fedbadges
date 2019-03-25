@@ -117,3 +117,19 @@ def user_exists_in_fas(config, user):
         password=config['fas_credentials']['password'],
     )
     return bool(fas2.person_by_username(user))
+
+def get_pagure_authors(authors):
+    """ Extract the name of pagure authors from
+    a dictionary
+
+    Args:
+    authors (list): A list of dict that contains fullname and name key.
+    """
+    authors_name = []
+    for item in authors:
+        if isinstance(item, dict):
+            try:
+                authors_name.append(item["name"])
+            except KeyError:
+                raise Exception("Multiple recipients : name not found in the message")
+    return authors_name

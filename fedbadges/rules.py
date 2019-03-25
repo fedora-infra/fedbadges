@@ -28,6 +28,7 @@ from fedbadges.utils import (
     single_argument_lambda_factory,
     recursive_lambda_factory,
     graceful,
+    get_pagure_authors,
 
     # These make networked API calls
     user_exists_in_fas,
@@ -189,14 +190,8 @@ class BadgeRule(object):
             # of the recipient, this is the case in the pagure's fedmsg.
             # In that case we create a new list containing the names taken from the
             # dictionnary.
-            # If the "name" was not available in the dictionary we raise an exception.
-            new_obj = []
-            for item in obj:
-                if isinstance(item, dict):
-                    try:
-                        new_obj.append(item["name"])
-                    except KeyError:
-                        raise Exception("Multiple recipients : name not found in the message")
+
+            new_obj = get_pagure_authors(obj)
             if new_obj:
                 obj = new_obj
 
@@ -461,6 +456,18 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         subs = construct_substitutions(msg)
         kwargs = format_args(copy.copy(self._d['filter']), subs)
         kwargs = recursive_lambda_factory(kwargs, msg, name='msg')
+
+        # It is possible to recieve a list of dictionary containing the name
+        # of the recipient, this is the case in the pagure's fedmsg.
+        # In that case we create a new list containing the names taken from the
+        # dictionnary.
+        if kwargs.get('users') is not None:
+            for item in kwargs['users']:
+                if isinstance(item, list):
+                    kwargs['users'] = item
+            users = get_pagure_authors(kwargs['users'])
+            if users:
+                kwargs['users'] = users
         kwargs['defer'] = True
         total, pages, query = datanommer.models.Message.grep(**kwargs)
         return total, pages, query
