@@ -7,3 +7,4 @@ zope.sqlalchemy
 requests
 psutil
 moksha
+fasjson-client

@@ -29,5 +29,7 @@ config = {
         ),
     },
 
+    "fasjson": False,
+
     "fedbadges.datagrepper_url": "https://apps.fedoraproject.org/datagrepper",
 }

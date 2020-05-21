@@ -5,6 +5,7 @@ import types
 import logging
 log = logging.getLogger("moksha.hub")
 
+from fasjson_client import Client
 import fedmsg
 import fedora.client
 import requests
@@ -17,6 +18,7 @@ import fedmsg.config
 import fedmsg.encoding
 import fedmsg.meta
 
+default_url = 'https://admin.fedoraproject.org/accounts/'
 
 def construct_substitutions(msg):
     """ Convert a fedmsg message into a dict of substitutions. """
@@ -110,13 +112,32 @@ def notification_callback(topic, msg):
 
 def user_exists_in_fas(config, user):
     """ Return true if the user exists in FAS. """
-    default_url = 'https://admin.fedoraproject.org/accounts/'
+    global default_url
+    if config.get["fasjson"]:
+        return user_exists_in_freeipa_fas(config, user)
+
     fas2 = fedora.client.AccountSystem(
         base_url=config['fas_credentials'].get('base_url', default_url),
         username=config['fas_credentials']['username'],
         password=config['fas_credentials']['password'],
     )
     return bool(fas2.person_by_username(user))
+
+def user_exists_in_fasjson(config, user):
+    """ Return true if the user exists in freeipa-fas. """
+    global default_url
+    client = Client(
+        url=config['fas_credentials'].get('base_url', default_url)
+    )
+    try:
+        client.get_user(username=user).result
+        return True
+    except fasjson_client.errors.APIError as e:
+        if(e.code == 404):
+            return False
+        else:
+            log.exception(e)
+    return False
 
 def get_pagure_authors(authors):
     """ Extract the name of pagure authors from
