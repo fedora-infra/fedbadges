@@ -133,3 +133,18 @@ def get_pagure_authors(authors):
             except KeyError:
                 raise Exception("Multiple recipients : name not found in the message")
     return authors_name
+
+
+def assertion_exists(badge, recipient):
+    """ Check if badge has already been rewarded to the recipient
+
+    Args:
+    badge (BadgeClass): BadgeClass to check in
+    recipient (string): Recipient identifier
+    """
+    awarded_badges = badge.fetch_assertions(recipient=recipient)
+
+    if len(awarded_badges):
+        return True
+
+    return False
