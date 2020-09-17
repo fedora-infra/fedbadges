@@ -28,7 +28,7 @@ def construct_substitutions(msg):
                 for key2, val2 in construct_substitutions(msg[key1]).items()
             ]))
             subs[key1] = msg[key1]
-        elif isinstance(msg[key1], basestring):
+        elif isinstance(msg[key1], str):
             subs[key1] = msg[key1].lower()
         else:
             subs[key1] = msg[key1]
@@ -43,7 +43,7 @@ def format_args(obj, subs):
             obj[key] = format_args(obj[key], subs)
     elif isinstance(obj, list):
         return [format_args(item, subs) for item in obj]
-    elif isinstance(obj, basestring) and obj[2:-2] in subs:
+    elif isinstance(obj, str) and obj[2:-2] in subs:
         obj = subs[obj[2:-2]]
     elif isinstance(obj, (int, float)):
         pass
@@ -143,7 +143,6 @@ def assertion_exists(badge, recipient):
     recipient (string): Recipient identifier
     """
     awarded_badges = badge.fetch_assertions(recipient=recipient)
-
     if len(awarded_badges):
         return True
 

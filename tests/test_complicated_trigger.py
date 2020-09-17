@@ -1,24 +1,25 @@
 import unittest
 import logging
 
-import tahrir_api.dbapi
 import fedbadges.consumers
 
 from mock import patch, Mock
 from nose.tools import eq_
 
-from StringIO import StringIO
+from io import StringIO
 
 # Utils for tests
-import utils
+from . import utils
 
 
 class TestComplicatedTrigger(unittest.TestCase):
 
     @patch('fedmsg.init')
-    @patch('tahrir_api.dbapi.TahrirDatabase.add_issuer')
-    @patch('tahrir_api.dbapi.TahrirDatabase.add_badge')
-    def setUp(self, fedmsg_init, add_issuer, add_badge):
+    @patch('badgrclient.BadgrClient._get_auth_token')
+    @patch('badgrclient.BadgrClient._call_api')
+    @patch('badgrclient.Issuer.create')
+    @patch('badgrclient.BadgeClass.create')
+    def setUp(self, create_badge, create_issuer, _call_api, _get_auth_token, fedmsg_init):
         hub = utils.MockHub()
         self.consumer = fedbadges.consumers.FedoraBadgesConsumer(hub)
         for rule in self.consumer.badge_rules:
@@ -61,11 +62,9 @@ class TestComplicatedTrigger(unittest.TestCase):
         log.error.assert_called()
 
     @patch('datanommer.models.Message.grep')
-    @patch('tahrir_api.dbapi.TahrirDatabase.get_person')
-    @patch('tahrir_api.dbapi.TahrirDatabase.assertion_exists')
+    @patch('badgrclient.BadgeClass.fetch_assertions')
     def test_complicated_trigger_against_full_match(self,
-                                                    assertion_exists,
-                                                    get_person,
+                                                    fetch_assertions,
                                                     grep,
                                                     ):
         msg = {
@@ -106,12 +105,8 @@ class TestComplicatedTrigger(unittest.TestCase):
             def count(self):
                 return float("inf")  # Master tagger
 
-        class MockPerson(object):
-            opt_out = False
-
         grep.return_value = float("inf"), 1, MockQuery()
-        get_person.return_value = MockPerson()
-        assertion_exists.return_value = False
+        fetch_assertions.return_value = []
 
         with patch("fedbadges.rules.user_exists_in_fas") as g:
             g.return_value = True

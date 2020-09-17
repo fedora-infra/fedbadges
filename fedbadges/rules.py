@@ -182,7 +182,7 @@ class BadgeRule(object):
             subs = construct_substitutions(msg)
             obj = format_args(self.recipient_key, subs)
 
-            if isinstance(obj, (basestring, int, float)):
+            if isinstance(obj, (str, int, float)):
                 obj = [obj]
 
             # On the way, it is possible for the fedmsg message to contain None
@@ -269,9 +269,8 @@ class BadgeRule(object):
         return awardees
 
 
-class AbstractComparator(object):
+class AbstractComparator(object, metaclass=abc.ABCMeta):
     """ Base class for shared behavior between trigger and criteria. """
-    __metaclass__ = abc.ABCMeta
     possible = required = frozenset()
     children = None
 
@@ -312,8 +311,7 @@ class AbstractTopLevelComparator(AbstractComparator):
         if len(self._d) > 1:
             raise ValueError("No more than one trigger allowed.  "
                              "Use an operator, one of %r" % operators)
-        print(type(self._d.keys()), 'sdfsdf')
-        self.attribute = self._d.keys()[0]
+        self.attribute = list(self._d.keys())[0]
         self.expected_value = self._d[self.attribute]
 
         # XXX - Check if we should we recursively nest Trigger/Criteria?
@@ -418,7 +416,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
     def __init__(self, *args, **kwargs):
         super(DatanommerCriteria, self).__init__(*args, **kwargs)
         if len(self._d['condition']) > 1:
-            conditions = self.condition_callbacks.keys()
+            conditions = list(self.condition_callbacks.keys())
             raise ValueError("No more than one condition allowed.  "
                              "Use one of %r" % conditions)
 
@@ -437,10 +435,10 @@ class DatanommerCriteria(AbstractSpecializedComparator):
                 ))
 
         # Validate the condition
-        condition_key, condition_val = self._d['condition'].items()[0]
+        condition_key, condition_val = list(self._d['condition'].items())[0]
         if condition_key not in self.condition_callbacks:
             raise KeyError("%r is not a valid condition key.  Use one of %r" %
-                           (condition_key, self.condition_callbacks.keys()))
+                           (condition_key, list(self.condition_callbacks.keys())))
 
         # Construct a condition callable for later
         self.condition = functools.partial(

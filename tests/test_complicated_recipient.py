@@ -1,33 +1,32 @@
 import unittest
 import logging
 
-import tahrir_api.dbapi
 import fedbadges.consumers
 
 from mock import patch, Mock
 from nose.tools import eq_
 
-from StringIO import StringIO
+from io import StringIO
 
 # Utils for tests
-import utils
+from . import utils
 
 
 class TestComplicatedRecipient(unittest.TestCase):
 
     @patch('fedmsg.init')
-    @patch('tahrir_api.dbapi.TahrirDatabase.add_issuer')
-    @patch('tahrir_api.dbapi.TahrirDatabase.add_badge')
-    def setUp(self, fedmsg_init, add_issuer, add_badge):
+    @patch('badgrclient.BadgrClient._get_auth_token')
+    @patch('badgrclient.BadgrClient._call_api')
+    @patch('badgrclient.Issuer.create')
+    @patch('badgrclient.BadgeClass.create')
+    def setUp(self, fedmsg_init, _get_auth_token, _call_api, create_issuer, create_badge):
         hub = utils.MockHub()
         self.consumer = fedbadges.consumers.FedoraBadgesConsumer(hub)
 
     @patch('datanommer.models.Message.grep')
-    @patch('tahrir_api.dbapi.TahrirDatabase.get_person')
-    @patch('tahrir_api.dbapi.TahrirDatabase.assertion_exists')
+    @patch('badgrclient.BadgeClass.fetch_assertions')
     def test_complicated_recipient_real(self,
-                                        assertion_exists,
-                                        get_person,
+                                        fetch_assertions,
                                         grep,
                                         ):
 
@@ -35,19 +34,19 @@ class TestComplicatedRecipient(unittest.TestCase):
             if rule['name'] == 'Speak Up!':
                 self.rule = rule
         msg = {
-            u'username': u'daemon',
-            u'i': 236,
-            u'timestamp': 1372103541.190249,
-            u'topic': u'org.fedoraproject.prod.meetbot.meeting.complete',
-            u'msg': {
-                u'meeting_topic': u'testing',
-                u'attendees': {u'zodbot': 2,
-                               u'threebean': 2},
-                u'chairs': {},
-                u'topic': u'',
-                u'url': u'fedora-meeting.2013-06-24-19.52',
-                u'owner': u'threebean',
-                u'channel': u'#fedora-meeting'
+            'username': 'daemon',
+            'i': 236,
+            'timestamp': 1372103541.190249,
+            'topic': 'org.fedoraproject.prod.meetbot.meeting.complete',
+            'msg': {
+                'meeting_topic': 'testing',
+                'attendees': {'zodbot': 2,
+                              'threebean': 2},
+                'chairs': {},
+                'topic': '',
+                'url': 'fedora-meeting.2013-06-24-19.52',
+                'owner': 'threebean',
+                'channel': '#fedora-meeting'
             }
         }
 
@@ -56,12 +55,8 @@ class TestComplicatedRecipient(unittest.TestCase):
             def count(self):
                 return float("inf")  # Master tagger
 
-        class MockPerson(object):
-            opt_out = False
-
         grep.return_value = float("inf"), 1, MockQuery()
-        get_person.return_value = MockPerson()
-        assertion_exists.return_value = False
+        fetch_assertions.return_value = []
 
         with patch("fedbadges.rules.user_exists_in_fas") as g:
             g.return_value = True
@@ -69,11 +64,9 @@ class TestComplicatedRecipient(unittest.TestCase):
 
 
     @patch('datanommer.models.Message.grep')
-    @patch('tahrir_api.dbapi.TahrirDatabase.get_person')
-    @patch('tahrir_api.dbapi.TahrirDatabase.assertion_exists')
+    @patch('badgrclient.BadgeClass.fetch_assertions')
     def test_complicated_recipient_pagure(self,
-                                        assertion_exists,
-                                        get_person,
+                                        fetch_assertions,
                                         grep,
                                         ):
 
@@ -93,7 +86,7 @@ class TestComplicatedRecipient(unittest.TestCase):
                             "name": "pingou"
                         },
                         {
-                            "fullname": "Lubom\u00edr Sedl\u00e1\u0159",
+                            "fullname": "Lubom\\u00edr Sedl\\u00e1\\u0159",
                             "name": "lsedlar"
                         }
                         ],
@@ -107,23 +100,17 @@ class TestComplicatedRecipient(unittest.TestCase):
             def count(self):
                 return float("inf")  # Master tagger
 
-        class MockPerson(object):
-            opt_out = False
-
         grep.return_value = float("inf"), 1, MockQuery()
-        get_person.return_value = MockPerson()
-        assertion_exists.return_value = False
+        fetch_assertions.return_value = []
 
         with patch("fedbadges.rules.user_exists_in_fas") as g:
             g.return_value = True
             eq_(self.rule.matches(msg), set(['pingou', 'lsedlar']))
 
     @patch('datanommer.models.Message.grep')
-    @patch('tahrir_api.dbapi.TahrirDatabase.get_person')
-    @patch('tahrir_api.dbapi.TahrirDatabase.assertion_exists')
+    @patch('badgrclient.BadgeClass.fetch_assertions')
     def test_complicated_recipient_pagure_bad(self,
-                                        assertion_exists,
-                                        get_person,
+                                        fetch_assertions,
                                         grep,
                                         ):
 
@@ -142,7 +129,7 @@ class TestComplicatedRecipient(unittest.TestCase):
                             "fullname": "Pierre-YvesChibon",
                         },
                         {
-                            "fullname": "Lubom\u00edr Sedl\u00e1\u0159",
+                            "fullname": "Lubom\\u00edr Sedl\\u00e1\\u0159",
                         }
                         ],
                         "total_commits": 2,
@@ -155,13 +142,9 @@ class TestComplicatedRecipient(unittest.TestCase):
             def count(self):
                 return float("inf")  # Master tagger
 
-        class MockPerson(object):
-            opt_out = False
-
         grep.return_value = float("inf"), 1, MockQuery()
-        get_person.return_value = MockPerson()
-        assertion_exists.return_value = False
+        fetch_assertions.return_value = []
 
         with patch("fedbadges.rules.user_exists_in_fas") as g:
             g.return_value = True
-            self.assertRaises(Exception("Multiple recipients : name not found in the message"))
+            self.assertRaises(Exception, "Multiple recipients : name not found in the message")

@@ -119,11 +119,11 @@ class TestRuleMatching(unittest.TestCase):
         ), None, None)
 
         msg = {
-            u'topic': u'org.fedoraproject.stg.fas.role.update',
-            u'msg': {
-                u'group': {u'name': u'ambassadors'},
-                u'user': {u'username': u'ralph'},
-                u'agent': {u'username': u'toshio'},
+            'topic': 'org.fedoraproject.stg.fas.role.update',
+            'msg': {
+                'group': {'name': 'ambassadors'},
+                'user': {'username': 'ralph'},
+                'agent': {'username': 'toshio'},
             }
         }
 
@@ -158,11 +158,11 @@ class TestRuleMatching(unittest.TestCase):
         ), None, None)
 
         msg = {
-            u'topic': u'org.fedoraproject.stg.fas.role.update',
-            u'msg': {
-                u'group': {u'name': u'ambassadors'},
-                u'user': {u'username': u'ralph'},
-                u'agent': {u'username': u'toshio'},
+            'topic': 'org.fedoraproject.stg.fas.role.update',
+            'msg': {
+                'group': {'name': 'ambassadors'},
+                'user': {'username': 'ralph'},
+                'agent': {'username': 'toshio'},
             }
         }
 
@@ -178,21 +178,25 @@ class TestRuleMatching(unittest.TestCase):
                 g.return_value = True
                 eq_(rule.matches(msg), set(['toshio', 'ralph']))
 
-    def test_against_duplicates(self):
+    @patch('badgrclient.BadgeClass.create')
+    @patch('badgrclient.BadgeClass.fetch_assertions')
+    def test_against_duplicates(self, fetch_assertions, badgeclass_create):
         """ Test that matching fails if user already has the badge. """
 
-        class MockTahrirDB(object):
-            def assertion_exists(self, badge_id, email):
-                return email == 'toshio@fedoraproject.org'
+        def mock_fetch_assertions(recipient):
+            if recipient == 'toshio@fedoraproject.org':
+                return [1]
+            return[]
 
-            def add_badge(self, name, image, desc,
-                          criteria, issuer_id, tags=None):
-                pass
+        fetch_assertions.side_effect = mock_fetch_assertions
 
-            def person_opted_out(self, *args, **kwargs):
-                return False
+        class MockBadgrClient(object):
+            unique_badge_names=True
 
-        tahrir_db = MockTahrirDB()
+            def get_eid_from_badge_name(self, badgr_name, issuer_id):
+                return 'randomid'
+
+        badgr_client = MockBadgrClient()
 
         rule = fedbadges.rules.BadgeRule(dict(
             name="Test",
@@ -207,14 +211,14 @@ class TestRuleMatching(unittest.TestCase):
                 operation="count",
                 condition={"greater than or equal to": 1}
             ))
-        ), tahrir_db, None)
+        ), badgr_client, None)
 
         msg = {
-            u'topic': u'org.fedoraproject.stg.fas.role.update',
-            u'msg': {
-                u'group': {u'name': u'ambassadors'},
-                u'user': {u'username': u'ralph'},
-                u'agent': {u'username': u'toshio'},
+            'topic': 'org.fedoraproject.stg.fas.role.update',
+            'msg': {
+                'group': {'name': 'ambassadors'},
+                'user': {'username': 'ralph'},
+                'agent': {'username': 'toshio'},
             }
         }
 
