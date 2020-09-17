@@ -14,14 +14,8 @@ import time
 
 import fedmsg.consumers
 
-# import tahrir_api.dbapi
 import datanommer.models
 from badgrclient import BadgrClient, Assertion, BadgeClass, Issuer
-
-# from sqlalchemy import create_engine
-# from sqlalchemy.exc import IntegrityError
-# from sqlalchemy.orm import sessionmaker, scoped_session
-# from zope.sqlalchemy import ZopeTransactionExtension
 
 import fedbadges.rules
 import fedbadges.utils
@@ -50,8 +44,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         # Five things need doing at start up time
         # 0) Set up a request local to hang thread-safe db sessions on.
-        # 1) Initialize our connection to the tahrir DB and perform some
-        #    administrivia.
+        # 1) Initialize our badgrclient connection 
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
         # 4) Initialize fedmsg so that those listening to us can handshake.
@@ -181,50 +174,23 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         client = badge_rule.client
 
         # TODO: Check if the badge has been awarded in a reliable way
+        # Here we handle two different kinds of errors due to the existence
+        # of a somewhat harmless race condition.
+        # Say that someone adds 2 tags to a package in fedora-tagger all at
+        # once.  That produces 2 different fedmsg messages that each hit
+        # this daemon.  Each message gets handed off to each of 2 worker
+        # threads that start working in parallel.  They both ask, does
+        # person X have the 'Awesome Tagger' badge?  The database responds
+        # "no", so they both start checking to see if the person meets all
+        # the criteria.  They do, so the first worker gets here and awards
+        # them the badge with add_assertion.  The second thread gets here
+        # and tries to award the badge, but it is already awarded by the
+        # other thread -- so it raises a 'duplicate primary key'
+        # We catch that here, and note it in the logs as a
+        # warning not an error.  It happens often enough and is harmless
+        # enough that we don't want to receive emails about it.
         badge_to_award = BadgeClass(client, eid=badge_rule.badge_id)
         badge_to_award.issue(recipient_email=email)
-        # try:
-            # transaction.begin()
-            # self.l.tahrir.add_person(email)
-            # transaction.commit()
-        # except:
-            # transaction.abort()
-            # self.l.tahrir.session.rollback()
-            # raise
-
-        # user = self.l.tahrir.get_person(email)
-
-        # try:
-            # transaction.begin()
-            # self.l.tahrir.add_assertion(badge_rule.badge_id, email, None, link)
-            # transaction.commit()
-        # except IntegrityError:
-            # TODO: VV
-            # Here we handle two different kinds of errors due to the existence
-            # of a somewhat harmless race condition.
-            # Say that someone adds 2 tags to a package in fedora-tagger all at
-            # once.  That produces 2 different fedmsg messages that each hit
-            # this daemon.  Each message gets handed off to each of 2 worker
-            # threads that start working in parallel.  They both ask, does
-            # person X have the 'Awesome Tagger' badge?  The database responds
-            # "no", so they both start checking to see if the person meets all
-            # the criteria.  They do, so the first worker gets here and awards
-            # them the badge with add_assertion.  The second thread gets here
-            # and tries to award the badge, but it is already awarded by the
-            # other thread -- so it raises a 'duplicate primary key'
-            # IntegrityError.  We catch that here, and note it in the logs as a
-            # warning not an error.  It happens often enough and is harmless
-            # enough that we don't want to receive emails about it.
-            # transaction.abort()
-            # self.l.tahrir.session.rollback()
-            # log.warn(traceback.format_exc())
-        # except:
-            # For all other errors, we rollback the transaction but we also
-            # re-raise the error so that it hits the fedmsg handling in the
-            # stack above and emails us about it.
-            # transaction.abort()
-            # self.l.tahrir.session.rollback()
-            # raise
 
     def consume(self, msg):
 
