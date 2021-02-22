@@ -18,7 +18,7 @@ import datanommer.models
 from badgrclient import BadgrClient, Assertion, BadgeClass, Issuer
 
 import fedbadges.rules
-import fedbadges.utils
+from fedbadges.utils import assertion_exists
 
 import logging
 log = logging.getLogger("moksha.hub")
@@ -186,10 +186,9 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         # the same recipient via badgr-server)
         with self.lock():
             badge_to_award = BadgeClass(client, eid=badge_rule.badge_id)
-            awarded_badges = badge_to_award.fetch_assertions(
-                recipient={"type": "email", "identity": email})
+            badge_has_been_awarded = assertion_exists(badge_to_award, email)
 
-            if len(awarded_badges) == 0:
+            if not badge_has_been_awarded:
                 badge_to_award.issue(recipient_email=email)
 
     def consume(self, msg):

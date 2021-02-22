@@ -118,6 +118,7 @@ def user_exists_in_fas(config, user):
     )
     return bool(fas2.person_by_username(user))
 
+
 def get_pagure_authors(authors):
     """ Extract the name of pagure authors from
     a dictionary
@@ -131,18 +132,20 @@ def get_pagure_authors(authors):
             try:
                 authors_name.append(item["name"])
             except KeyError:
-                raise Exception("Multiple recipients : name not found in the message")
+                raise Exception(
+                    "Multiple recipients : name not found in the message")
     return authors_name
 
 
-def assertion_exists(badge, recipient):
+def assertion_exists(badge, recipient_email):
     """ Check if badge has already been rewarded to the recipient
 
     Args:
     badge (BadgeClass): BadgeClass to check in
-    recipient (string): Recipient identifier
+    recipient (string): Recipient email
     """
-    awarded_badges = badge.fetch_assertions(recipient=recipient)
+    awarded_badges = badge.fetch_assertions(
+        recipient={"type": "email", "identity": recipient_email})
     if len(awarded_badges):
         return True
 
