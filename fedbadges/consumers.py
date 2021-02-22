@@ -25,6 +25,7 @@ log = logging.getLogger("moksha.hub")
 
 BADGR_SCOPE = 'rw:profile rw:issuer rw:backpack'
 
+
 class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
     topic = "*"
     config_key = "fedmsg.consumers.badges.enabled"
@@ -34,6 +35,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
     def __init__(self, hub):
         self.badge_rules = []
         self.hub = hub
+        self.lock = threading.Lock()
 
         super(FedoraBadgesConsumer, self).__init__(hub)
 
@@ -44,7 +46,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         # Five things need doing at start up time
         # 0) Set up a request local to hang thread-safe db sessions on.
-        # 1) Initialize our badgrclient connection 
+        # 1) Initialize our badgrclient connection
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
         # 4) Initialize fedmsg so that those listening to us can handshake.
@@ -67,10 +69,10 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         badgr_user = global_settings.get('badgr_user')
 
         required = frozenset(['username', 'password', 'client_id',
-            'base_url'])
+                              'base_url'])
 
         argued_fields = frozenset(badgr_user.keys())
-        
+
         if not required.issubset(argued_fields):
             raise ValueError('BadgrClient requires: {}, \
                 missing: {}'.format(required, required.difference(argued_fields)))
@@ -173,24 +175,22 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
 
         client = badge_rule.client
 
-        # TODO: Check if the badge has been awarded in a reliable way
-        # Here we handle two different kinds of errors due to the existence
-        # of a somewhat harmless race condition.
+        # TODO: Optimize this
         # Say that someone adds 2 tags to a package in fedora-tagger all at
         # once.  That produces 2 different fedmsg messages that each hit
         # this daemon.  Each message gets handed off to each of 2 worker
-        # threads that start working in parallel.  They both ask, does
-        # person X have the 'Awesome Tagger' badge?  The database responds
-        # "no", so they both start checking to see if the person meets all
-        # the criteria.  They do, so the first worker gets here and awards
-        # them the badge with add_assertion.  The second thread gets here
-        # and tries to award the badge, but it is already awarded by the
-        # other thread -- so it raises a 'duplicate primary key'
-        # We catch that here, and note it in the logs as a
-        # warning not an error.  It happens often enough and is harmless
-        # enough that we don't want to receive emails about it.
-        badge_to_award = BadgeClass(client, eid=badge_rule.badge_id)
-        badge_to_award.issue(recipient_email=email)
+        # threads that start working in parallel. This way issue will get
+        # called twice and the user will get the same badge awarded twice.
+        # So we use a lock here to prevent this.
+        # (Note that multiple instances of the same badge can be awarded to
+        # the same recipient via badgr-server)
+        with self.lock():
+            badge_to_award = BadgeClass(client, eid=badge_rule.badge_id)
+            awarded_badges = badge_to_award.fetch_assertions(
+                recipient={"type": "email", "identity": email})
+
+            if len(awarded_badges) == 0:
+                badge_to_award.issue(recipient_email=email)
 
     def consume(self, msg):
 
