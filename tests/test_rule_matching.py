@@ -184,7 +184,7 @@ class TestRuleMatching(unittest.TestCase):
         """ Test that matching fails if user already has the badge. """
 
         def mock_fetch_assertions(recipient):
-            if recipient == 'toshio@fedoraproject.org':
+            if recipient['identity'] == 'toshio@fedoraproject.org':
                 return [1]
             return[]
 
