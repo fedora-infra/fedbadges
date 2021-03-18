@@ -16,17 +16,23 @@ config = {
 
         # This is a sqlalchemy URI that points to the tahrir DB.  In
         # production, this will be a postgres URI.
-        "database_uri": "sqlite:////tmp/test-badges-sqlite.db",
+        # "database_uri": "sqlite:////tmp/test-badges-sqlite.db",
 
         # This is a set of data that tells our consumer what Open Badges Issuer
         # should be kept as the issuer of all the badges we create.
         "badge_issuer": dict(
-            issuer_id='Fedora Project',
-            issuer_origin='http://badges.fedoraproject.com',
+            issuer_entity_id='dkcsldkmlkc92jn',
             issuer_name='Fedora Project',
-            issuer_org='http://fedoraproject.org',
-            issuer_contact='badges@fedoraproject.org',
+            issuer_origin='http://badges.fedoraproject.com',
+            issuer_url='http://fedoraproject.org',
+            issuer_email='badges@fedoraproject.org',
         ),
+        "badgr_user": dict(
+            username = "test_user",
+            password = "password",
+            client_id = "public",
+            base_url = "http://localhost:8000",
+        )
     },
 
     "fedbadges.datagrepper_url": "https://apps.fedoraproject.org/datagrepper",

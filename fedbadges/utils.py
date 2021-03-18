@@ -28,7 +28,7 @@ def construct_substitutions(msg):
                 for key2, val2 in construct_substitutions(msg[key1]).items()
             ]))
             subs[key1] = msg[key1]
-        elif isinstance(msg[key1], basestring):
+        elif isinstance(msg[key1], str):
             subs[key1] = msg[key1].lower()
         else:
             subs[key1] = msg[key1]
@@ -43,7 +43,7 @@ def format_args(obj, subs):
             obj[key] = format_args(obj[key], subs)
     elif isinstance(obj, list):
         return [format_args(item, subs) for item in obj]
-    elif isinstance(obj, basestring) and obj[2:-2] in subs:
+    elif isinstance(obj, str) and obj[2:-2] in subs:
         obj = subs[obj[2:-2]]
     elif isinstance(obj, (int, float)):
         pass
@@ -118,6 +118,7 @@ def user_exists_in_fas(config, user):
     )
     return bool(fas2.person_by_username(user))
 
+
 def get_pagure_authors(authors):
     """ Extract the name of pagure authors from
     a dictionary
@@ -131,5 +132,21 @@ def get_pagure_authors(authors):
             try:
                 authors_name.append(item["name"])
             except KeyError:
-                raise Exception("Multiple recipients : name not found in the message")
+                raise Exception(
+                    "Multiple recipients : name not found in the message")
     return authors_name
+
+
+def assertion_exists(badge, recipient_email):
+    """ Check if badge has already been rewarded to the recipient
+
+    Args:
+    badge (BadgeClass): BadgeClass to check in
+    recipient (string): Recipient email
+    """
+    awarded_badges = badge.fetch_assertions(
+        recipient={"type": "email", "identity": recipient_email})
+    if len(awarded_badges):
+        return True
+
+    return False

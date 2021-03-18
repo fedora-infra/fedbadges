@@ -1,22 +1,24 @@
 import unittest
 
-import tahrir_api.dbapi
+import badgrclient
 import fedbadges.consumers
 
 from mock import patch
 from nose.tools import eq_
 
 # Utils for tests
-import utils
+from .utils import MockHub
 
 
 class TestYamlCollector(unittest.TestCase):
 
     @patch('fedmsg.init')
-    @patch('tahrir_api.dbapi.TahrirDatabase.add_issuer')
-    @patch('tahrir_api.dbapi.TahrirDatabase.add_badge')
-    def setUp(self, fedmsg_init, add_issuer, add_badge):
-        hub = utils.MockHub()
+    @patch('badgrclient.BadgrClient._get_auth_token')
+    @patch('badgrclient.BadgrClient._call_api')
+    @patch('badgrclient.Issuer.create')
+    @patch('badgrclient.BadgeClass.create')
+    def setUp(self, create_badge, create_issuer, _call_api, _get_auth_token, fedmsg_init):
+        hub = MockHub()
         self.consumer = fedbadges.consumers.FedoraBadgesConsumer(hub)
 
     def test_load_badges_number(self):
