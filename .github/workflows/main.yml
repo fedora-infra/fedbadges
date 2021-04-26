@@ -18,6 +18,8 @@ jobs:
         run: echo "The job is running on ${{ github.ref }} branch of ${{ github.repository }} repository."
       - name: "Checkout the branch code into the container"
         uses: actions/checkout@v2
+      - name: "Install libkrb5-dev on Ubuntu as one of the recurring dependencies"
+        run: sudo apt install libkrb5-dev -y
       - name: "Install the dependencies locally"
         run: pip3 install -r requirements.txt
       - name: "Run Tox tests on the cloned repository"
