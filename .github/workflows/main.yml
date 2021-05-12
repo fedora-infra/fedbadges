@@ -1,0 +1,28 @@
+name: Running Fedora Badges test cases on GitHub Actions
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+jobs:
+  fedora-badges:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "What was the triggering event for this job?"
+        run: echo "The job was automatically triggered by a ${{ github.event_name }} event."
+      - name: "What is the job running on?"
+        run: echo "This job is now running on a ${{ runner.os }} server."
+      - name: "Which branch of the repository are running the job on?"
+        run: echo "The job is running on ${{ github.ref }} branch of ${{ github.repository }} repository."
+      - name: "Checkout the branch code into the container"
+        uses: actions/checkout@v2
+      - name: "Install libkrb5-dev on Ubuntu as one of the recurring dependencies"
+        run: sudo apt install libkrb5-dev -y
+      - name: "Install the dependencies locally"
+        run: pip3 install -r requirements.txt
+      - name: "Run Tox tests on the cloned repository"
+        run: python3 setup.py test
+      - name: "What was the job outcome status?"
+        run: echo "This job's status is ${{ job.status }}."
