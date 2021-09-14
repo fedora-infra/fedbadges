@@ -17,6 +17,13 @@ import fedmsg.config
 import fedmsg.encoding
 import fedmsg.meta
 
+# Imports for fasjson support
+import os
+import requests
+import requests.exceptions
+from gssapi import Credentials, exceptions
+from requests_gssapi import HTTPSPNEGOAuth
+
 
 def construct_substitutions(msg):
     """ Convert a fedmsg message into a dict of substitutions. """
@@ -110,13 +117,25 @@ def notification_callback(topic, msg):
 
 def user_exists_in_fas(config, user):
     """ Return true if the user exists in FAS. """
-    default_url = 'https://admin.fedoraproject.org/accounts/'
-    fas2 = fedora.client.AccountSystem(
-        base_url=config['fas_credentials'].get('base_url', default_url),
-        username=config['fas_credentials']['username'],
-        password=config['fas_credentials']['password'],
-    )
-    return bool(fas2.person_by_username(user))
+    if config.get("fasjson_base_url", False):
+        # fasjson_client not available in python2, so just use requests
+        os.environ["KRB5_CLIENT_KTNAME"] = config.get("keytab")
+        try:
+            creds = Credentials(usage="initiate")
+        except exceptions.GSSError as e:
+            log.error("GSSError trying to authenticate to fasjson", e)
+        gssapi_auth = HTTPSPNEGOAuth(opportunistic_auth=True, creds=creds)
+        session = requests.Session()
+        session.auth = gssapi_auth
+        return session.get(config['fasjson_base_url']+"users/"+user+"/").ok
+    else:
+        default_url = 'https://admin.fedoraproject.org/accounts/'
+        fas2 = fedora.client.AccountSystem(
+            base_url=config['fas_credentials'].get('base_url', default_url),
+            username=config['fas_credentials']['username'],
+            password=config['fas_credentials']['password'],
+        )
+        return bool(fas2.person_by_username(user))
 
 def get_pagure_authors(authors):
     """ Extract the name of pagure authors from
