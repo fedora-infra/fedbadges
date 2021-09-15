@@ -220,8 +220,9 @@ class BadgeRule(object):
                     openid2fas(openid, **fedmsg_config) for openid in awardees
                 ])
         else:
-            usernames = fedmsg.meta.msg2usernames(msg)
-            awardees = usernames.difference(self.banned_usernames)
+            awardees = fedmsg.meta.msg2usernames(msg)
+
+        awardees = awardees.difference(self.banned_usernames)
 
         # Strip anyone who is an IP address
         awardees = frozenset([
