@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.3
+-----
+
+- Add quick support for FASJSON (using requests, as fasjson-client is python3 only)
+
 1.0.2
 -----
 
