@@ -149,7 +149,8 @@ def get_pagure_authors(authors):
     for item in authors:
         if isinstance(item, dict):
             try:
-                authors_name.append(item["name"])
+                if item["name"] is not None:
+                    authors_name.append(item["name"])
             except KeyError:
                 raise Exception(
                     "Multiple recipients : name not found in the message")
