@@ -60,6 +60,18 @@ def openid2fas(openid, **config):
         return m.group(1)
     return openid
 
+def github2fas(uri, **config):
+    m = re.search('^https?://api.github.com/users/([a-z][a-z0-9]+)$', uri)
+    if m:
+        return m.group(1)
+    return uri
+
+def distgit2fas(uri, **config):
+    m = re.search('^https?://src.fedoraproject.org/user/([a-z][a-z0-9]+)$', uri)
+    if m:
+        return m.group(1)
+    return uri
+
 operators = frozenset([
     "all",
     "any",
@@ -97,6 +109,8 @@ class BadgeRule(object):
         'recipient_nick2fas',
         'recipient_email2fas',
         'recipient_openid2fas',
+        'recipient_github2fas',
+        'recipient_distgit2fas',
     ])
 
     banned_usernames = frozenset([
@@ -152,6 +166,8 @@ class BadgeRule(object):
         self.recipient_nick2fas = self._d.get('recipient_nick2fas')
         self.recipient_email2fas = self._d.get('recipient_email2fas')
         self.recipient_openid2fas = self._d.get('recipient_openid2fas')
+        self.recipient_github2fas = self._d.get('recipient_github2fas')
+        self.recipient_distgit2fas = self._d.get('recipient_distgit2fas')
 
         # A sanity check before we kick things off.
         if self.recipient_nick2fas and not nick2fas:
@@ -218,6 +234,16 @@ class BadgeRule(object):
             if self.recipient_openid2fas:
                 awardees = frozenset([
                     openid2fas(openid, **fedmsg_config) for openid in awardees
+                ])
+
+            if self.recipient_github2fas:
+                awardees = frozenset([
+                    github2fas(uri, **fedmsg_config) for uri in awardees
+                ])
+
+            if self.recipient_distgit2fas:
+                awardees = frozenset([
+                    distgit2fas(uri, **fedmsg_config) for uri in awardees
                 ])
         else:
             awardees = fedmsg.meta.msg2usernames(msg)
