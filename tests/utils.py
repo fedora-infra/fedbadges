@@ -22,6 +22,8 @@ class MockHub(object):
         },
         "datanommer.sqlalchemy.url": "sqlite://",
         "validate_signatures": "False",
+        "keytab": "/etc/krb5.keytab",
+        "fasjson_base_url": "https://fasjson.example.com/v1/",
     }
 
     def subscribe(self, topic, callback):

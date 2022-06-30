@@ -2,7 +2,7 @@ import unittest
 
 import fedbadges.rules
 
-from mock import patch
+from mock import patch, Mock
 from nose.tools import eq_, raises
 
 
@@ -233,6 +233,55 @@ class TestRuleMatching(unittest.TestCase):
             with patch("fedbadges.rules.user_exists_in_fas") as g:
                 g.return_value = True
                 eq_(rule.matches(msg), set(['ralph']))
+
+    @patch.dict(
+        fedbadges.rules.fedmsg_config,
+        {
+            "keytab": "/etc/krb5.keytab",
+            "fasjson_base_url": "https://fasjson.example.com/v1/",
+        }
+    )
+    @patch("fedbadges.rules.user_exists_in_fas", Mock(return_value=True))
+    def test_github_awardee(self):
+        """Conversion from GitHub URI to FAS users"""
+        rule = fedbadges.rules.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
+            trigger=dict(category="bodhi"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            )),
+            recipient="%(msg.user)s",
+            recipient_github2fas="Yes",
+        ), None, None)
+
+        msg = {
+            "topic": "org.fedoraproject.prod.bodhi.update.request.testing",
+            "msg": {"user": "https://api.github.com/users/dummygh"}
+        }
+
+        class MockQuery(object):
+            def count(self):
+                return 1
+
+        query = MockQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = 1, 1, query
+            with patch("fedbadges.utils.requests") as req:
+                session = req.Session.return_value = Mock()
+                response = session.get.return_value = Mock()
+                response.json.return_value = {
+                    "result": [{"username": "dummy"}],
+                    "page": {"total_results": 1},
+                }
+                eq_(rule.matches(msg), set(['dummy']))
 
 
 _example_real_bodhi_message = {

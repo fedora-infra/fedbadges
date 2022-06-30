@@ -115,18 +115,24 @@ def notification_callback(topic, msg):
     )
 
 
+def get_fasjson_session(config):
+    # fasjson_client not available in python2, so just use requests
+    os.environ["KRB5_CLIENT_KTNAME"] = config.get("keytab")
+    session = requests.Session()
+    try:
+        creds = Credentials(usage="initiate")
+    except exceptions.GSSError as e:
+        log.error("GSSError trying to authenticate to fasjson", e)
+    else:
+        gssapi_auth = HTTPSPNEGOAuth(opportunistic_auth=True, creds=creds)
+        session.auth = gssapi_auth
+    return session
+
+
 def user_exists_in_fas(config, user):
     """ Return true if the user exists in FAS. """
     if config.get("fasjson_base_url", False):
-        # fasjson_client not available in python2, so just use requests
-        os.environ["KRB5_CLIENT_KTNAME"] = config.get("keytab")
-        try:
-            creds = Credentials(usage="initiate")
-        except exceptions.GSSError as e:
-            log.error("GSSError trying to authenticate to fasjson", e)
-        gssapi_auth = HTTPSPNEGOAuth(opportunistic_auth=True, creds=creds)
-        session = requests.Session()
-        session.auth = gssapi_auth
+        session = get_fasjson_session(config)
         return session.get(config['fasjson_base_url']+"users/"+user+"/").ok
     else:
         default_url = 'https://admin.fedoraproject.org/accounts/'
