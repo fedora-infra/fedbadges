@@ -283,6 +283,61 @@ class TestRuleMatching(unittest.TestCase):
                 }
                 eq_(rule.matches(msg), set(['dummy']))
 
+    def test_krb_awardee(self):
+        """Conversion from Kerberos user to FAS users"""
+        rule = fedbadges.rules.BadgeRule(dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
+            trigger=dict(category="buildsys"),
+            criteria=dict(datanommer=dict(
+                filter=dict(categories=["pkgdb"]),
+                operation="count",
+                condition={"greater than or equal to": 1}
+            )),
+            recipient="%(msg.owner)s",
+            recipient_krb2fas="Yes",
+        ), None, None)
+
+        msg = {
+            'msg_id': 'cedd7ab4-8a59-4704-bd1b-0e7297bf759c',
+            'topic': u'org.fedoraproject.prod.buildsys.build.state.change',
+            'headers': {u'fedora_messaging_severity': 20, u'sent-at': u'2022-06-29T16:27:05+00:00', u'fedora_messaging_schema': u'base.message'},
+            'msg': {
+                'build_id': 1994993, 
+                'old': 0, 
+                'name': 'dummy-test-package-gloster', 
+                'task_id': 88890394,
+                u'instance': u'primary',
+                u'attribute': u'state',
+                u'request': [u'git+https://src.fedoraproject.org/rpms/dummy-test-package-gloster.git#aaf707bc5671ab5e00c5618d95bfd83803ca54c0', u'rawhide', {}],
+                u'owner': u'packagerbot/os-master02.iad2.fedoraproject.org',
+                u'epoch': None,
+                'version': '0',
+                'release': '9242.fc37',
+                'new': 1
+            }
+        }
+        msg = {
+            'topic': u'org.fedoraproject.prod.buildsys.build.state.change',
+            "msg": {"owner": "packagerbot/os-master02.iad2.fedoraproject.org"}
+        }
+
+        class MockQuery(object):
+            def count(self):
+                return 1
+
+        query = MockQuery()
+
+        with patch("datanommer.models.Message.grep") as f:
+            f.return_value = 1, 1, query
+            with patch("fedbadges.rules.user_exists_in_fas") as g:
+                g.return_value = True
+                eq_(rule.matches(msg), set(['packagerbot']))
+
 
 _example_real_bodhi_message = {
     "topic": "org.fedoraproject.prod.bodhi.update.request.testing",
