@@ -109,7 +109,7 @@ class BadgeRule(object):
     ])
 
     def __init__(self, badge_dict, badgr_client, issuer_id):
-        argued_fields = frozenset(badge_dict.keys())
+        argued_fields = frozenset(list(badge_dict.keys()))
 
         if not argued_fields.issubset(self.possible):
             raise KeyError(
@@ -276,7 +276,7 @@ class AbstractComparator(object, metaclass=abc.ABCMeta):
     children = None
 
     def __init__(self, d, parent=None):
-        argued_fields = frozenset(d.keys())
+        argued_fields = frozenset(list(d.keys()))
         if not argued_fields.issubset(self.possible):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (
@@ -427,7 +427,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         grep_arguments = frozenset(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
-        argued_filter_fields = frozenset(self._d['filter'].keys())
+        argued_filter_fields = frozenset(list(self._d['filter'].keys()))
         if not argued_filter_fields.issubset(grep_arguments):
             raise KeyError(
                 "%r are not possible fields.  Choose from %r" % (

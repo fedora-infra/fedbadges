@@ -70,7 +70,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         required = frozenset(['username', 'password', 'client_id',
                               'base_url'])
 
-        argued_fields = frozenset(badgr_user.keys())
+        argued_fields = frozenset(list(badgr_user.keys()))
 
         if not required.issubset(argued_fields):
             raise ValueError('BadgrClient requires: {}, \

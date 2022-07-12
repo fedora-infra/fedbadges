@@ -16,7 +16,7 @@ class BadgesCommand(BaseCommand):
     def run(self):
         moksha_options = dict(
             zmq_subscribe_endpoints=','.join(
-                ','.join(bunch) for bunch in self.config['endpoints'].values()
+                ','.join(bunch) for bunch in list(self.config['endpoints'].values())
             ),
         )
         self.config.update(moksha_options)
