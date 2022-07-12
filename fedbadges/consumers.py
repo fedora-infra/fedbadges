@@ -4,7 +4,6 @@
 Authors:  Ross Delinger
           Ralph Bean
 """
-
 import os.path
 import yaml
 import traceback
