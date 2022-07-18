@@ -152,7 +152,7 @@ class FedoraBadgesConsumer(fedmsg.consumers.FedmsgConsumer):
         log.debug("Loading %r" % fname)
         try:
             with open(fname, 'r') as f:
-                return yaml.load(f.read())
+                return yaml.safe_load(f.read())
         except Exception as e:
             log.error("Loading %r failed with %r" % (fname, e))
             return None
