@@ -280,7 +280,8 @@ class BadgeRule(object):
         awardees = frozenset([
             user for user in awardees if not (
                 user.startswith('192.168.') or
-                user.startswith('10.')
+                user.startswith('10.') or
+                user.startswith('mbs/')
             )
         ])
 
