@@ -3,7 +3,7 @@ fedmsg
 fedmsg_meta_fedora_infrastructure
 PyYAML
 datanommer.models
-zope.sqlalchemy
+zope.sqlalchemy==0.7.7
 requests
 psutil
 moksha.hub
