@@ -9,16 +9,11 @@ Authors:    Ralph Bean
 
 import abc
 import copy
-import json
-import types
 import functools
 import inspect
-import transaction
 import re
 
-import fedmsg.config
-import fedmsg.meta
-import fedmsg.encoding
+from fedora_messaging.api import Message
 import datanommer.models
 
 from badgrclient import BadgeClass
@@ -34,40 +29,28 @@ from fedbadges.utils import (
     # These make networked API calls
     user_exists_in_fas,
     assertion_exists,
-    get_fasjson_session,
+    nick2fas,
+    email2fas,
 )
 
 import logging
-log = logging.getLogger('moksha.hub')
+log = logging.getLogger(__name__)
 
-
-nick2fas = None
-try:
-    from fedmsg_meta_fedora_infrastructure.fasshim import nick2fas
-except ImportError as e:
-    log.warn("Could not import nick2fas: %r" % e)
-
-
-email2fas = None
-try:
-    from fedmsg_meta_fedora_infrastructure.fasshim import email2fas
-except ImportError as e:
-    log.warn("Could not import email2fas: %r" % e)
 
 # Match OpenID agent strings, i.e. http://FAS.id.fedoraproject.org
-def openid2fas(openid, **config):
-    m = re.search('^https?://([a-z][a-z0-9]+)\.id\.fedoraproject\.org$', openid)
+def openid2fas(openid, config):
+    id_provider_hostname = re.escape(config['id_provider_hostname'])
+    m = re.search(f'^https?://([a-z][a-z0-9]+)\\.{id_provider_hostname}$', openid)
     if m:
         return m.group(1)
     return openid
 
-def github2fas(uri, **config):
-    m = re.search('^https?://api.github.com/users/([a-z][a-z0-9-]+)$', uri)
+def github2fas(uri, config, fasjson):
+    m = re.search(r'^https?://api.github.com/users/([a-z][a-z0-9-]+)$', uri)
     if not m:
         return uri
     github_username = m.group(1)
-    http_client = get_fasjson_session(config)
-    response = http_client.get(
+    response = fasjson.get(
         "{}search/users/".format(config['fasjson_base_url']),
         params={"github_username__exact": github_username}
     )
@@ -78,13 +61,14 @@ def github2fas(uri, **config):
         return None
     return result["result"][0]["username"]
 
-def distgit2fas(uri, **config):
-    m = re.search('^https?://src.fedoraproject.org/user/([a-z][a-z0-9]+)$', uri)
+def distgit2fas(uri, config):
+    distgit_hostname = re.escape(config['distgit_hostname'])
+    m = re.search(f"^https?://{distgit_hostname}/user/([a-z][a-z0-9]+)$", uri)
     if m:
         return m.group(1)
     return uri
 
-def krb2fas(name, **config):
+def krb2fas(name):
     if "/" not in name:
         return name
     return name.split("/")[0]
@@ -104,11 +88,8 @@ operator_lookup = {
     "not": lambda x: all([not item for item in x])
 }
 
-fedmsg_config = fedmsg.config.load_config()
-fedmsg.meta.make_processors(**fedmsg_config)
 
-
-class BadgeRule(object):
+class BadgeRule:
     required = frozenset([
         'name',
         'image_url',
@@ -140,7 +121,7 @@ class BadgeRule(object):
         'taskotron',
     ])
 
-    def __init__(self, badge_dict, badgr_client, issuer_id):
+    def __init__(self, badge_dict, badgr_client, issuer_id, config, fasjson):
         argued_fields = frozenset(list(badge_dict.keys()))
 
         if not argued_fields.issubset(self.possible):
@@ -160,6 +141,8 @@ class BadgeRule(object):
         self._d = badge_dict
         self.client = badgr_client
         self.issuer_id = issuer_id
+        self.config = config
+        self.fasjson = fasjson
 
         if self.client:
             badge_name = self._d['name']
@@ -188,22 +171,13 @@ class BadgeRule(object):
         self.recipient_distgit2fas = self._d.get('recipient_distgit2fas')
         self.recipient_krb2fas = self._d.get('recipient_krb2fas')
 
-        # A sanity check before we kick things off.
-        if self.recipient_nick2fas and not nick2fas:
-            raise ImportError("recipient_nick2fas specified, but "
-                              "nick2fas is not available.")
-
-        if self.recipient_email2fas and not email2fas:
-            raise ImportError("recipient_email2fas specified, but "
-                              "email2fas is not available.")
-
     def __getitem__(self, key):
         return self._d[key]
 
     def __repr__(self):
         return "<fedbadges.models.BadgeRule: %r>" % self._d
 
-    def matches(self, msg):
+    def matches(self, msg: Message):
 
         # First, do a lightweight check to see if the msg matches a pattern.
         if not self.trigger.matches(msg):
@@ -214,7 +188,7 @@ class BadgeRule(object):
         # recipient_key, we can use that to extract the potential awardee.  If
         # that is not specified, we just use `msg2usernames`.
         if self.recipient_key:
-            subs = construct_substitutions(msg)
+            subs = construct_substitutions({"msg": msg.body})
             obj = format_args(self.recipient_key, subs)
 
             if isinstance(obj, (str, int, float)):
@@ -242,37 +216,37 @@ class BadgeRule(object):
 
             if self.recipient_nick2fas:
                 awardees = frozenset([
-                    nick2fas(nick, **fedmsg_config) for nick in awardees
+                    nick2fas(nick, self.config, self.fasjson) for nick in awardees
                 ])
 
             if self.recipient_email2fas:
                 awardees = frozenset([
-                    email2fas(email, **fedmsg_config) for email in awardees
+                    email2fas(email, self.config, self.fasjson) for email in awardees
                 ])
 
             if self.recipient_openid2fas:
                 awardees = frozenset([
-                    openid2fas(openid, **fedmsg_config) for openid in awardees
+                    openid2fas(openid, self.config) for openid in awardees
                 ])
 
             if self.recipient_github2fas:
                 awardees = frozenset([
-                    github2fas(uri, **fedmsg_config) for uri in awardees
+                    github2fas(uri, self.config, self.fasjson) for uri in awardees
                 ])
 
             if self.recipient_distgit2fas:
                 awardees = frozenset([
-                    distgit2fas(uri, **fedmsg_config) for uri in awardees
+                    distgit2fas(uri, self.config) for uri in awardees
                 ])
 
             if self.recipient_krb2fas:
                 awardees = frozenset([
-                    krb2fas(uri, **fedmsg_config) for uri in awardees
+                    krb2fas(uri) for uri in awardees
                 ])
 
             awardees = frozenset([e for e in awardees if e is not None])
         else:
-            awardees = fedmsg.meta.msg2usernames(msg)
+            awardees = msg.usernames
 
         awardees = awardees.difference(self.banned_usernames)
 
@@ -316,13 +290,13 @@ class BadgeRule(object):
         # actually has a FAS account before we award anything.
         # https://github.com/fedora-infra/tahrir/issues/225
         awardees = set([
-            u for u in awardees if user_exists_in_fas(fedmsg_config, u)
+            u for u in awardees if user_exists_in_fas(self.config, self.fasjson, u)
         ])
 
         return awardees
 
 
-class AbstractComparator(object, metaclass=abc.ABCMeta):
+class AbstractComparator(metaclass=abc.ABCMeta):
     """ Base class for shared behavior between trigger and criteria. """
     possible = required = frozenset()
     children = None
@@ -358,7 +332,7 @@ class AbstractComparator(object, metaclass=abc.ABCMeta):
 
 class AbstractTopLevelComparator(AbstractComparator):
     def __init__(self, *args, **kwargs):
-        super(AbstractTopLevelComparator, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         cls = type(self)
 
         if len(self._d) > 1:
@@ -397,15 +371,13 @@ class Trigger(AbstractTopLevelComparator):
             ))
         elif self.attribute == 'lambda':
             return single_argument_lambda_factory(
-                expression=self.expected_value, argument=msg, name='msg')
+                expression=self.expected_value, argument={"msg": msg.body}, name='msg')
         elif self.attribute == 'category':
-            # TODO -- use fedmsg.meta.msg2processor(msg).__name__.lower()
-            return msg['topic'].split('.')[3] == self.expected_value
+            return msg.topic.split('.')[3] == self.expected_value
+        elif self.attribute == 'topic':
+            return msg.topic.endswith(self.expected_value)
         else:
-            if hasattr(msg[self.attribute], 'endswith'):
-                return msg[self.attribute].endswith(self.expected_value)
-            else:
-                return msg[self.attribute] == self.expected_value
+            raise RuntimeError(f"Unexpected attribute: {self.attribute}")
 
 
 class Criteria(AbstractTopLevelComparator):
@@ -414,7 +386,7 @@ class Criteria(AbstractTopLevelComparator):
     ]).union(operators)
 
     def __init__(self, *args, **kwargs):
-        super(Criteria, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if not self.children:
             # Then, by AbstractComparator rules, I am a leaf node.  Specialize!
@@ -467,7 +439,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
     }
 
     def __init__(self, *args, **kwargs):
-        super(DatanommerCriteria, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if len(self._d['condition']) > 1:
             conditions = list(self.condition_callbacks.keys())
             raise ValueError("No more than one condition allowed.  "
@@ -506,9 +478,9 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         me all the messages bearing the same topic as the message that just
         arrived".
         """
-        subs = construct_substitutions(msg)
+        subs = construct_substitutions({"msg": msg.body})
         kwargs = format_args(copy.copy(self._d['filter']), subs)
-        kwargs = recursive_lambda_factory(kwargs, msg, name='msg')
+        kwargs = recursive_lambda_factory(kwargs, {"msg": msg.body}, name='msg')
 
         # It is possible to recieve a list of dictionary containing the name
         # of the recipient, this is the case in the pagure's fedmsg.
@@ -533,11 +505,11 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         %(msg.comment.update_submitter)s.  Placeholders like that will have
         their value substituted with whatever appears in the incoming message.
         """
-        subs = construct_substitutions(msg)
+        subs = construct_substitutions({"msg": msg.body})
         operation = format_args(copy.copy(self._d['operation']), subs)
         return operation['lambda']
 
-    def matches(self, msg):
+    def matches(self, msg: Message):
         """ A datanommer criteria check is composed of three steps.
 
         - A datanommer query is constructed by combining our yaml definition

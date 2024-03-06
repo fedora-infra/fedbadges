@@ -1,9 +1,9 @@
 badgrclient
-fedmsg
-fedmsg_meta_fedora_infrastructure
 PyYAML
 datanommer.models
 zope.sqlalchemy
 requests
 psutil
-moksha.hub
+fedora-messaging
+requests-gssapi
+backoff

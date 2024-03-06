@@ -1,0 +1,9 @@
+# .bashrc
+
+export PATH=$PATH:/home/vagrant/.local/bin
+source /opt/venv/bin/activate
+
+alias service-start="sudo systemctl start fedbadges.service"
+alias service-restart="sudo systemctl restart fedbadges.service"
+alias service-stop="sudo systemctl stop fedbadges.service"
+alias show-logs="sudo journalctl -u fedbadges.service"

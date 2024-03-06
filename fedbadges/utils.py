@@ -1,31 +1,29 @@
 """ Utilities for fedbadges that don't quite fit anywhere else. """
 
-import types
-
 import logging
-log = logging.getLogger("moksha.hub")
-
-import fedmsg
-import fedora.client
-import requests
+import os
+import types
+import traceback
+import sys
 
 # These are here just so they're available in globals()
 # for compiling lambda expressions
 import json
 import re
-import fedmsg.config
-import fedmsg.encoding
-import fedmsg.meta
 
-# Imports for fasjson support
-import os
+import backoff
 import requests
-import requests.exceptions
-from gssapi import Credentials, exceptions
+from fedora_messaging import api as fm_api
+from fedora_messaging import exceptions as fm_exceptions
+from gssapi import Credentials
+from gssapi.exceptions import GSSError
 from requests_gssapi import HTTPSPNEGOAuth
 
 
-def construct_substitutions(msg):
+log = logging.getLogger(__name__)
+
+
+def construct_substitutions(msg: dict):
     """ Convert a fedmsg message into a dict of substitutions. """
     subs = {}
     for key1 in msg:
@@ -103,16 +101,35 @@ def graceful(default_return_value):
     return decorate
 
 
+def _backoff_hdlr(details):
+    log.warning(
+        f"Publishing message failed. Retrying. {traceback.format_tb(sys.exc_info()[2])}"
+    )
+
+
+@backoff.on_exception(
+    backoff.expo,
+    (fm_exceptions.ConnectionException, fm_exceptions.PublishException),
+    max_tries=3,
+    on_backoff=_backoff_hdlr,
+)
+def _publish(message):
+    fm_api.publish(message)
+
+
 def notification_callback(topic, msg):
     """ This is a callback called by tahrir_api whenever something
     it deems important has happened.
 
     It is just used to publish fedmsg messages.
     """
-    fedmsg.publish(
-        topic=topic,
-        msg=msg,
-    )
+    message = fm_api.Message(topic=topic, body=msg)
+    try:
+        _publish(message)
+    except fm_exceptions.BaseException:
+        log.error(
+            f"Publishing message failed. Giving up. {traceback.format_tb(sys.exc_info()[2])}"
+        )
 
 
 def get_fasjson_session(config):
@@ -121,7 +138,7 @@ def get_fasjson_session(config):
     session = requests.Session()
     try:
         creds = Credentials(usage="initiate")
-    except exceptions.GSSError as e:
+    except GSSError as e:
         log.error("GSSError trying to authenticate to fasjson", e)
     else:
         gssapi_auth = HTTPSPNEGOAuth(opportunistic_auth=True, creds=creds)
@@ -129,19 +146,10 @@ def get_fasjson_session(config):
     return session
 
 
-def user_exists_in_fas(config, user):
+def user_exists_in_fas(config, fasjson, user):
     """ Return true if the user exists in FAS. """
-    if config.get("fasjson_base_url", False):
-        session = get_fasjson_session(config)
-        return session.get(config['fasjson_base_url']+"users/"+user+"/").ok
-    else:
-        default_url = 'https://admin.fedoraproject.org/accounts/'
-        fas2 = fedora.client.AccountSystem(
-            base_url=config['fas_credentials'].get('base_url', default_url),
-            username=config['fas_credentials']['username'],
-            password=config['fas_credentials']['password'],
-        )
-        return bool(fas2.person_by_username(user))
+    url = f"{config['fasjson_base_url']}users/{user}/"
+    return fasjson.get(url).ok
 
 
 def get_pagure_authors(authors):
@@ -176,3 +184,26 @@ def assertion_exists(badge, recipient_email):
         return True
 
     return False
+
+
+def nick2fas(nick, config, fasjson):
+    """ Return the user in FAS. """
+    url = f"{config['fasjson_base_url']}users/{nick}/"
+    response = fasjson.get(url)
+    if response.status_code == 404:
+        return None
+    response.raise_for_status()
+    return response.json()["result"]
+
+
+def email2fas(email, config, fasjson):
+    """ Return the user with the specified email in FAS. """
+    if email.endswith('@fedoraproject.org'):
+        return nick2fas(email.rsplit('@', 1)[0], config, fasjson)
+
+    url = f"{config['fasjson_base_url']}search/users/?email__exact={email}"
+    response = fasjson.get(url)
+    if response.status_code == 404:
+        return None
+    response.raise_for_status()
+    return response.json()["result"][0]

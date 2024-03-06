@@ -38,12 +38,4 @@ setup(
         'fedbadges',
     ],
     zip_safe=False,
-    entry_points={
-        'console_scripts': [
-            "fedmsg-badges=fedbadges.commands:badges"
-        ],
-        'moksha.consumer': [
-            "fedmsg-badges=fedbadges.consumers:FedoraBadgesConsumer",
-        ]
-    },
 )

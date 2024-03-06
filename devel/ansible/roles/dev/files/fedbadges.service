@@ -1,0 +1,12 @@
+[Unit]
+Description=fedbadges
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=vagrant
+WorkingDirectory=/home/vagrant/fedbadges
+ExecStart=/opt/venv/bin/fedora-messaging --conf /etc/fedora-messaging/fedbadges.toml consume
+
+[Install]
+WantedBy=multi-user.target
