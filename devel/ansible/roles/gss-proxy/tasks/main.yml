@@ -1,0 +1,42 @@
+---
+- name: Install RPM packages
+  dnf:
+    name:
+      - gssproxy
+    state: present
+
+- name: kinit
+  shell: echo "{{ ipa_admin_password }}" | kinit {{ ipa_admin_user }}@{{ krb_realm }}
+
+- name: Create the service in IPA
+  command: ipa service-add {{ krb_service }}/{{ ansible_fqdn }}
+  register: service_add_result
+  changed_when: "'Added service' in service_add_result.stdout"
+  failed_when: "not ('Added service' in service_add_result.stdout or 'already exists' in service_add_result.stderr)"
+
+- name: Get service keytab
+  shell: ipa-getkeytab -p {{ krb_service }}/{{ ansible_fqdn }}@{{ krb_realm }} -k /var/lib/gssproxy/{{ krb_service }}.keytab
+  args:
+    creates: /var/lib/gssproxy/{{ krb_service }}.keytab
+
+- name: Set the correct permissions on keytab
+  file:
+    path: /var/lib/gssproxy/{{ krb_service }}.keytab
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Copy gssproxy conf
+  template:
+    src: gssproxy.conf
+    dest: /etc/gssproxy/98-{{ krb_service }}.conf
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Enable and restart GSSProxy
+  systemd:
+    state: restarted
+    name: gssproxy
+    enabled: yes
+    daemon_reload: yes

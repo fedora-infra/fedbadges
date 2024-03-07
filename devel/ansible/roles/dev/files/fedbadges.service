@@ -5,6 +5,7 @@ Wants=network-online.target
 
 [Service]
 User=vagrant
+Environment=GSS_USE_PROXY=yes
 WorkingDirectory=/home/vagrant/fedbadges
 ExecStart=/opt/venv/bin/fedora-messaging --conf /etc/fedora-messaging/fedbadges.toml consume
 

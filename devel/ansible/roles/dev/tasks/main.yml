@@ -31,7 +31,7 @@
 
 - name: prepare virtualenv
   file:
-    path: /opt/venv
+    path: "{{ venv }}"
     state: directory
     owner: vagrant
     group: vagrant
@@ -39,16 +39,20 @@
 - name: install some python build deps
   become_user: vagrant
   pip:
-    virtualenv: /opt/venv
+    virtualenv: "{{ venv }}"
     name: cython
 
 - name: install python deps
   become_user: vagrant
   pip:
-    chdir: fedbadges
+    chdir: "{{ item }}"
     editable: true
-    virtualenv: /opt/venv
+    virtualenv: "{{ venv }}"
     name: .
+  loop:
+    - tahrir-api
+    - tahrir
+    - fedbadges
 
 - name: Install the configuration file
   copy:
@@ -58,15 +62,41 @@
     group: vagrant
     mode: 0640
 
+- name: Copy Tahrir development.ini config file
+  copy:
+    src: development.ini
+    dest: /home/vagrant/development.ini
+    owner: vagrant
+    group: vagrant
+    mode: 0640
+
+- name: Copy Tahrir secret.ini config file
+  copy:
+    src: secret.ini
+    dest: /home/vagrant/secret.ini
+    owner: vagrant
+    group: vagrant
+    mode: 0640
+
+- name: Initialize the Tahrir DB
+  become_user: vagrant
+  command: "{{ venv }}/bin/initialize_tahrir_db /home/vagrant/development.ini"
+
 - name: Install the systemd unit files
   copy:
-    src: fedbadges.service
-    dest: /etc/systemd/system/fedbadges.service
+    src: "{{ item }}.service"
+    dest: /etc/systemd/system/tahrir.service
     mode: 0644
+  loop:
+    - fedbadges
+    - tahrir
 
 - name: Start the service using systemd
   systemd:
     state: started
-    name: fedbadges
+    name: "{{ item }}"
     daemon_reload: yes
     enabled: yes
+  loop:
+    - fedbadges
+    - tahrir

@@ -1,3 +1,5 @@
 ---
 ipa_admin_user: admin
 ipa_admin_password: password
+venv: /opt/venv
+python_exec: "{{ venv }}/bin/python"

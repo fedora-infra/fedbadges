@@ -47,10 +47,7 @@ def github2fas(uri, config, fasjson):
     if not m:
         return uri
     github_username = m.group(1)
-    response = fasjson.get(
-        "{}search/users/".format(config['fasjson_base_url']),
-        params={"github_username__exact": github_username}
-    )
+    response = fasjson.search_users(github_username__exact=github_username)
     if not response.ok:
         return None
     result = response.json()
@@ -210,12 +207,12 @@ class BadgeRule:
 
             if self.recipient_nick2fas:
                 awardees = frozenset([
-                    nick2fas(nick, self.config, self.fasjson) for nick in awardees
+                    nick2fas(nick, self.fasjson) for nick in awardees
                 ])
 
             if self.recipient_email2fas:
                 awardees = frozenset([
-                    email2fas(email, self.config, self.fasjson) for email in awardees
+                    email2fas(email, self.fasjson) for email in awardees
                 ])
 
             if self.recipient_openid2fas:
@@ -286,7 +283,7 @@ class BadgeRule:
         # actually has a FAS account before we award anything.
         # https://github.com/fedora-infra/tahrir/issues/225
         awardees = set([
-            u for u in awardees if user_exists_in_fas(self.config, self.fasjson, u)
+            u for u in awardees if user_exists_in_fas(self.fasjson, u)
         ])
 
         return awardees

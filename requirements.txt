@@ -4,5 +4,5 @@ zope.sqlalchemy
 requests
 psutil
 fedora-messaging
-requests-gssapi
 backoff
+fasjson-client

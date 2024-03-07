@@ -1,7 +1,6 @@
 """ Utilities for fedbadges that don't quite fit anywhere else. """
 
 import logging
-import os
 import types
 import traceback
 import sys
@@ -12,12 +11,8 @@ import json
 import re
 
 import backoff
-import requests
 from fedora_messaging import api as fm_api
 from fedora_messaging import exceptions as fm_exceptions
-from gssapi import Credentials
-from gssapi.exceptions import GSSError
-from requests_gssapi import HTTPSPNEGOAuth
 
 
 log = logging.getLogger(__name__)
@@ -132,24 +127,9 @@ def notification_callback(topic, msg):
         )
 
 
-def get_fasjson_session(config):
-    # fasjson_client not available in python2, so just use requests
-    os.environ["KRB5_CLIENT_KTNAME"] = config.get("keytab")
-    session = requests.Session()
-    try:
-        creds = Credentials(usage="initiate")
-    except GSSError as e:
-        log.error("GSSError trying to authenticate to fasjson", e)
-    else:
-        gssapi_auth = HTTPSPNEGOAuth(opportunistic_auth=True, creds=creds)
-        session.auth = gssapi_auth
-    return session
-
-
-def user_exists_in_fas(config, fasjson, user):
+def user_exists_in_fas(fasjson, user):
     """ Return true if the user exists in FAS. """
-    url = f"{config['fasjson_base_url']}users/{user}/"
-    return fasjson.get(url).ok
+    return fasjson.get_user(user) is not None
 
 
 def get_pagure_authors(authors):
@@ -171,24 +151,17 @@ def get_pagure_authors(authors):
     return authors_name
 
 
-def nick2fas(nick, config, fasjson):
+def nick2fas(nick, fasjson):
     """ Return the user in FAS. """
-    url = f"{config['fasjson_base_url']}users/{nick}/"
-    response = fasjson.get(url)
-    if response.status_code == 404:
-        return None
-    response.raise_for_status()
-    return response.json()["result"]
+    return fasjson.get_user(nick)
 
 
-def email2fas(email, config, fasjson):
+def email2fas(email, fasjson):
     """ Return the user with the specified email in FAS. """
     if email.endswith('@fedoraproject.org'):
-        return nick2fas(email.rsplit('@', 1)[0], config, fasjson)
+        return nick2fas(email.rsplit('@', 1)[0], fasjson)
 
-    url = f"{config['fasjson_base_url']}search/users/?email__exact={email}"
-    response = fasjson.get(url)
-    if response.status_code == 404:
+    result = fasjson.search_users(email__exact=email)
+    if not result:
         return None
-    response.raise_for_status()
-    return response.json()["result"][0]
+    return result[0]
