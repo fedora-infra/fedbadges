@@ -60,12 +60,6 @@ issuer_origin = "http://badges.fedoraproject.com"
 issuer_url = "http://fedoraproject.org"
 issuer_email = "badges@fedoraproject.org"
 
-[consumer_config.badgr_user]
-username = "test_user"
-password = "password"
-client_id = "public"
-base_url = "http://localhost:8000"
-
 
 [qos]
 prefetch_size = 0

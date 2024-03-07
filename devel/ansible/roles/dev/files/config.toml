@@ -58,12 +58,6 @@ issuer_origin = "http://badges.tinystage.test"
 issuer_url = "http://fedoraproject.org"
 issuer_email = "badges@fedoraproject.org"
 
-[consumer_config.badgr_user]
-username = "test_user"
-password = "password"
-client_id = "public"
-base_url = "http://badges.tinystage.test:8000"
-
 
 [qos]
 prefetch_size = 0

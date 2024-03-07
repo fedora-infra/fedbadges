@@ -14,7 +14,6 @@ import time
 import datanommer.models
 import tahrir_api.dbapi
 import fasjson_client
-# from badgrclient import BadgrClient, Assertion, BadgeClass, Issuer
 from fedora_messaging.config import conf as fm_config
 from fedora_messaging.api import Message
 from sqlalchemy import create_engine
@@ -26,7 +25,6 @@ import fedbadges.rules
 import logging
 log = logging.getLogger(__name__)
 
-# BADGR_SCOPE = 'rw:profile rw:issuer rw:backpack'
 DEFAULT_CONSUME_DELAY = 3
 DEFAULT_DELAY_LIMIT = 100
 
@@ -51,110 +49,23 @@ class FedoraBadgesConsumer:
     async def setup(self):
         # Five things need doing at start up time
         # 0) Set up a request local to hang thread-safe db sessions on.
-        # 1) Initialize our badgrclient connection
+        # 1) Initialize our connection to the Tahrir DB
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
         # 4) Initialize fedmsg so that those listening to us can handshake.
 
-        # # Badgr stuff.
-        # self._initialize_badgr_connection()
         # Tahrir stuff.
         self._initialize_tahrir_connection()
 
         # Datanommer stuff
         self._initialize_datanommer_connection()
 
-        # Tahrir DB
-        # self._initialize_tahrir_connection()
+        # FASJSON stuff
         self.fasjson = fasjson_client.Client(self.config["fasjson_base_url"])
-
 
         # Load badge definitions
         directory = self.config["badges_directory"]
         self.badge_rules = self._load_badges_from_yaml(directory)
-
-    # def _initialize_tahrir_connection(self):
-    #     global_settings = self.config.get("badges_global", {})
-    #     database_uri = global_settings.get('database_uri')
-    #     if not database_uri:
-    #         raise ValueError('Badges consumer requires a database uri')
-
-    #     session_cls = scoped_session(sessionmaker(
-    #         bind=create_engine(database_uri),
-    #     ))
-
-    #     issuer = global_settings.get('badge_issuer')
-
-    #     with session_cls() as session:
-    #         self.issuer_id = self.tahrir.add_issuer(
-    #             issuer.get('issuer_origin'),
-    #             issuer.get('issuer_name'),
-    #             issuer.get('issuer_org'),
-    #             issuer.get('issuer_contact')
-    #         )
-    #         session.commit()
-
-    #     self.tahrir = tahrir_api.dbapi.TahrirDatabase(
-    #         session=session_cls(),
-    #         autocommit=False,
-    #         notification_callback=fedbadges.utils.notification_callback,
-    #     )
-
-    # def _initialize_badgr_connection(self):
-    #     badgr_user = self.config.get('badgr_user', {})
-
-    #     required = frozenset(['username', 'password', 'client_id',
-    #                           'base_url'])
-
-    #     argued_fields = frozenset(list(badgr_user.keys()))
-
-    #     if not required.issubset(argued_fields):
-    #         raise ValueError('BadgrClient requires: {}, \
-    #             missing: {}'.format(required, required.difference(argued_fields)))
-
-    #     username = badgr_user.get('username')
-    #     password = badgr_user.get('password')
-    #     client_id = badgr_user.get('client_id')
-    #     base_url = badgr_user.get('base_url')
-
-    #     self.badgr_client = BadgrClient(
-    #         username=username,
-    #         password=password,
-    #         client_id=client_id,
-    #         scope=BADGR_SCOPE,
-    #         base_url=base_url,
-    #         unique_badge_names=True
-    #     )
-
-    #     issuer = self.config.get('badge_issuer', {})
-    #     issuer_eid = issuer.get('issuer_entity_id')
-
-    #     if issuer_eid:
-    #         # if config has id it take from there
-    #         self.issuer_id = issuer_eid
-    #     else:
-    #         # or search the existing issuers
-    #         existing_issuers = self.badgr_client.fetch_issuer()
-    #         issuer_name = issuer.get('issuer_name')
-
-    #         for issuer in existing_issuers:
-    #             if issuer_name == issuer.data.get('name'):
-    #                 self.issuer_id = issuer.entityId
-    #                 break
-
-    #     if not self.issuer_id:
-    #         new_issuer = Issuer(self.badgr_client).create(
-    #             name=issuer_name,
-    #             email=issuer.get('issuer_email'),
-    #             description=issuer.get('issuer_origin'),
-    #             url=issuer.get('issuer_url'),
-    #             # image=TODO
-    #         )
-
-    #         self.issuer_id = new_issuer.entityId
-
-    #     # Load the existing badges
-    #     self.badgr_client.load_badge_names(self.issuer_id)
 
     def _initialize_tahrir_connection(self):
         database_uri = self.config.get('database_uri')
@@ -208,6 +119,7 @@ class FedoraBadgesConsumer:
                 try:
                     badge_rule = fedbadges.rules.BadgeRule(
                         badge, client, self.issuer_id, self.config, self.fasjson)
+                    badge_rule.setup()
                     badges.append(badge_rule)
                 except ValueError as e:
                     log.error("Initializing rule for %r failed with %r" % (
@@ -226,11 +138,7 @@ class FedoraBadgesConsumer:
             return None
 
     def award_badge(self, username, badge_rule, link=None):
-        return self.award_badge_with_badgr_client(username, badge_rule, link)
-
-    def award_badge_with_tahrir_api(self, username, badge_rule, link=None):
         email = f"{username}@fedoraproject.org"
-
         with self.TahrirDbSession() as session:
             client = self._get_tahrir_client(session)
             client.add_person(email)
@@ -238,31 +146,6 @@ class FedoraBadgesConsumer:
             user = client.get_person(email)
             client.add_assertion(badge_rule.badge_id, email, None, link)
             session.commit()
-
-
-    # def award_badge_with_badgr_client(self, username, badge_rule, link=None):
-    #     """ A high level way to issue a badge to a Person.
-
-    #     It adds the person if they don't exist, and creates an assertion for
-    #     them.
-
-    #     :type username: str
-    #     :param username: This person's username.
-
-    #     :type badge_rule: object
-    #     :param badge_rule: the badge_rule that triggered this.
-    #     """
-
-    #     log.info("Awarding badge %r to %r" % (badge_rule.badge_id, username))
-    #     email = "%s@fedoraproject.org" % username
-
-    #     client = badge_rule.client
-
-    #     badge_to_award = BadgeClass(client, eid=badge_rule.badge_id)
-    #     badge_has_been_awarded = assertion_exists(badge_to_award, email)
-
-    #     if not badge_has_been_awarded:
-    #         badge_to_award.issue(recipient_email=email)
 
     def __call__(self, message: Message):
         # First thing, we receive the message, but we put ourselves to sleep to
@@ -282,9 +165,6 @@ class FedoraBadgesConsumer:
 
         # Define this so we can refer to it in error handling below
         badge_rule = None
-
-        # Initialize our connection if this is the first time we are called.
-        # self._get_tahrir_client()
 
         # Award every badge as appropriate.
         log.debug("Received %s, %s", message.topic, message.id)

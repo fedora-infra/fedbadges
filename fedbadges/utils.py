@@ -171,21 +171,6 @@ def get_pagure_authors(authors):
     return authors_name
 
 
-def assertion_exists(badge, recipient_email):
-    """ Check if badge has already been rewarded to the recipient
-
-    Args:
-    badge (BadgeClass): BadgeClass to check in
-    recipient (string): Recipient email
-    """
-    awarded_badges = badge.fetch_assertions(
-        recipient={"type": "email", "identity": recipient_email})
-    if len(awarded_badges):
-        return True
-
-    return False
-
-
 def nick2fas(nick, config, fasjson):
     """ Return the user in FAS. """
     url = f"{config['fasjson_base_url']}users/{nick}/"

@@ -1,4 +1,3 @@
-# -*- coding; utf-8 -*-
 """ Models for fedbadges.
 
 The primary thing here is a "BadgeRule" which is an in-memory working
@@ -16,7 +15,6 @@ import re
 from fedora_messaging.api import Message
 import datanommer.models
 
-from badgrclient import BadgeClass
 from fedbadges.utils import (
     # These are all in-process utilities
     construct_substitutions,
@@ -28,7 +26,6 @@ from fedbadges.utils import (
 
     # These make networked API calls
     user_exists_in_fas,
-    assertion_exists,
     nick2fas,
     email2fas,
 )
@@ -121,7 +118,7 @@ class BadgeRule:
         'taskotron',
     ])
 
-    def __init__(self, badge_dict, badgr_client, issuer_id, config, fasjson):
+    def __init__(self, badge_dict, tahrir_database, issuer_id, config, fasjson):
         argued_fields = frozenset(list(badge_dict.keys()))
 
         if not argued_fields.issubset(self.possible):
@@ -139,27 +136,10 @@ class BadgeRule:
                 ))
 
         self._d = badge_dict
-        self.client = badgr_client
+        self.tahrir = tahrir_database
         self.issuer_id = issuer_id
         self.config = config
         self.fasjson = fasjson
-
-        if self.client:
-            badge_name = self._d['name']
-            badge_id = self.client.get_eid_from_badge_name(badge_name, issuer_id)
-            if badge_id:
-                self.badge_id = badge_id
-            else:
-                badge = BadgeClass(self.client).create(
-                    name=badge_name,
-                    image='TODO',
-                    description=self._d['description'],
-                    issuer_eid=self.issuer_id,
-                    criteria_url=self._d['discussion'],
-                    tags=self._d.get('tags', []),
-                )
-
-                self.badge_id = badge.entityId
 
         self.trigger = Trigger(self._d['trigger'], self)
         self.criteria = Criteria(self._d['criteria'], self)
@@ -171,11 +151,25 @@ class BadgeRule:
         self.recipient_distgit2fas = self._d.get('recipient_distgit2fas')
         self.recipient_krb2fas = self._d.get('recipient_krb2fas')
 
+    def setup(self):
+        if self.tahrir:
+            with self.tahrir.session.begin():
+                self.badge_id = self._d['badge_id'] = self.tahrir.add_badge(
+                    name=self._d['name'],
+                    image=self._d['image_url'],
+                    desc=self._d['description'],
+                    criteria=self._d['discussion'],
+                    tags=','.join(self._d.get('tags', [])),
+                    issuer_id=self.issuer_id,
+                )
+                self.tahrir.session.commit()
+
+
     def __getitem__(self, key):
         return self._d[key]
 
     def __repr__(self):
-        return "<fedbadges.models.BadgeRule: %r>" % self._d
+        return f"<fedbadges.models.BadgeRule: {self._d!r}>"
 
     def matches(self, msg: Message):
 
@@ -265,12 +259,14 @@ class BadgeRule:
 
         # Limit awardees to only those who do not already have this badge.
         # Do this only if we have an active connection to the Tahrir DB.
-        if self.client:
-            badge = BadgeClass(self.client, eid=self.badge_id)
+        if self.tahrir:
+            # badge = BadgeClass(self.tahrir, eid=self.badge_id)
             awardees = frozenset([
                 user for user in awardees
-                if not assertion_exists(
-                    badge, "%s@fedoraproject.org" % user
+                if not self.tahrir.assertion_exists(
+                    self.badge_id, f"{user}@fedoraproject.org"
+                ) and not self.tahrir.person_opted_out(
+                    f"{user}@fedoraproject.org"
                 )])
 
         # If no-one would get the badge at this point, then no reason to waste
@@ -446,7 +442,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
                              "Use one of %r" % conditions)
 
         # Determine what arguments datanommer..grep accepts
-        argspec = inspect.getargspec(datanommer.models.Message.grep)
+        argspec = inspect.getfullargspec(datanommer.models.Message.grep)
         irrelevant = frozenset(['defer'])
         grep_arguments = frozenset(argspec.args[1:]).difference(irrelevant)
 
