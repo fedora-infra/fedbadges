@@ -1,0 +1,12 @@
+[Unit]
+Description=fedbadges
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=vagrant
+WorkingDirectory=/home/vagrant/tahrir
+ExecStart=/opt/venv/bin/pserve --reload /home/vagrant/development.ini
+
+[Install]
+WantedBy=multi-user.target
