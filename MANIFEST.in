@@ -1,4 +1,0 @@
-include *.rst
-include LICENSE
-include requirements.txt
-recursive-include fedmsg.d *.py
