@@ -1,0 +1,140 @@
+[tool.poetry]
+name = "fedbadges"
+version = "2.0.0"
+description = "Fedora Messaging consumer for awarding open badges"
+
+license = "GPL-2.0-or-later"
+
+authors = [
+  "Fedora Infrastructure <admin@fedoraproject.org>"
+]
+
+readme = "README.rst"
+keywords = ["fedora"]
+repository = "https://github.com/fedora-infra/fedbadges"
+homepage = "https://github.com/fedora-infra/fedbadges"
+
+include = [
+    { path = "tox.ini", format = "sdist" },
+    { path = "tests", format = "sdist" },
+    { path = "docs", format = "sdist" },
+    { path = "*.example", format = "sdist" },
+]
+
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic-settings = "^2.0.2"
+pyyaml = "^6.0.1"
+datanommer-models = "^1.1.0"
+requests = "^2.31.0"
+psutil = "^5.9.8"
+fedora-messaging = "^3.5.0"
+backoff = "^2.2.1"
+fasjson-client = "^1.0.8"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0.0"
+pytest-cov = ">=4.0.0"
+black = ">=23.10.0"
+ruff = ">=0.1.1"
+coverage = {extras = ["toml"], version = ">=7.0.0"}
+diff-cover = ">=8.0.0"
+sphinx = ">=4.0"
+myst-parser = ">=0.16"
+liccheck = ">=0.6"
+pre-commit = ">=2.13"
+sphinxcontrib-napoleon = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.ruff]
+line-length = 100
+ignore = ["RUF012"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "S", "B", "RUF"]
+
+[tool.ruff.isort]
+lines-after-imports = 2
+order-by-type = false
+
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S101", "E501"]
+"fedbadges/__init__.py" = ["F401"]
+
+[tool.coverage.run]
+branch = true
+source = ["fedbadges"]
+
+[tool.coverage.paths]
+source = ["fedbadges"]
+
+[tool.coverage.report]
+fail_under = 100
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    # Don't complain if tests don't hit defensive assertion code
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "\\.\\.\\.",
+]
+omit = [
+    "tests/*",
+]
+
+
+[tool.towncrier]
+package = "{{ cookiecutter.slug }}"
+filename = "docs/release_notes.md"
+directory = "changelog.d"
+start_string = "<!-- towncrier release notes start -->\n"
+underlines = ["", "", ""]
+template = "changelog.d/_template.md"
+title_format = "## Version [{version}]({{ cookiecutter.github_url }}/tree/{version}) - {project_date}"
+issue_format = "{issue}"
+
+[[tool.towncrier.type]]
+directory = "security"
+name = "Security"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "removed"
+name = "Removed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "deprecated"
+name = "Deprecated"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "added"
+name = "Added"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "changed"
+name = "Changed"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "fixed"
+name = "Fixed"
+showcontent = true

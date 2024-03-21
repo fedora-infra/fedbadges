@@ -1,8 +1,0 @@
-PyYAML
-datanommer.models
-zope.sqlalchemy
-requests
-psutil
-fedora-messaging
-backoff
-fasjson-client
