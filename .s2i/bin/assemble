@@ -1,0 +1,30 @@
+#!/bin/bash -e
+
+# SPDX-FileCopyrightText: Contributors to the Fedora Project
+#
+# SPDX-License-Identifier: MIT
+
+# The assemble script builds the application artifacts from a source and
+# places them into appropriate directories inside the image.
+
+# Execute the default S2I script
+. /usr/libexec/s2i/assemble
+
+set -e
+set -x
+
+install_tool "micropipenv" "[toml]"
+
+# Poetry 1.5.0 breaks micropipenv, regenetate the log file
+# https://github.com/thoth-station/micropipenv/issues/280
+pip install "poetry<1.5.0"
+poetry lock --no-update -n
+#
+
+micropipenv install --deploy
+
+# Now install the root project too, micropipenv does not do that
+pip install . --no-deps
+
+# set permissions for any installed artifacts
+fix-permissions /opt/app-root -P
