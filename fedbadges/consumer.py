@@ -2,6 +2,7 @@
 
 Authors:  Ross Delinger
           Ralph Bean
+          Aurelien Bompard
 """
 
 import asyncio
@@ -53,7 +54,6 @@ class FedoraBadgesConsumer:
         # 1) Initialize our connection to the Tahrir DB
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
-        # 4) Initialize fedmsg so that those listening to us can handshake.
 
         # Tahrir stuff.
         self._initialize_tahrir_connection()
