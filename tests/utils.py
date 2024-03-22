@@ -7,7 +7,7 @@ class MockHub(object):
         "badges.yaml.directory": "tests/test_badges",
         "badges_global": {
             "badge_issuer": dict(
-                issuer_entity_id="dkcsldkmlkc92jn",
+                issuer_id="dkcsldkmlkc92jn",
                 issuer_name="Fedora Project",
                 issuer_origin="http://badges.fedoraproject.com",
                 issuer_url="http://fedoraproject.org",

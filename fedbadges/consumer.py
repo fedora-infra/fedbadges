@@ -74,7 +74,7 @@ class FedoraBadgesConsumer:
         self.TahrirDbSession = scoped_session(sessionmaker(
             bind=create_engine(database_uri),
         ))
-        issuer = self.config.get('badge_issuer')
+        issuer = self.config['badge_issuer']
 
         with self.TahrirDbSession() as session:
             client = self._get_tahrir_client(session=session)

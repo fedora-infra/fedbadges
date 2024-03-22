@@ -56,7 +56,7 @@ fasjson_base_url = "https://fasjson.tinystage.test/fasjson"
 # This is a set of data that tells our consumer what Open Badges Issuer
 # should be kept as the issuer of all the badges we create.
 [consumer_config.badge_issuer]
-issuer_entity_id = "dkcsldkmlkc92jn"
+issuer_id = "dkcsldkmlkc92jn"
 issuer_name = "Fedora Project"
 issuer_origin = "http://badges.tinystage.test"
 issuer_url = "http://fedoraproject.org"
