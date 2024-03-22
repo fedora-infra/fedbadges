@@ -19,14 +19,18 @@ log = logging.getLogger(__name__)
 
 
 def construct_substitutions(msg: dict):
-    """ Convert a fedmsg message into a dict of substitutions. """
+    """Convert a fedmsg message into a dict of substitutions."""
     subs = {}
     for key1 in msg:
         if isinstance(msg[key1], dict):
-            subs.update(dict([
-                ('.'.join([key1, key2]), val2)
-                for key2, val2 in list(construct_substitutions(msg[key1]).items())
-            ]))
+            subs.update(
+                dict(
+                    [
+                        (".".join([key1, key2]), val2)
+                        for key2, val2 in list(construct_substitutions(msg[key1]).items())
+                    ]
+                )
+            )
             subs[key1] = msg[key1]
         elif isinstance(msg[key1], str):
             subs[key1] = msg[key1].lower()
@@ -36,7 +40,7 @@ def construct_substitutions(msg: dict):
 
 
 def format_args(obj, subs):
-    """ Recursively apply a substitutions dict to a given criteria subtree """
+    """Recursively apply a substitutions dict to a given criteria subtree"""
 
     if isinstance(obj, dict):
         for key in obj:
@@ -53,20 +57,20 @@ def format_args(obj, subs):
     return obj
 
 
-def single_argument_lambda_factory(expression, argument, name='value'):
-    """ Compile and execute a lambda expression with a single argument """
+def single_argument_lambda_factory(expression, argument, name="value"):
+    """Compile and execute a lambda expression with a single argument"""
 
     code = compile("lambda %s: %s" % (name, expression), __file__, "eval")
     func = types.LambdaType(code, globals())()
     return func(argument)
 
 
-def recursive_lambda_factory(obj, arg, name='value'):
-    """ Given a dict, find any lambdas, compile, and execute them. """
+def recursive_lambda_factory(obj, arg, name="value"):
+    """Given a dict, find any lambdas, compile, and execute them."""
 
     if isinstance(obj, dict):
         for key in obj:
-            if key == 'lambda':
+            if key == "lambda":
                 # If so, *replace* the parent dict with the result of the expr
                 obj = single_argument_lambda_factory(obj[key], arg, name)
                 break
@@ -81,7 +85,7 @@ def recursive_lambda_factory(obj, arg, name='value'):
 
 
 def graceful(default_return_value):
-    """ A decorator that gracefully handles exceptions. """
+    """A decorator that gracefully handles exceptions."""
 
     def decorate(method):
         def inner(self, *args, **kwargs):
@@ -89,17 +93,18 @@ def graceful(default_return_value):
                 return method(self, *args, **kwargs)
             except Exception as e:
                 log.exception(e)
-                log.error("From method: %r self: %r args: %r kwargs: %r" % (
-                    method, self, args, kwargs))
+                log.error(
+                    "From method: %r self: %r args: %r kwargs: %r" % (method, self, args, kwargs)
+                )
                 return default_return_value
+
         return inner
+
     return decorate
 
 
 def _backoff_hdlr(details):
-    log.warning(
-        f"Publishing message failed. Retrying. {traceback.format_tb(sys.exc_info()[2])}"
-    )
+    log.warning(f"Publishing message failed. Retrying. {traceback.format_tb(sys.exc_info()[2])}")
 
 
 @backoff.on_exception(
@@ -113,7 +118,7 @@ def _publish(message):
 
 
 def notification_callback(topic, msg):
-    """ This is a callback called by tahrir_api whenever something
+    """This is a callback called by tahrir_api whenever something
     it deems important has happened.
 
     It is just used to publish fedmsg messages.
@@ -122,18 +127,16 @@ def notification_callback(topic, msg):
     try:
         _publish(message)
     except fm_exceptions.BaseException:
-        log.error(
-            f"Publishing message failed. Giving up. {traceback.format_tb(sys.exc_info()[2])}"
-        )
+        log.error(f"Publishing message failed. Giving up. {traceback.format_tb(sys.exc_info()[2])}")
 
 
 def user_exists_in_fas(fasjson, user):
-    """ Return true if the user exists in FAS. """
+    """Return true if the user exists in FAS."""
     return fasjson.get_user(user) is not None
 
 
 def get_pagure_authors(authors):
-    """ Extract the name of pagure authors from
+    """Extract the name of pagure authors from
     a dictionary
 
     Args:
@@ -146,20 +149,19 @@ def get_pagure_authors(authors):
                 if item["name"] is not None:
                     authors_name.append(item["name"])
             except KeyError:
-                raise Exception(
-                    "Multiple recipients : name not found in the message")
+                raise Exception("Multiple recipients : name not found in the message")
     return authors_name
 
 
 def nick2fas(nick, fasjson):
-    """ Return the user in FAS. """
+    """Return the user in FAS."""
     return fasjson.get_user(nick)
 
 
 def email2fas(email, fasjson):
-    """ Return the user with the specified email in FAS. """
-    if email.endswith('@fedoraproject.org'):
-        return nick2fas(email.rsplit('@', 1)[0], fasjson)
+    """Return the user with the specified email in FAS."""
+    if email.endswith("@fedoraproject.org"):
+        return nick2fas(email.rsplit("@", 1)[0], fasjson)
 
     result = fasjson.search_users(email__exact=email)
     if not result:

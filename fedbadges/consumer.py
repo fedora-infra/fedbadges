@@ -23,6 +23,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 import fedbadges.rules
 
 import logging
+
 log = logging.getLogger(__name__)
 
 DEFAULT_CONSUME_DELAY = 3
@@ -34,8 +35,8 @@ class FedoraBadgesConsumer:
 
     def __init__(self):
         self.config = fm_config["consumer_config"]
-        self.consume_delay = int(self.config.get('consume_delay', DEFAULT_CONSUME_DELAY))
-        self.delay_limit = int(self.config.get('delay_limit', DEFAULT_DELAY_LIMIT))
+        self.consume_delay = int(self.config.get("consume_delay", DEFAULT_CONSUME_DELAY))
+        self.delay_limit = int(self.config.get("delay_limit", DEFAULT_DELAY_LIMIT))
         self.badge_rules = []
         self.lock = threading.Lock()
         # Thread-local stuff
@@ -68,26 +69,28 @@ class FedoraBadgesConsumer:
         self.badge_rules = self._load_badges_from_yaml(directory)
 
     def _initialize_tahrir_connection(self):
-        database_uri = self.config.get('database_uri')
+        database_uri = self.config.get("database_uri")
         if not database_uri:
-            raise ValueError('Badges consumer requires a database uri')
-        self.TahrirDbSession = scoped_session(sessionmaker(
-            bind=create_engine(database_uri),
-        ))
-        issuer = self.config['badge_issuer']
+            raise ValueError("Badges consumer requires a database uri")
+        self.TahrirDbSession = scoped_session(
+            sessionmaker(
+                bind=create_engine(database_uri),
+            )
+        )
+        issuer = self.config["badge_issuer"]
 
         with self.TahrirDbSession() as session:
             client = self._get_tahrir_client(session=session)
             self.issuer_id = client.add_issuer(
-                issuer.get('issuer_origin'),
-                issuer.get('issuer_name'),
-                issuer.get('issuer_url'),
-                issuer.get('issuer_email')
+                issuer.get("issuer_origin"),
+                issuer.get("issuer_name"),
+                issuer.get("issuer_url"),
+                issuer.get("issuer_email"),
             )
             session.commit()
 
     def _get_tahrir_client(self, session=None):
-        if hasattr(self.l, 'tahrir'):
+        if hasattr(self.l, "tahrir"):
             return self.l.tahrir
 
         session = session or self.TahrirDbSession()
@@ -100,7 +103,7 @@ class FedoraBadgesConsumer:
         return self.l.tahrir
 
     def _initialize_datanommer_connection(self):
-        datanommer.models.init(self.config['datanommer_db_uri'])
+        datanommer.models.init(self.config["datanommer_db_uri"])
 
     def _load_badges_from_yaml(self, directory):
         # badges indexed by trigger
@@ -118,12 +121,12 @@ class FedoraBadgesConsumer:
 
                 try:
                     badge_rule = fedbadges.rules.BadgeRule(
-                        badge, client, self.issuer_id, self.config, self.fasjson)
+                        badge, client, self.issuer_id, self.config, self.fasjson
+                    )
                     badge_rule.setup()
                     badges.append(badge_rule)
                 except ValueError as e:
-                    log.error("Initializing rule for %r failed with %r" % (
-                        fname, e))
+                    log.error("Initializing rule for %r failed with %r" % (fname, e))
 
         log.info("Loaded %i total badge definitions" % len(badges))
         return badges
@@ -131,7 +134,7 @@ class FedoraBadgesConsumer:
     def _load_badge_from_yaml(self, fname):
         log.debug("Loading %r" % fname)
         try:
-            with open(fname, 'r') as f:
+            with open(fname, "r") as f:
                 return yaml.safe_load(f.read())
         except Exception as e:
             log.error("Loading %r failed with %r" % (fname, e))
@@ -160,7 +163,7 @@ class FedoraBadgesConsumer:
         # TODO: scratch that, check if the current message is in the matched messages when querying datanommer, and if it's not add 1 to the count.
         time.sleep(self.consume_delay)
 
-        datagrepper_url = self.config['datagrepper_url']
+        datagrepper_url = self.config["datagrepper_url"]
         link = f"{datagrepper_url}/id?id={message.id}&is_raw=true&size=extra-large"
 
         # Define this so we can refer to it in error handling below

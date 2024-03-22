@@ -45,13 +45,9 @@ except python_freeipa.exceptions.FreeIPAError as e:
     print(e)
 
 # add 2 user agreements
-agreement1 = '\n\n'.join(
-    textwrap.fill(fake.paragraph(nb_sentences=20)) for _ in range(10)
-)
+agreement1 = "\n\n".join(textwrap.fill(fake.paragraph(nb_sentences=20)) for _ in range(10))
 ipa.fasagreement_add("FPCA", description=agreement1)
-agreement2 = '\n\n'.join(
-    textwrap.fill(fake.paragraph(nb_sentences=5)) for _ in range(15)
-)
+agreement2 = "\n\n".join(textwrap.fill(fake.paragraph(nb_sentences=5)) for _ in range(15))
 ipa.fasagreement_add("CentOS Agreement", description=agreement2)
 
 # add developers and designers groups to the FPCA agreement

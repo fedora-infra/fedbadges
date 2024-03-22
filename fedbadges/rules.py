@@ -23,7 +23,6 @@ from fedbadges.utils import (
     recursive_lambda_factory,
     graceful,
     get_pagure_authors,
-
     # These make networked API calls
     user_exists_in_fas,
     nick2fas,
@@ -31,19 +30,21 @@ from fedbadges.utils import (
 )
 
 import logging
+
 log = logging.getLogger(__name__)
 
 
 # Match OpenID agent strings, i.e. http://FAS.id.fedoraproject.org
 def openid2fas(openid, config):
-    id_provider_hostname = re.escape(config['id_provider_hostname'])
-    m = re.search(f'^https?://([a-z][a-z0-9]+)\\.{id_provider_hostname}$', openid)
+    id_provider_hostname = re.escape(config["id_provider_hostname"])
+    m = re.search(f"^https?://([a-z][a-z0-9]+)\\.{id_provider_hostname}$", openid)
     if m:
         return m.group(1)
     return openid
 
+
 def github2fas(uri, config, fasjson):
-    m = re.search(r'^https?://api.github.com/users/([a-z][a-z0-9-]+)$', uri)
+    m = re.search(r"^https?://api.github.com/users/([a-z][a-z0-9-]+)$", uri)
     if not m:
         return uri
     github_username = m.group(1)
@@ -55,82 +56,91 @@ def github2fas(uri, config, fasjson):
         return None
     return result["result"][0]["username"]
 
+
 def distgit2fas(uri, config):
-    distgit_hostname = re.escape(config['distgit_hostname'])
+    distgit_hostname = re.escape(config["distgit_hostname"])
     m = re.search(f"^https?://{distgit_hostname}/user/([a-z][a-z0-9]+)$", uri)
     if m:
         return m.group(1)
     return uri
+
 
 def krb2fas(name):
     if "/" not in name:
         return name
     return name.split("/")[0]
 
-operators = frozenset([
-    "all",
-    "any",
-    "not",
-])
-lambdas = frozenset([
-    "lambda",
-])
 
-operator_lookup = {
-    "any": any,
-    "all": all,
-    "not": lambda x: all([not item for item in x])
-}
+operators = frozenset(
+    [
+        "all",
+        "any",
+        "not",
+    ]
+)
+lambdas = frozenset(
+    [
+        "lambda",
+    ]
+)
+
+operator_lookup = {"any": any, "all": all, "not": lambda x: all([not item for item in x])}
 
 
 class BadgeRule:
-    required = frozenset([
-        'name',
-        'image_url',
-        'description',
-        'creator',
-        'discussion',
-        'issuer_id',
+    required = frozenset(
+        [
+            "name",
+            "image_url",
+            "description",
+            "creator",
+            "discussion",
+            "issuer_id",
+            "trigger",
+            "criteria",
+        ]
+    )
 
-        'trigger',
-        'criteria',
-    ])
+    possible = required.union(
+        [
+            "recipient",
+            "recipient_nick2fas",
+            "recipient_email2fas",
+            "recipient_openid2fas",
+            "recipient_github2fas",
+            "recipient_distgit2fas",
+            "recipient_krb2fas",
+        ]
+    )
 
-    possible = required.union([
-        'recipient',
-        'recipient_nick2fas',
-        'recipient_email2fas',
-        'recipient_openid2fas',
-        'recipient_github2fas',
-        'recipient_distgit2fas',
-        'recipient_krb2fas',
-    ])
-
-    banned_usernames = frozenset([
-        'bodhi',
-        'oscar',
-        'apache',
-        'koji',
-        'bodhi',
-        'taskotron',
-    ])
+    banned_usernames = frozenset(
+        [
+            "bodhi",
+            "oscar",
+            "apache",
+            "koji",
+            "bodhi",
+            "taskotron",
+        ]
+    )
 
     def __init__(self, badge_dict, tahrir_database, issuer_id, config, fasjson):
         argued_fields = frozenset(list(badge_dict.keys()))
 
         if not argued_fields.issubset(self.possible):
             raise KeyError(
-                "%r are not possible fields.  Choose from %r" % (
-                    argued_fields.difference(self.possible),
-                    self.possible
-                ))
+                "%r are not possible fields.  Choose from %r"
+                % (argued_fields.difference(self.possible), self.possible)
+            )
 
         if not self.required.issubset(argued_fields):
             raise ValueError(
-                "BadgeRule requires %r.  Missing %r" % (
+                "BadgeRule requires %r.  Missing %r"
+                % (
                     self.required,
                     self.required.difference(argued_fields),
-                ))
+                )
+            )
 
         self._d = badge_dict
         self.tahrir = tahrir_database
@@ -138,29 +148,28 @@ class BadgeRule:
         self.config = config
         self.fasjson = fasjson
 
-        self.trigger = Trigger(self._d['trigger'], self)
-        self.criteria = Criteria(self._d['criteria'], self)
-        self.recipient_key = self._d.get('recipient')
-        self.recipient_nick2fas = self._d.get('recipient_nick2fas')
-        self.recipient_email2fas = self._d.get('recipient_email2fas')
-        self.recipient_openid2fas = self._d.get('recipient_openid2fas')
-        self.recipient_github2fas = self._d.get('recipient_github2fas')
-        self.recipient_distgit2fas = self._d.get('recipient_distgit2fas')
-        self.recipient_krb2fas = self._d.get('recipient_krb2fas')
+        self.trigger = Trigger(self._d["trigger"], self)
+        self.criteria = Criteria(self._d["criteria"], self)
+        self.recipient_key = self._d.get("recipient")
+        self.recipient_nick2fas = self._d.get("recipient_nick2fas")
+        self.recipient_email2fas = self._d.get("recipient_email2fas")
+        self.recipient_openid2fas = self._d.get("recipient_openid2fas")
+        self.recipient_github2fas = self._d.get("recipient_github2fas")
+        self.recipient_distgit2fas = self._d.get("recipient_distgit2fas")
+        self.recipient_krb2fas = self._d.get("recipient_krb2fas")
 
     def setup(self):
         if self.tahrir:
             with self.tahrir.session.begin():
-                self.badge_id = self._d['badge_id'] = self.tahrir.add_badge(
-                    name=self._d['name'],
-                    image=self._d['image_url'],
-                    desc=self._d['description'],
-                    criteria=self._d['discussion'],
-                    tags=','.join(self._d.get('tags', [])),
+                self.badge_id = self._d["badge_id"] = self.tahrir.add_badge(
+                    name=self._d["name"],
+                    image=self._d["image_url"],
+                    desc=self._d["description"],
+                    criteria=self._d["discussion"],
+                    tags=",".join(self._d.get("tags", [])),
                     issuer_id=self.issuer_id,
                 )
                 self.tahrir.session.commit()
-
 
     def __getitem__(self, key):
         return self._d[key]
@@ -193,7 +202,6 @@ class BadgeRule:
             if obj is None:
                 obj = []
 
-
             # It is possible to recieve a list of dictionary containing the name
             # of the recipient, this is the case in the pagure's fedmsg.
             # In that case we create a new list containing the names taken from the
@@ -206,34 +214,24 @@ class BadgeRule:
             awardees = frozenset(obj)
 
             if self.recipient_nick2fas:
-                awardees = frozenset([
-                    nick2fas(nick, self.fasjson) for nick in awardees
-                ])
+                awardees = frozenset([nick2fas(nick, self.fasjson) for nick in awardees])
 
             if self.recipient_email2fas:
-                awardees = frozenset([
-                    email2fas(email, self.fasjson) for email in awardees
-                ])
+                awardees = frozenset([email2fas(email, self.fasjson) for email in awardees])
 
             if self.recipient_openid2fas:
-                awardees = frozenset([
-                    openid2fas(openid, self.config) for openid in awardees
-                ])
+                awardees = frozenset([openid2fas(openid, self.config) for openid in awardees])
 
             if self.recipient_github2fas:
-                awardees = frozenset([
-                    github2fas(uri, self.config, self.fasjson) for uri in awardees
-                ])
+                awardees = frozenset(
+                    [github2fas(uri, self.config, self.fasjson) for uri in awardees]
+                )
 
             if self.recipient_distgit2fas:
-                awardees = frozenset([
-                    distgit2fas(uri, self.config) for uri in awardees
-                ])
+                awardees = frozenset([distgit2fas(uri, self.config) for uri in awardees])
 
             if self.recipient_krb2fas:
-                awardees = frozenset([
-                    krb2fas(uri) for uri in awardees
-                ])
+                awardees = frozenset([krb2fas(uri) for uri in awardees])
 
             awardees = frozenset([e for e in awardees if e is not None])
         else:
@@ -242,12 +240,13 @@ class BadgeRule:
         awardees = awardees.difference(self.banned_usernames)
 
         # Strip anyone who is an IP address
-        awardees = frozenset([
-            user for user in awardees if not (
-                user.startswith('192.168.') or
-                user.startswith('10.')
-            )
-        ])
+        awardees = frozenset(
+            [
+                user
+                for user in awardees
+                if not (user.startswith("192.168.") or user.startswith("10."))
+            ]
+        )
 
         # If no-one would get the badge by default, then no reason to waste
         # time doing any further checks.  No need to query the Tahrir DB.
@@ -258,13 +257,14 @@ class BadgeRule:
         # Do this only if we have an active connection to the Tahrir DB.
         if self.tahrir:
             # badge = BadgeClass(self.tahrir, eid=self.badge_id)
-            awardees = frozenset([
-                user for user in awardees
-                if not self.tahrir.assertion_exists(
-                    self.badge_id, f"{user}@fedoraproject.org"
-                ) and not self.tahrir.person_opted_out(
-                    f"{user}@fedoraproject.org"
-                )])
+            awardees = frozenset(
+                [
+                    user
+                    for user in awardees
+                    if not self.tahrir.assertion_exists(self.badge_id, f"{user}@fedoraproject.org")
+                    and not self.tahrir.person_opted_out(f"{user}@fedoraproject.org")
+                ]
+            )
 
         # If no-one would get the badge at this point, then no reason to waste
         # time doing any further checks.  No need to query datanommer.
@@ -282,15 +282,14 @@ class BadgeRule:
         # Lastly, and this is probably most expensive.  Make sure the person
         # actually has a FAS account before we award anything.
         # https://github.com/fedora-infra/tahrir/issues/225
-        awardees = set([
-            u for u in awardees if user_exists_in_fas(self.fasjson, u)
-        ])
+        awardees = set([u for u in awardees if user_exists_in_fas(self.fasjson, u)])
 
         return awardees
 
 
 class AbstractComparator(metaclass=abc.ABCMeta):
-    """ Base class for shared behavior between trigger and criteria. """
+    """Base class for shared behavior between trigger and criteria."""
+
     possible = required = frozenset()
     children = None
 
@@ -298,25 +297,24 @@ class AbstractComparator(metaclass=abc.ABCMeta):
         argued_fields = frozenset(list(d.keys()))
         if not argued_fields.issubset(self.possible):
             raise KeyError(
-                "%r are not possible fields.  Choose from %r" % (
-                    argued_fields.difference(self.possible),
-                    self.possible
-                ))
+                "%r are not possible fields.  Choose from %r"
+                % (argued_fields.difference(self.possible), self.possible)
+            )
 
         if self.required and not self.required.issubset(argued_fields):
             raise ValueError(
-                "%r are required fields.  Missing %r" % (
+                "%r are required fields.  Missing %r"
+                % (
                     self.required,
                     self.required.difference(argued_fields),
-                ))
+                )
+            )
 
         self._d = d
         self.parent = parent
 
     def __repr__(self):
-        return "<%s: %r> which is a child of %s" % (
-            type(self).__name__, self._d, repr(self.parent)
-        )
+        return "<%s: %r> which is a child of %s" % (type(self).__name__, self._d, repr(self.parent))
 
     @abc.abstractmethod
     def matches(self, msg):
@@ -329,54 +327,61 @@ class AbstractTopLevelComparator(AbstractComparator):
         cls = type(self)
 
         if len(self._d) > 1:
-            raise ValueError("No more than one trigger allowed.  "
-                             "Use an operator, one of %r" % operators)
+            raise ValueError(
+                "No more than one trigger allowed.  " "Use an operator, one of %r" % operators
+            )
         self.attribute = list(self._d.keys())[0]
         self.expected_value = self._d[self.attribute]
 
         # XXX - Check if we should we recursively nest Trigger/Criteria?
 
         # First, trick negation into thinking it is not a unary operator.
-        if self.attribute == 'not':
+        if self.attribute == "not":
             self.expected_value = [self.expected_value]
 
         # Then, treat everything as if it accepts an arbitrary # of args.
         if self.attribute in operators:
             if not isinstance(self.expected_value, list):
-                raise TypeError("Operators only accept lists, not %r" %
-                                type(self.expected_value))
+                raise TypeError("Operators only accept lists, not %r" % type(self.expected_value))
             self.children = [cls(child, self) for child in self.expected_value]
 
 
 class Trigger(AbstractTopLevelComparator):
-    possible = frozenset([
-        'topic',
-        'category',
-    ]).union(operators).union(lambdas)
+    possible = (
+        frozenset(
+            [
+                "topic",
+                "category",
+            ]
+        )
+        .union(operators)
+        .union(lambdas)
+    )
 
     @graceful(set())
     def matches(self, msg):
         # Check if we should just aggregate the results of our children.
         # Otherwise, we are a leaf-node doing a straightforward comparison.
         if self.children:
-            return operator_lookup[self.attribute]((
-                child.matches(msg) for child in self.children
-            ))
-        elif self.attribute == 'lambda':
+            return operator_lookup[self.attribute]((child.matches(msg) for child in self.children))
+        elif self.attribute == "lambda":
             return single_argument_lambda_factory(
-                expression=self.expected_value, argument={"msg": msg.body}, name='msg')
-        elif self.attribute == 'category':
-            return msg.topic.split('.')[3] == self.expected_value
-        elif self.attribute == 'topic':
+                expression=self.expected_value, argument={"msg": msg.body}, name="msg"
+            )
+        elif self.attribute == "category":
+            return msg.topic.split(".")[3] == self.expected_value
+        elif self.attribute == "topic":
             return msg.topic.endswith(self.expected_value)
         else:
             raise RuntimeError(f"Unexpected attribute: {self.attribute}")
 
 
 class Criteria(AbstractTopLevelComparator):
-    possible = frozenset([
-        'datanommer',
-    ]).union(operators)
+    possible = frozenset(
+        [
+            "datanommer",
+        ]
+    ).union(operators)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -386,7 +391,7 @@ class Criteria(AbstractTopLevelComparator):
             self._specialize()
 
     def _specialize(self):
-        if self.attribute == 'datanommer':
+        if self.attribute == "datanommer":
             self.specialization = DatanommerCriteria(self.expected_value)
         # TODO -- expand this with other "backends" as necessary
         # elif self.attribute == 'fas'
@@ -396,9 +401,7 @@ class Criteria(AbstractTopLevelComparator):
     @graceful(set())
     def matches(self, msg):
         if self.children:
-            return operator_lookup[self.attribute]((
-                child.matches(msg) for child in self.children
-            ))
+            return operator_lookup[self.attribute]((child.matches(msg) for child in self.children))
         else:
             return self.specialization.matches(msg)
 
@@ -406,64 +409,65 @@ class Criteria(AbstractTopLevelComparator):
 class AbstractSpecializedComparator(AbstractComparator):
     pass
 
+
 class DatanommerCriteria(AbstractSpecializedComparator):
-    required = possible = frozenset([
-        'filter',
-        'operation',
-        'condition',
-    ])
+    required = possible = frozenset(
+        [
+            "filter",
+            "operation",
+            "condition",
+        ]
+    )
 
     condition_callbacks = {
-        'is greater than or equal to': lambda t, v: v >= t,
-        'greater than or equal to': lambda t, v: v >= t,
-        'greater than': lambda t, v: v > t,
-
-        'is less than or equal to': lambda t, v: v <= t,
-        'less than or equal to': lambda t, v: v <= t,
-        'less than': lambda t, v: v < t,
-
-        'equal to': lambda t, v: v == t,
-        'is equal to': lambda t, v: v == t,
-
-        'is not': lambda t, v: v != t,
-        'is not equal to': lambda t, v: v != t,
-
-        'lambda': single_argument_lambda_factory,
+        "is greater than or equal to": lambda t, v: v >= t,
+        "greater than or equal to": lambda t, v: v >= t,
+        "greater than": lambda t, v: v > t,
+        "is less than or equal to": lambda t, v: v <= t,
+        "less than or equal to": lambda t, v: v <= t,
+        "less than": lambda t, v: v < t,
+        "equal to": lambda t, v: v == t,
+        "is equal to": lambda t, v: v == t,
+        "is not": lambda t, v: v != t,
+        "is not equal to": lambda t, v: v != t,
+        "lambda": single_argument_lambda_factory,
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if len(self._d['condition']) > 1:
+        if len(self._d["condition"]) > 1:
             conditions = list(self.condition_callbacks.keys())
-            raise ValueError("No more than one condition allowed.  "
-                             "Use one of %r" % conditions)
+            raise ValueError("No more than one condition allowed.  " "Use one of %r" % conditions)
 
         # Determine what arguments datanommer..grep accepts
         argspec = inspect.getfullargspec(datanommer.models.Message.grep)
-        irrelevant = frozenset(['defer'])
+        irrelevant = frozenset(["defer"])
         grep_arguments = frozenset(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
-        argued_filter_fields = frozenset(list(self._d['filter'].keys()))
+        argued_filter_fields = frozenset(list(self._d["filter"].keys()))
         if not argued_filter_fields.issubset(grep_arguments):
             raise KeyError(
-                "%r are not possible fields.  Choose from %r" % (
+                "%r are not possible fields.  Choose from %r"
+                % (
                     argued_filter_fields.difference(grep_arguments),
                     grep_arguments,
-                ))
+                )
+            )
 
         # Validate the condition
-        condition_key, condition_val = list(self._d['condition'].items())[0]
+        condition_key, condition_val = list(self._d["condition"].items())[0]
         if condition_key not in self.condition_callbacks:
-            raise KeyError("%r is not a valid condition key.  Use one of %r" %
-                           (condition_key, list(self.condition_callbacks.keys())))
+            raise KeyError(
+                "%r is not a valid condition key.  Use one of %r"
+                % (condition_key, list(self.condition_callbacks.keys()))
+            )
 
         # Construct a condition callable for later
-        self.condition = functools.partial(
-            self.condition_callbacks[condition_key], condition_val)
+        self.condition = functools.partial(self.condition_callbacks[condition_key], condition_val)
 
     def _construct_query(self, msg):
-        """ Construct a datanommer query for this message.
+        """Construct a datanommer query for this message.
 
         The "filter" section of this criteria object will be used.  It will
         first be formatted with any substitutions present in the incoming
@@ -472,26 +476,26 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         arrived".
         """
         subs = construct_substitutions({"msg": msg.body})
-        kwargs = format_args(copy.copy(self._d['filter']), subs)
-        kwargs = recursive_lambda_factory(kwargs, {"msg": msg.body}, name='msg')
+        kwargs = format_args(copy.copy(self._d["filter"]), subs)
+        kwargs = recursive_lambda_factory(kwargs, {"msg": msg.body}, name="msg")
 
         # It is possible to recieve a list of dictionary containing the name
         # of the recipient, this is the case in the pagure's fedmsg.
         # In that case we create a new list containing the names taken from the
         # dictionnary.
-        if kwargs.get('users') is not None:
-            for item in kwargs['users']:
+        if kwargs.get("users") is not None:
+            for item in kwargs["users"]:
                 if isinstance(item, list):
-                    kwargs['users'] = item
-            users = get_pagure_authors(kwargs['users'])
+                    kwargs["users"] = item
+            users = get_pagure_authors(kwargs["users"])
             if users:
-                kwargs['users'] = users
-        kwargs['defer'] = True
+                kwargs["users"] = users
+        kwargs["defer"] = True
         total, pages, query = datanommer.models.Message.grep(**kwargs)
         return total, pages, query
 
     def _format_lambda_operation(self, msg):
-        """ Format the string representation of a lambda operation.
+        """Format the string representation of a lambda operation.
 
         The lambda operation can be formatted here to include strings that
         appear in the message being evaluated like
@@ -499,11 +503,11 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         their value substituted with whatever appears in the incoming message.
         """
         subs = construct_substitutions({"msg": msg.body})
-        operation = format_args(copy.copy(self._d['operation']), subs)
-        return operation['lambda']
+        operation = format_args(copy.copy(self._d["operation"]), subs)
+        return operation["lambda"]
 
     def matches(self, msg: Message):
-        """ A datanommer criteria check is composed of three steps.
+        """A datanommer criteria check is composed of three steps.
 
         - A datanommer query is constructed by combining our yaml definition
           with the incoming fedmsg message that triggered us.
@@ -514,13 +518,14 @@ class DatanommerCriteria(AbstractSpecializedComparator):
           result of the operation from the previous step and is returned.
         """
         total, pages, query = self._construct_query(msg)
-        if self._d['operation'] == 'count':
+        if self._d["operation"] == "count":
             result = total
-        elif isinstance(self._d['operation'], dict):
+        elif isinstance(self._d["operation"], dict):
             expression = self._format_lambda_operation(msg)
             result = single_argument_lambda_factory(
-                expression=expression, argument=query, name='query')
+                expression=expression, argument=query, name="query"
+            )
         else:
-            operation = getattr(query, self._d['operation'])
+            operation = getattr(query, self._d["operation"])
             result = operation()
         return self.condition(result)
