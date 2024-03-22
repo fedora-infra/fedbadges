@@ -31,6 +31,20 @@ typing-extensions = ">=4"
 tz = ["backports.zoneinfo"]
 
 [[package]]
+name = "anitya-schema"
+version = "2.2.0"
+description = "JSON schema definitions for messages published by Anitya"
+optional = true
+python-versions = ">=3.8.1,<4.0.0"
+files = [
+    {file = "anitya_schema-2.2.0-py3-none-any.whl", hash = "sha256:b725716ecfa422a401e72bdbfde30532e54942383a353515fd588eb080752c36"},
+    {file = "anitya_schema-2.2.0.tar.gz", hash = "sha256:fb14362f55a30639bea5100f817c09fb5c62da3fd048913fb496d7c442aa3575"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=3.1.0,<4.0.0"
+
+[[package]]
 name = "annotated-types"
 version = "0.6.0"
 description = "Reusable constraint types to use with typing.Annotated"
@@ -178,6 +192,20 @@ files = [
     {file = "blinker-1.7.0-py3-none-any.whl", hash = "sha256:c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9"},
     {file = "blinker-1.7.0.tar.gz", hash = "sha256:e6820ff6fa4e4d1d8e2747c2283749c3f547e4fee112b98555cdcdae32996182"},
 ]
+
+[[package]]
+name = "bodhi-messages"
+version = "8.0.0"
+description = "JSON schema for messages sent by Bodhi"
+optional = true
+python-versions = ">=3.8,<4"
+files = [
+    {file = "bodhi_messages-8.0.0-py3-none-any.whl", hash = "sha256:3a83dfe47aded3ba0d6bd83966d7e66a4896f9e59eff54709017b87178eac693"},
+    {file = "bodhi_messages-8.0.0.tar.gz", hash = "sha256:eb75c94fd68726099d404b54a06a5396827e11328adb4c5886a91f48218de888"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=3.0.0"
 
 [[package]]
 name = "bravado"
@@ -424,6 +452,21 @@ files = [
 ]
 
 [[package]]
+name = "ci-messages"
+version = "0.2.1"
+description = "Python wrapper for CI Messages schemas"
+optional = true
+python-versions = "!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <4"
+files = [
+    {file = "ci_messages-0.2.1-py3-none-any.whl", hash = "sha256:39e5de6220db98b04ebeabd356859dca9527cc41d63d2fd1353b8889fc037205"},
+    {file = "ci_messages-0.2.1.tar.gz", hash = "sha256:b3a8cecb7cdde161e0affe0ca4a59aca9a2b4db3f2a6a6247efe4f43625f4655"},
+]
+
+[package.dependencies]
+fedora-messaging = "*"
+jsonref = "*"
+
+[[package]]
 name = "click"
 version = "8.1.7"
 description = "Composable command line interface toolkit"
@@ -458,6 +501,30 @@ files = [
     {file = "constantly-23.10.4-py3-none-any.whl", hash = "sha256:3fd9b4d1c3dc1ec9757f3c52aef7e53ad9323dbe39f51dfd4c43853b68dfa3f9"},
     {file = "constantly-23.10.4.tar.gz", hash = "sha256:aa92b70a33e2ac0bb33cd745eb61776594dc48764b06c35e0efd050b7f1c7cbd"},
 ]
+
+[[package]]
+name = "copr-common"
+version = "0.22"
+description = "Common python code used by Copr."
+optional = true
+python-versions = "*"
+files = [
+    {file = "copr-common-0.22.tar.gz", hash = "sha256:ae12cc5f8c1c6de7f9b09c4160f22677a5fc4e33f7438659685b9545d9e17fd5"},
+]
+
+[[package]]
+name = "copr-messaging"
+version = "0.11"
+description = "A schema and tooling for Copr fedora-messaging"
+optional = true
+python-versions = "*"
+files = [
+    {file = "copr-messaging-0.11.tar.gz", hash = "sha256:764a4d5420110325fe711102202b2f5b4221fe7a9a7016fc96bfca72a60c9516"},
+]
+
+[package.dependencies]
+copr-common = "*"
+fedora-messaging = "*"
 
 [[package]]
 name = "coverage"
@@ -647,6 +714,20 @@ Pygments = ">=2.9.0,<3.0.0"
 toml = ["tomli (>=1.2.1)"]
 
 [[package]]
+name = "discourse2fedmsg-messages"
+version = "1.0.3"
+description = "A schema package for messages sent by discourse2fedmsg"
+optional = true
+python-versions = ">=3.6.7,<4.0.0"
+files = [
+    {file = "discourse2fedmsg-messages-1.0.3.tar.gz", hash = "sha256:53ee3d738d883909cfad33940ab18ba5dd1c52b022e4f0a41ebce9270d4a3afa"},
+    {file = "discourse2fedmsg_messages-1.0.3-py3-none-any.whl", hash = "sha256:aadb9620e6576b8fe18419ea40f29a507924bcc0720f1863c8afabf8a2049319"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=2.0.1"
+
+[[package]]
 name = "distlib"
 version = "0.3.8"
 description = "Distribution utilities"
@@ -704,6 +785,34 @@ toml = ">=0.10.0,<0.11.0"
 cli = ["click (>=6.7,<9)", "cryptography (>=2.3)"]
 
 [[package]]
+name = "fedocal-messages"
+version = "1.5.0"
+description = "A schema package for messages sent by fedocal"
+optional = true
+python-versions = "*"
+files = [
+    {file = "fedocal-messages-1.5.0.tar.gz", hash = "sha256:965a90505ff31f5fa4b2d7e8eb36769322cda8dc8d9a15c3f2faba9f75911b31"},
+]
+
+[package.dependencies]
+fedora_messaging = "*"
+python-dateutil = "*"
+
+[[package]]
+name = "fedora-elections-messages"
+version = "1.0.1"
+description = "A schema package for messages sent by fedora-elections"
+optional = true
+python-versions = "*"
+files = [
+    {file = "fedora-elections-messages-1.0.1.tar.gz", hash = "sha256:237f8ad59c91148a0d5d95c11979cd0e2226319cbab36b3d05b7c7c05c71e508"},
+    {file = "fedora_elections_messages-1.0.1-py2.py3-none-any.whl", hash = "sha256:df2eaf0053c7e8bdb0f03e97049aadec776395940cdb97f74e7b9dea0d0c4b37"},
+]
+
+[package.dependencies]
+fedora-messaging = "*"
+
+[[package]]
 name = "fedora-messaging"
 version = "3.5.0"
 description = "A set of tools for using Fedora's messaging infrastructure"
@@ -725,6 +834,65 @@ pytz = ">=2023.3"
 service-identity = ">=21.1.0"
 tomli = ">=2.0.1,<3.0.0"
 twisted = ">=22.4.0"
+
+[[package]]
+name = "fedora-messaging-git-hook-messages"
+version = "1.0.1"
+description = "A schema package for messages sent by Fedora Messaging Git Hook"
+optional = true
+python-versions = ">=3.6"
+files = [
+    {file = "fedora-messaging-git-hook-messages-1.0.1.tar.gz", hash = "sha256:090e70b7245452d37bd153f3028eab1dec36669d39c19a9a1e3931d1f178824a"},
+    {file = "fedora_messaging_git_hook_messages-1.0.1-py3-none-any.whl", hash = "sha256:4f3f207fb1ba033c1e91822db70bc59ca45bdb54ee6e562a356351a69c9d2aa6"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=3.0.0"
+
+[package.extras]
+dev = ["black", "coverage[toml]", "diff-cover", "flake8", "pre-commit", "pytest", "pytest-cov", "reuse"]
+
+[[package]]
+name = "fedora-messaging-the-new-hotness-schema"
+version = "1.2.1"
+description = "JSON schema definitions for messages published by the-new-hotness"
+optional = true
+python-versions = ">=3.8.1,<4.0.0"
+files = [
+    {file = "fedora_messaging_the_new_hotness_schema-1.2.1-py3-none-any.whl", hash = "sha256:40866a0acf97f84b4d0c8320729ff8fc9d13bb29c6035fefc7f5016a17761ba7"},
+    {file = "fedora_messaging_the_new_hotness_schema-1.2.1.tar.gz", hash = "sha256:cc2e44f21096ed3ab2fb76f9bfc54fcb8c32b116dc21f20f2bba73a58cd06ccd"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=3.1.0,<4.0.0"
+
+[[package]]
+name = "fedora-planet-messages"
+version = "1.0.0"
+description = "JSON schema definitions for messages published by Fedora planet"
+optional = true
+python-versions = "*"
+files = [
+    {file = "fedora-planet-messages-1.0.0.tar.gz", hash = "sha256:a505fdb6fe979efda7ff4eb83f645000dd3a1a27dcac00a1e980377a6c492b7c"},
+    {file = "fedora_planet_messages-1.0.0-py2.py3-none-any.whl", hash = "sha256:830ab40e19492a4bf5393f01761a4ce1fac8519894e589a794ead36af7e2c32d"},
+]
+
+[package.dependencies]
+fedora-messaging = "*"
+
+[[package]]
+name = "fedorainfra-ansible-messages"
+version = "0.0.2"
+description = "A schema package for messages sent by fedorainfra_ansible"
+optional = true
+python-versions = "*"
+files = [
+    {file = "fedorainfra_ansible-messages-0.0.2.tar.gz", hash = "sha256:7f44e82baff4c75ab3b6f32dac9f85a6c6b27ee4c6d192598ce4a52f3bed065e"},
+    {file = "fedorainfra_ansible_messages-0.0.2-py2.py3-none-any.whl", hash = "sha256:6312a7333ceca78f2866026f7ca41b0c6c0beff6fdee6f096b8ff4d40c5bd721"},
+]
+
+[package.dependencies]
+fedora-messaging = "*"
 
 [[package]]
 name = "filelock"
@@ -1033,6 +1201,35 @@ files = [
 referencing = ">=0.31.0"
 
 [[package]]
+name = "koji-fedoramessaging-messages"
+version = "1.2.3"
+description = "A schema package for messages sent by the koji-fedoramessaging plugin"
+optional = true
+python-versions = ">=3.10,<4.0"
+files = [
+    {file = "koji_fedoramessaging_messages-1.2.3-py3-none-any.whl", hash = "sha256:9875ac11ebd8719835b3dfa736feec7556c97adaaa964db079d8731351425a50"},
+    {file = "koji_fedoramessaging_messages-1.2.3.tar.gz", hash = "sha256:ece7e06922f8076388d4deb0f4667ed01124c159715da243456d13949d4579a0"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=3.0.1"
+
+[[package]]
+name = "koschei-messages"
+version = "1.0.1"
+description = "A schema package for messages sent by Koschei"
+optional = true
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "koschei-messages-1.0.1.tar.gz", hash = "sha256:2aa22ea3e4906c978d9ddb4b0b80e3f4d70d97e7dcb334ff936af5610cb63216"},
+    {file = "koschei_messages-1.0.1-py3-none-any.whl", hash = "sha256:7661a52c8c3bb4653fb0e770529289ca8b7e38cb098549f90ef9f2151f72c7c4"},
+]
+
+[package.dependencies]
+coverage = {version = ">=7.2.7,<8.0.0", extras = ["toml"]}
+fedora-messaging = ">=3.3.0,<4.0.0"
+
+[[package]]
 name = "liccheck"
 version = "0.9.2"
 description = "Check python packages from requirement.txt and report issues"
@@ -1160,6 +1357,20 @@ files = [
 ]
 
 [[package]]
+name = "mdapi-messages"
+version = "1.0.0"
+description = "A schema package for messages sent by mdapi"
+optional = true
+python-versions = "*"
+files = [
+    {file = "mdapi-messages-1.0.0.tar.gz", hash = "sha256:12ee47b5539db55cc0961632d720ffae54ae44b66df1a7cc8f7cf3e058884132"},
+    {file = "mdapi_messages-1.0.0-py2.py3-none-any.whl", hash = "sha256:53a789a6be7f648258d884f3b15428b80c82864abb73c59bbc2de783b02268f8"},
+]
+
+[package.dependencies]
+fedora-messaging = "*"
+
+[[package]]
 name = "mdit-py-plugins"
 version = "0.4.0"
 description = "Collection of plugins for markdown-it-py"
@@ -1188,6 +1399,21 @@ files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
 ]
+
+[[package]]
+name = "mediawiki-messages"
+version = "1.0.1"
+description = "A schema package for messages sent by Mediawiki"
+optional = true
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "mediawiki_messages-1.0.1-py3-none-any.whl", hash = "sha256:de423baddd435def9cf2b7b693be598e1699b97bb01e6f1f72e8941fadf9f3af"},
+    {file = "mediawiki_messages-1.0.1.tar.gz", hash = "sha256:3b31a2ac632e58aa232e9a31adcb4b859b565d63ce99737e85f28302e1821bf4"},
+]
+
+[package.dependencies]
+coverage = {version = ">=7.0.0", extras = ["toml"]}
+fedora-messaging = ">=3.3.0,<4.0.0"
 
 [[package]]
 name = "monotonic"
@@ -1317,6 +1543,33 @@ files = [
 setuptools = "*"
 
 [[package]]
+name = "noggin-messages"
+version = "1.0.3"
+description = "Fedora Messaging message schemas for Noggin."
+optional = true
+python-versions = ">=3.7.0,<4.0.0"
+files = [
+    {file = "noggin-messages-1.0.3.tar.gz", hash = "sha256:5abd6b666da08c852c54415219a48f74c355af5892c152d6ceea56f794aff793"},
+    {file = "noggin_messages-1.0.3-py3-none-any.whl", hash = "sha256:a636c9b8429b06b405f27d3a3b0a42f18bd35ac44d2d0cdfe7f2cbb5428a79d6"},
+]
+
+[package.dependencies]
+fedora-messaging = ">=2.0.1"
+
+[[package]]
+name = "nuancier-messages"
+version = "1.0.0"
+description = "A schema package for messages sent by nuancier"
+optional = true
+python-versions = "*"
+files = [
+    {file = "nuancier-messages-1.0.0.tar.gz", hash = "sha256:0d1496674682c1af1a864bc16f89e79aca4b8e76f2267d565fb3e16304c131da"},
+]
+
+[package.dependencies]
+fedora_messaging = "*"
+
+[[package]]
 name = "packaging"
 version = "24.0"
 description = "Core utilities for Python packages"
@@ -1326,6 +1579,19 @@ files = [
     {file = "packaging-24.0-py3-none-any.whl", hash = "sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5"},
     {file = "packaging-24.0.tar.gz", hash = "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"},
 ]
+
+[[package]]
+name = "pagure-messages"
+version = "1.2.0"
+description = "A schema package for messages sent by pagure"
+optional = true
+python-versions = "*"
+files = [
+    {file = "pagure-messages-1.2.0.tar.gz", hash = "sha256:c77a95562c224a70705427077cccd5b5bdcf8b488763502fbc012f90b13705ff"},
+]
+
+[package.dependencies]
+fedora_messaging = "*"
 
 [[package]]
 name = "pastedeploy"
@@ -2007,28 +2273,28 @@ files = [
 
 [[package]]
 name = "ruff"
-version = "0.3.3"
+version = "0.3.4"
 description = "An extremely fast Python linter and code formatter, written in Rust."
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "ruff-0.3.3-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:973a0e388b7bc2e9148c7f9be8b8c6ae7471b9be37e1cc732f8f44a6f6d7720d"},
-    {file = "ruff-0.3.3-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:cfa60d23269d6e2031129b053fdb4e5a7b0637fc6c9c0586737b962b2f834493"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1eca7ff7a47043cf6ce5c7f45f603b09121a7cc047447744b029d1b719278eb5"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:e7d3f6762217c1da954de24b4a1a70515630d29f71e268ec5000afe81377642d"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b24c19e8598916d9c6f5a5437671f55ee93c212a2c4c569605dc3842b6820386"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:5a6cbf216b69c7090f0fe4669501a27326c34e119068c1494f35aaf4cc683778"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:352e95ead6964974b234e16ba8a66dad102ec7bf8ac064a23f95371d8b198aab"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:8d6ab88c81c4040a817aa432484e838aaddf8bfd7ca70e4e615482757acb64f8"},
-    {file = "ruff-0.3.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:79bca3a03a759cc773fca69e0bdeac8abd1c13c31b798d5bb3c9da4a03144a9f"},
-    {file = "ruff-0.3.3-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:2700a804d5336bcffe063fd789ca2c7b02b552d2e323a336700abb8ae9e6a3f8"},
-    {file = "ruff-0.3.3-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:fd66469f1a18fdb9d32e22b79f486223052ddf057dc56dea0caaf1a47bdfaf4e"},
-    {file = "ruff-0.3.3-py3-none-musllinux_1_2_i686.whl", hash = "sha256:45817af234605525cdf6317005923bf532514e1ea3d9270acf61ca2440691376"},
-    {file = "ruff-0.3.3-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:0da458989ce0159555ef224d5b7c24d3d2e4bf4c300b85467b08c3261c6bc6a8"},
-    {file = "ruff-0.3.3-py3-none-win32.whl", hash = "sha256:f2831ec6a580a97f1ea82ea1eda0401c3cdf512cf2045fa3c85e8ef109e87de0"},
-    {file = "ruff-0.3.3-py3-none-win_amd64.whl", hash = "sha256:be90bcae57c24d9f9d023b12d627e958eb55f595428bafcb7fec0791ad25ddfc"},
-    {file = "ruff-0.3.3-py3-none-win_arm64.whl", hash = "sha256:0171aab5fecdc54383993389710a3d1227f2da124d76a2784a7098e818f92d61"},
-    {file = "ruff-0.3.3.tar.gz", hash = "sha256:38671be06f57a2f8aba957d9f701ea889aa5736be806f18c0cd03d6ff0cbca8d"},
+    {file = "ruff-0.3.4-py3-none-macosx_10_12_x86_64.macosx_11_0_arm64.macosx_10_12_universal2.whl", hash = "sha256:60c870a7d46efcbc8385d27ec07fe534ac32f3b251e4fc44b3cbfd9e09609ef4"},
+    {file = "ruff-0.3.4-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:6fc14fa742e1d8f24910e1fff0bd5e26d395b0e0e04cc1b15c7c5e5fe5b4af91"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d3ee7880f653cc03749a3bfea720cf2a192e4f884925b0cf7eecce82f0ce5854"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:cf133dd744f2470b347f602452a88e70dadfbe0fcfb5fd46e093d55da65f82f7"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:3f3860057590e810c7ffea75669bdc6927bfd91e29b4baa9258fd48b540a4365"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:986f2377f7cf12efac1f515fc1a5b753c000ed1e0a6de96747cdf2da20a1b369"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:c4fd98e85869603e65f554fdc5cddf0712e352fe6e61d29d5a6fe087ec82b76c"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:64abeed785dad51801b423fa51840b1764b35d6c461ea8caef9cf9e5e5ab34d9"},
+    {file = "ruff-0.3.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:df52972138318bc7546d92348a1ee58449bc3f9eaf0db278906eb511889c4b50"},
+    {file = "ruff-0.3.4-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:98e98300056445ba2cc27d0b325fd044dc17fcc38e4e4d2c7711585bd0a958ed"},
+    {file = "ruff-0.3.4-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:519cf6a0ebed244dce1dc8aecd3dc99add7a2ee15bb68cf19588bb5bf58e0488"},
+    {file = "ruff-0.3.4-py3-none-musllinux_1_2_i686.whl", hash = "sha256:bb0acfb921030d00070539c038cd24bb1df73a2981e9f55942514af8b17be94e"},
+    {file = "ruff-0.3.4-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:cf187a7e7098233d0d0c71175375c5162f880126c4c716fa28a8ac418dcf3378"},
+    {file = "ruff-0.3.4-py3-none-win32.whl", hash = "sha256:af27ac187c0a331e8ef91d84bf1c3c6a5dea97e912a7560ac0cef25c526a4102"},
+    {file = "ruff-0.3.4-py3-none-win_amd64.whl", hash = "sha256:de0d5069b165e5a32b3c6ffbb81c350b1e3d3483347196ffdf86dc0ef9e37dd6"},
+    {file = "ruff-0.3.4-py3-none-win_arm64.whl", hash = "sha256:6810563cc08ad0096b57c717bd78aeac888a1bfd38654d9113cb3dc4d3f74232"},
+    {file = "ruff-0.3.4.tar.gz", hash = "sha256:f0f4484c6541a99862b693e13a151435a279b271cff20e37101116a21e2a1ad1"},
 ]
 
 [[package]]
@@ -2822,7 +3088,10 @@ transaction = ">=1.6.0"
 [package.extras]
 test = ["zope.testing"]
 
+[extras]
+schemas = ["anitya-schema", "bodhi-messages", "ci-messages", "copr-messaging", "discourse2fedmsg-messages", "fedocal-messages", "fedora-elections-messages", "fedora-messaging-git-hook-messages", "fedora-messaging-the-new-hotness-schema", "fedora-planet-messages", "fedorainfra-ansible-messages", "koji-fedoramessaging-messages", "koschei-messages", "mdapi-messages", "mediawiki-messages", "noggin-messages", "nuancier-messages", "pagure-messages"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9011688f136f1d19b9d68086ced6272c506924295c53a3f236aeafa88f329689"
+content-hash = "9c05a6ed95b918132258b792ec6f3f91bb15da7ed05c617582eb7dcb51f8f656"

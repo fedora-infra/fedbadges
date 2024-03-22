@@ -44,6 +44,26 @@ backoff = "^2.2.1"
 fasjson-client = "^1.0.8"
 tahrir-api = { git = "https://github.com/fedora-infra/tahrir-api.git", branch = "develop" }
 
+# Schema packages
+anitya-schema = {version = "*", optional = true}
+bodhi-messages = {version = "*", optional = true}
+ci-messages = {version = "*", optional = true}
+copr-messaging = {version = "*", optional = true}
+discourse2fedmsg-messages = {version = "*", optional = true}
+fedocal-messages = {version = "*", optional = true}
+fedorainfra-ansible-messages = {version = "*", optional = true}
+fedora-elections-messages = {version = "*", optional = true}
+fedora-messaging-the-new-hotness-schema = {version = "*", optional = true}
+fedora-planet-messages = {version = "*", optional = true}
+koji-fedoramessaging-messages = {version = "*", optional = true}
+mdapi-messages = {version = "*", optional = true}
+noggin-messages = {version = "*", optional = true}
+nuancier-messages = {version = "*", optional = true}
+pagure-messages = {version = "*", optional = true}
+mediawiki-messages = {version = "*", optional = true}
+koschei-messages = {version = "*", optional = true}
+fedora-messaging-git-hook-messages = {version = "*", optional = true}
+
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0.0"
 pytest-cov = ">=4.0.0"
@@ -56,6 +76,29 @@ myst-parser = ">=0.16"
 liccheck = ">=0.6"
 pre-commit = ">=2.13"
 sphinxcontrib-napoleon = "*"
+
+[tool.poetry.extras]
+schemas = [
+  "anitya-schema",
+  "bodhi-messages",
+  "ci-messages",
+  "copr-messaging",
+  "discourse2fedmsg-messages",
+  "fedocal-messages",
+  "fedorainfra-ansible-messages",
+  "fedora-elections-messages",
+  "fedora-messaging-the-new-hotness-schema",
+  "fedora-planet-messages",
+  "koji-fedoramessaging-messages",
+  "mdapi-messages",
+  "noggin-messages",
+  "nuancier-messages",
+  "pagure-messages",
+  "mediawiki-messages",
+  "koschei-messages",
+  "fedora-messaging-git-hook-messages",
+]
+
 
 [build-system]
 requires = ["poetry-core"]
