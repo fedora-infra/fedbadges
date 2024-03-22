@@ -2015,6 +2015,20 @@ files = [
 cli = ["click (>=5.0)"]
 
 [[package]]
+name = "python-ldap"
+version = "3.4.4"
+description = "Python modules for implementing LDAP clients"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "python-ldap-3.4.4.tar.gz", hash = "sha256:7edb0accec4e037797705f3a05cbf36a9fde50d08c8f67f2aef99a2628fab828"},
+]
+
+[package.dependencies]
+pyasn1 = ">=0.3.7"
+pyasn1_modules = ">=0.1.5"
+
+[[package]]
 name = "pytz"
 version = "2024.1"
 description = "World timezone definitions, modern and historical"
@@ -3094,4 +3108,4 @@ schemas = ["anitya-schema", "bodhi-messages", "ci-messages", "copr-messaging", "
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "9c05a6ed95b918132258b792ec6f3f91bb15da7ed05c617582eb7dcb51f8f656"
+content-hash = "dcccd0a14beb7d1cb9fcd15da87cb669f13ae33014502ddb0d37c5e81506127f"

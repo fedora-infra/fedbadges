@@ -42,6 +42,7 @@ psutil = "^5.9.8"
 fedora-messaging = "^3.5.0"
 backoff = "^2.2.1"
 fasjson-client = "^1.0.8"
+click = "^8.0.0"
 tahrir-api = { git = "https://github.com/fedora-infra/tahrir-api.git", branch = "develop" }
 
 # Schema packages
@@ -63,6 +64,7 @@ pagure-messages = {version = "*", optional = true}
 mediawiki-messages = {version = "*", optional = true}
 koschei-messages = {version = "*", optional = true}
 fedora-messaging-git-hook-messages = {version = "*", optional = true}
+python-ldap = "^3.4.4"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0.0"
@@ -98,6 +100,14 @@ schemas = [
   "koschei-messages",
   "fedora-messaging-git-hook-messages",
 ]
+
+[tool.poetry.scripts]
+award-badges-dev = "fedbadges.manual.badges_dev:main"
+award-libravatar = "fedbadges.manual.libravatar:main"
+award-lifecycle = "fedbadges.manual.lifecycle:main"
+award-mirror = "fedbadges.manual.mirror:main"
+award-group-membership = "fedbadges.manual.group_membership:main"
+
 
 
 [build-system]

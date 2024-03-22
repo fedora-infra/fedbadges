@@ -61,6 +61,103 @@ issuer_origin = "http://badges.fedoraproject.com"
 issuer_url = "http://fedoraproject.org"
 issuer_email = "badges@fedoraproject.org"
 
+# Members and Sponsors of these groups get the corresponding badge
+[[consumer_config.group_badges]]
+group = "3d-printing-sig"
+badge = "3d-printing-sig-member"
+[[consumer_config.group_badges]]
+group = "cla_done"
+badge = "involvement"
+[[consumer_config.group_badges]]
+group = "advocates"
+badge = "fedora-advocate"
+[[consumer_config.group_badges]]
+group = "ambassadors"
+badge = "ambassador"
+[[consumer_config.group_badges]]
+group = "ambassadors"
+memberships = ["sponsor"]
+badge = "ambassadors-sponsor"
+[[consumer_config.group_badges]]
+group = "commops"
+badge = "commops-superstar"
+[[consumer_config.group_badges]]
+group = "council"
+badge = "council-member"
+[[consumer_config.group_badges]]
+group = "designteam"
+badge = "pixel-ninja"
+[[consumer_config.group_badges]]
+group = "dotnet-team"
+badge = "dotnet-sig-member"
+[[consumer_config.group_badges]]
+group = "fedora-hams"
+badge = "amateur-radio-sig-member"
+[[consumer_config.group_badges]]
+group = "fi-apprentice"
+badge = "no-longer-a-ronin"
+[[consumer_config.group_badges]]
+group = "gitfedora-web"
+badge = "rock-the-web!"
+[[consumer_config.group_badges]]
+group = "git-fedora-electronic-lab"
+badge = "fel-member"
+[[consumer_config.group_badges]]
+group = "iot"
+badge = "iot-working-group-member"
+[[consumer_config.group_badges]]
+group = "irc-support-operators"
+badge = "your-call-may-be-monitored-for-quality-assurance"
+[[consumer_config.group_badges]]
+group = "kde-sig"
+badge = "kde-sig"
+[[consumer_config.group_badges]]
+group = "lxqt-sig"
+badge = "lxqt-sig-member"
+[[consumer_config.group_badges]]
+group = "marketing"
+badge = "called-to-action"
+[[consumer_config.group_badges]]
+group = "mindshare"
+badge = "meeting-of-the-minds"
+[[consumer_config.group_badges]]
+group = "modularity-wg"
+badge = "modularity-wg-member"
+[[consumer_config.group_badges]]
+group = "neuro-sig"
+badge = "neurofedora-sig-member"
+[[consumer_config.group_badges]]
+group = "packager"
+memberships = ["sponsor"]
+badge = "packager-sponsor"
+[[consumer_config.group_badges]]
+group = "provenpackager"
+badge = "proven-packager"
+[[consumer_config.group_badges]]
+group = "proventesters"
+badge = "proven-tester"
+[[consumer_config.group_badges]]
+group = "robotics-sig"
+badge = "domo-arigato"
+[[consumer_config.group_badges]]
+group = "ruby-sig"
+badge = "ruby-sig-member"
+[[consumer_config.group_badges]]
+group = "security-team"
+badge = "security-team"
+[[consumer_config.group_badges]]
+group = "summer-coding"
+badge = "summer-coder"
+[[consumer_config.group_badges]]
+group = "sysadmin-main"
+badge = "trust-me,-i-know-what-i-am-doing"
+[[consumer_config.group_badges]]
+group = "sysadmin-badges"
+badge = "inside-job"
+[[consumer_config.group_badges]]
+group = "videos"
+badge = "videographer"
+
 
 [qos]
 prefetch_size = 0
