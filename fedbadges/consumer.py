@@ -6,24 +6,22 @@ Authors:  Ross Delinger
 """
 
 import asyncio
-
+import logging
 import os.path
-import yaml
 import threading
 import time
 
 import datanommer.models
-import tahrir_api.dbapi
 import fasjson_client
-from fedora_messaging.config import conf as fm_config
+import tahrir_api.dbapi
+import yaml
 from fedora_messaging.api import Message
+from fedora_messaging.config import conf as fm_config
 from sqlalchemy import create_engine
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 import fedbadges.rules
 
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -111,7 +109,7 @@ class FedoraBadgesConsumer:
         directory = os.path.abspath(directory)
         log.info("Looking in %r to load badge definitions" % directory)
         client = self._get_tahrir_client()
-        for root, dirs, files in os.walk(directory):
+        for root, _dirs, files in os.walk(directory):
             for partial_fname in files:
                 fname = root + "/" + partial_fname
                 badge = self._load_badge_from_yaml(fname)
@@ -126,7 +124,7 @@ class FedoraBadgesConsumer:
                     badge_rule.setup()
                     badges.append(badge_rule)
                 except ValueError as e:
-                    log.error("Initializing rule for %r failed with %r" % (fname, e))
+                    log.error("Initializing rule for %r failed with %r", fname, e)
 
         log.info("Loaded %i total badge definitions" % len(badges))
         return badges
@@ -134,10 +132,10 @@ class FedoraBadgesConsumer:
     def _load_badge_from_yaml(self, fname):
         log.debug("Loading %r" % fname)
         try:
-            with open(fname, "r") as f:
+            with open(fname) as f:
                 return yaml.safe_load(f.read())
         except Exception as e:
-            log.error("Loading %r failed with %r" % (fname, e))
+            log.error("Loading %r failed with %r", fname, e)
             return None
 
     def award_badge(self, username, badge_rule, link=None):
@@ -146,7 +144,6 @@ class FedoraBadgesConsumer:
             client = self._get_tahrir_client(session)
             client.add_person(email)
             session.commit()
-            user = client.get_person(email)
             client.add_assertion(badge_rule.badge_id, email, None, link)
             session.commit()
 
@@ -160,7 +157,8 @@ class FedoraBadgesConsumer:
         # condition.  We go to sleep to allow ample time for datanommer to
         # consume this one before we go and start doing checks on it.
         # TODO: make a SQL query in datanommer instead of waiting
-        # TODO: scratch that, check if the current message is in the matched messages when querying datanommer, and if it's not add 1 to the count.
+        # TODO: scratch that, check if the current message is in the matched messages
+        #       when querying datanommer, and if it's not add 1 to the count.
         time.sleep(self.consume_delay)
 
         datagrepper_url = self.config["datagrepper_url"]
@@ -175,7 +173,7 @@ class FedoraBadgesConsumer:
             try:
                 for recipient in badge_rule.matches(message):
                     self.award_badge(recipient, badge_rule, link)
-            except Exception as e:
+            except Exception:
                 log.exception("Rule: %s, message: %s", repr(badge_rule), repr(message))
 
         log.debug("Done with %s, %s", message.topic, message.id)
