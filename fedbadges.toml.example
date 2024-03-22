@@ -46,16 +46,16 @@ consume_delay = 1
 database_uri = "sqlite:////tmp/badges.db"
 
 # Datanommer database URI
-datanommer_db_uri = "sqlite:///datanommer.db"
+datanommer_db_uri = "sqlite:////tmp/datanommer.db"
 datagrepper_url = "https://apps.fedoraproject.org/datagrepper"
 distgit_hostname = "src.fedoraproject.org"
 id_provider_hostname = "id.fedoraproject.org"
-fasjson_base_url = "https://auth.tinystage.test/fasjson"
+fasjson_base_url = "https://fasjson.fedoraproject.org"
 
 # This is a set of data that tells our consumer what Open Badges Issuer
 # should be kept as the issuer of all the badges we create.
 [consumer_config.badge_issuer]
-issuer_id = "dkcsldkmlkc92jn"
+issuer_id = "fedora"
 issuer_name = "Fedora Project"
 issuer_origin = "http://badges.fedoraproject.com"
 issuer_url = "http://fedoraproject.org"
