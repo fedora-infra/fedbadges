@@ -42,7 +42,7 @@ psutil = "^5.9.8"
 fedora-messaging = "^3.5.0"
 backoff = "^2.2.1"
 fasjson-client = "^1.0.8"
-tahrir-api = "^0.8.1"
+tahrir-api = { git = "https://github.com/fedora-infra/tahrir-api.git", branch = "develop" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0.0"

@@ -2459,9 +2459,8 @@ version = "0.8.1"
 description = "An API for interacting with the Tahrir database"
 optional = false
 python-versions = "*"
-files = [
-    {file = "tahrir-api-0.8.1.tar.gz", hash = "sha256:877680b1e803d5293dbc0544efa3d87417a0591139485dc152d7b8bf3078e098"},
-]
+files = []
+develop = false
 
 [package.dependencies]
 alembic = "*"
@@ -2471,6 +2470,12 @@ pygments = "*"
 simplejson = "*"
 SQLAlchemy = ">=0.7.2"
 "zope.sqlalchemy" = "*"
+
+[package.source]
+type = "git"
+url = "https://github.com/fedora-infra/tahrir-api.git"
+reference = "develop"
+resolved_reference = "3bc69789625558b6c7332b73823e561cf8834584"
 
 [[package]]
 name = "toml"
@@ -2820,4 +2825,4 @@ test = ["zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "df676753a4a3e2a375e449f42c41b26415d288312e1f8e56442f60706d0616ab"
+content-hash = "9011688f136f1d19b9d68086ced6272c506924295c53a3f236aeafa88f329689"
