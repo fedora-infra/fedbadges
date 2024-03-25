@@ -10,26 +10,27 @@ import abc
 import copy
 import functools
 import inspect
+import logging
 import re
 
-from fedora_messaging.api import Message
 import datanommer.models
+from fedora_messaging.api import Message
+from tahrir_api.dbapi import TahrirDatabase
 
 from fedbadges.utils import (
     # These are all in-process utilities
     construct_substitutions,
+    email2fas,
     format_args,
-    single_argument_lambda_factory,
-    recursive_lambda_factory,
-    graceful,
     get_pagure_authors,
+    graceful,
+    nick2fas,
+    recursive_lambda_factory,
+    single_argument_lambda_factory,
     # These make networked API calls
     user_exists_in_fas,
-    nick2fas,
-    email2fas,
 )
 
-import logging
 
 log = logging.getLogger(__name__)
 
@@ -69,6 +70,22 @@ def krb2fas(name):
     if "/" not in name:
         return name
     return name.split("/")[0]
+
+
+def validate_possible(possible, fields):
+    if not fields.issubset(possible):
+        raise KeyError(
+            f"{fields.difference(possible)!r} are not possible fields. " f"Choose from {possible!r}"
+        )
+
+
+def validate_badge(required, possible, badge_dict):
+    fields = frozenset(list(badge_dict.keys()))
+    validate_possible(possible, fields)
+    if required and not required.issubset(fields):
+        raise ValueError(
+            f"BadgeRule requires {required!r}. " f"Missing {required.difference(fields)!r}"
+        )
 
 
 operators = frozenset(
@@ -124,26 +141,9 @@ class BadgeRule:
         ]
     )
 
-    def __init__(self, badge_dict, tahrir_database, issuer_id, config, fasjson):
-        argued_fields = frozenset(list(badge_dict.keys()))
-
-        if not argued_fields.issubset(self.possible):
-            raise KeyError(
-                "%r are not possible fields.  Choose from %r"
-                % (argued_fields.difference(self.possible), self.possible)
-            )
-
-        if not self.required.issubset(argued_fields):
-            raise ValueError(
-                "BadgeRule requires %r.  Missing %r"
-                % (
-                    self.required,
-                    self.required.difference(argued_fields),
-                )
-            )
-
+    def __init__(self, badge_dict, issuer_id, config, fasjson):
+        validate_badge(self.required, self.possible, badge_dict)
         self._d = badge_dict
-        self.tahrir = tahrir_database
         self.issuer_id = issuer_id
         self.config = config
         self.fasjson = fasjson
@@ -158,18 +158,17 @@ class BadgeRule:
         self.recipient_distgit2fas = self._d.get("recipient_distgit2fas")
         self.recipient_krb2fas = self._d.get("recipient_krb2fas")
 
-    def setup(self):
-        if self.tahrir:
-            with self.tahrir.session.begin():
-                self.badge_id = self._d["badge_id"] = self.tahrir.add_badge(
-                    name=self._d["name"],
-                    image=self._d["image_url"],
-                    desc=self._d["description"],
-                    criteria=self._d["discussion"],
-                    tags=",".join(self._d.get("tags", [])),
-                    issuer_id=self.issuer_id,
-                )
-                self.tahrir.session.commit()
+    def setup(self, tahrir: TahrirDatabase):
+        with tahrir.session.begin():
+            self.badge_id = self._d["badge_id"] = tahrir.add_badge(
+                name=self._d["name"],
+                image=self._d["image_url"],
+                desc=self._d["description"],
+                criteria=self._d["discussion"],
+                tags=",".join(self._d.get("tags", [])),
+                issuer_id=self.issuer_id,
+            )
+            tahrir.session.commit()
 
     def __getitem__(self, key):
         return self._d[key]
@@ -177,7 +176,7 @@ class BadgeRule:
     def __repr__(self):
         return f"<fedbadges.models.BadgeRule: {self._d!r}>"
 
-    def matches(self, msg: Message):
+    def matches(self, msg: Message, tahrir: TahrirDatabase):
 
         # First, do a lightweight check to see if the msg matches a pattern.
         if not self.trigger.matches(msg):
@@ -254,17 +253,14 @@ class BadgeRule:
             return awardees
 
         # Limit awardees to only those who do not already have this badge.
-        # Do this only if we have an active connection to the Tahrir DB.
-        if self.tahrir:
-            # badge = BadgeClass(self.tahrir, eid=self.badge_id)
-            awardees = frozenset(
-                [
-                    user
-                    for user in awardees
-                    if not self.tahrir.assertion_exists(self.badge_id, f"{user}@fedoraproject.org")
-                    and not self.tahrir.person_opted_out(f"{user}@fedoraproject.org")
-                ]
-            )
+        awardees = frozenset(
+            [
+                user
+                for user in awardees
+                if not tahrir.assertion_exists(self.badge_id, f"{user}@fedoraproject.org")
+                and not tahrir.person_opted_out(f"{user}@fedoraproject.org")
+            ]
+        )
 
         # If no-one would get the badge at this point, then no reason to waste
         # time doing any further checks.  No need to query datanommer.
@@ -275,8 +271,8 @@ class BadgeRule:
         try:
             if not self.criteria.matches(msg):
                 return set()
-        except IOError as e:
-            log.exception(e)
+        except OSError:
+            log.exception("Failed checking criteria for rule %s", self.badge_id)
             return set()
 
         # Lastly, and this is probably most expensive.  Make sure the person
@@ -294,27 +290,12 @@ class AbstractComparator(metaclass=abc.ABCMeta):
     children = None
 
     def __init__(self, d, parent=None):
-        argued_fields = frozenset(list(d.keys()))
-        if not argued_fields.issubset(self.possible):
-            raise KeyError(
-                "%r are not possible fields.  Choose from %r"
-                % (argued_fields.difference(self.possible), self.possible)
-            )
-
-        if self.required and not self.required.issubset(argued_fields):
-            raise ValueError(
-                "%r are required fields.  Missing %r"
-                % (
-                    self.required,
-                    self.required.difference(argued_fields),
-                )
-            )
-
+        validate_badge(self.required, self.possible, d)
         self._d = d
         self.parent = parent
 
     def __repr__(self):
-        return "<%s: %r> which is a child of %s" % (type(self).__name__, self._d, repr(self.parent))
+        return f"<{self.__class__.__name__}: {self._d!r}>, a child of {self.parent!r}"
 
     @abc.abstractmethod
     def matches(self, msg):
@@ -330,7 +311,7 @@ class AbstractTopLevelComparator(AbstractComparator):
             raise ValueError(
                 "No more than one trigger allowed.  " "Use an operator, one of %r" % operators
             )
-        self.attribute = list(self._d.keys())[0]
+        self.attribute = next(iter(self._d))
         self.expected_value = self._d[self.attribute]
 
         # XXX - Check if we should we recursively nest Trigger/Criteria?
@@ -363,7 +344,7 @@ class Trigger(AbstractTopLevelComparator):
         # Check if we should just aggregate the results of our children.
         # Otherwise, we are a leaf-node doing a straightforward comparison.
         if self.children:
-            return operator_lookup[self.attribute]((child.matches(msg) for child in self.children))
+            return operator_lookup[self.attribute](child.matches(msg) for child in self.children)
         elif self.attribute == "lambda":
             return single_argument_lambda_factory(
                 expression=self.expected_value, argument={"msg": msg.body}, name="msg"
@@ -401,7 +382,7 @@ class Criteria(AbstractTopLevelComparator):
     @graceful(set())
     def matches(self, msg):
         if self.children:
-            return operator_lookup[self.attribute]((child.matches(msg) for child in self.children))
+            return operator_lookup[self.attribute](child.matches(msg) for child in self.children)
         else:
             return self.specialization.matches(msg)
 
@@ -445,22 +426,14 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         grep_arguments = frozenset(argspec.args[1:]).difference(irrelevant)
 
         # Validate the filter
-        argued_filter_fields = frozenset(list(self._d["filter"].keys()))
-        if not argued_filter_fields.issubset(grep_arguments):
-            raise KeyError(
-                "%r are not possible fields.  Choose from %r"
-                % (
-                    argued_filter_fields.difference(grep_arguments),
-                    grep_arguments,
-                )
-            )
+        validate_possible(grep_arguments, self._d["filter"])
 
         # Validate the condition
-        condition_key, condition_val = list(self._d["condition"].items())[0]
+        condition_key, condition_val = next(iter(self._d["condition"].items()))
         if condition_key not in self.condition_callbacks:
             raise KeyError(
-                "%r is not a valid condition key.  Use one of %r"
-                % (condition_key, list(self.condition_callbacks.keys()))
+                f"{condition_key!r} is not a valid condition key. "
+                f"Use one of {list(self.condition_callbacks)!r}"
             )
 
         # Construct a condition callable for later

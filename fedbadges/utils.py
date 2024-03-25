@@ -1,14 +1,13 @@
 """ Utilities for fedbadges that don't quite fit anywhere else. """
 
-import logging
-import types
-import traceback
-import sys
-
 # These are here just so they're available in globals()
 # for compiling lambda expressions
-import json
-import re
+import json  # noqa: F401
+import logging
+import re  # noqa: F401
+import sys
+import traceback
+import types
 
 import backoff
 from fedora_messaging import api as fm_api
@@ -60,7 +59,7 @@ def format_args(obj, subs):
 def single_argument_lambda_factory(expression, argument, name="value"):
     """Compile and execute a lambda expression with a single argument"""
 
-    code = compile("lambda %s: %s" % (name, expression), __file__, "eval")
+    code = compile("lambda {name}: {expression}", __file__, "eval")
     func = types.LambdaType(code, globals())()
     return func(argument)
 
@@ -94,7 +93,7 @@ def graceful(default_return_value):
             except Exception as e:
                 log.exception(e)
                 log.error(
-                    "From method: %r self: %r args: %r kwargs: %r" % (method, self, args, kwargs)
+                    "From method: %r self: %r args: %r kwargs: %r", method, self, args, kwargs
                 )
                 return default_return_value
 
@@ -148,8 +147,8 @@ def get_pagure_authors(authors):
             try:
                 if item["name"] is not None:
                     authors_name.append(item["name"])
-            except KeyError:
-                raise Exception("Multiple recipients : name not found in the message")
+            except KeyError as e:
+                raise Exception("Multiple recipients : name not found in the message") from e
     return authors_name
 
 

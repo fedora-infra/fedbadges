@@ -6,29 +6,29 @@ Authors:  Ross Delinger
 """
 
 import asyncio
-import datetime
 import logging
-import os.path
 import threading
 import time
+from functools import partial
 
 import datanommer.models
 import fasjson_client
 import tahrir_api.dbapi
-import yaml
 from fedora_messaging.api import Message
 from fedora_messaging.config import conf as fm_config
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-import fedbadges.rules
-import fedbadges.rulesrepo
+from .aio import Periodic
+from .rulesrepo import RulesRepo
+from .utils import notification_callback
 
 
 log = logging.getLogger(__name__)
 
 DEFAULT_CONSUME_DELAY = 3
 DEFAULT_DELAY_LIMIT = 100
+RULES_RELOAD_INTERVAL = 15 * 60  # 15 minutes
 
 
 class FedoraBadgesConsumer:
@@ -56,17 +56,22 @@ class FedoraBadgesConsumer:
         # 3) Load our badge definitions and rules from YAML.
 
         # Tahrir stuff.
-        self._initialize_tahrir_connection()
+        await self.loop.run_in_executor(None, self._initialize_tahrir_connection)
 
         # Datanommer stuff
-        self._initialize_datanommer_connection()
+        await self.loop.run_in_executor(None, self._initialize_datanommer_connection)
 
         # FASJSON stuff
-        self.fasjson = fasjson_client.Client(self.config["fasjson_base_url"])
+        self.fasjson = await self.loop.run_in_executor(
+            None, fasjson_client.Client, self.config["fasjson_base_url"]
+        )
 
         # Load badge definitions
-        self._rules_repo = fedbadges.rulesrepo.RulesRepo(self.config)
-        self.badge_rules = self._rules_repo.load_all()
+        self._rules_repo = RulesRepo(self.config)
+        self._refresh_badges_task = Periodic(
+            partial(self.loop.run_in_executor, None, self._reload_rules), RULES_RELOAD_INTERVAL
+        )
+        await self._refresh_badges_task.start()
 
     def _initialize_tahrir_connection(self):
         database_uri = self.config.get("database_uri")
@@ -97,7 +102,7 @@ class FedoraBadgesConsumer:
         self.l.tahrir = tahrir_api.dbapi.TahrirDatabase(
             session=session,
             autocommit=False,
-            notification_callback=fedbadges.utils.notification_callback,
+            notification_callback=notification_callback,
         )
         session.commit()
         return self.l.tahrir
@@ -136,11 +141,16 @@ class FedoraBadgesConsumer:
 
         # Award every badge as appropriate.
         log.debug("Received %s, %s", message.topic, message.id)
+        tahrir = self._get_tahrir_client()
         for badge_rule in self.badge_rules:
             try:
-                for recipient in badge_rule.matches(message):
+                for recipient in badge_rule.matches(message, tahrir):
                     self.award_badge(recipient, badge_rule, link)
             except Exception:
                 log.exception("Rule: %s, message: %s", repr(badge_rule), repr(message))
 
         log.debug("Done with %s, %s", message.topic, message.id)
+
+    def _reload_rules(self):
+        tahrir = self._get_tahrir_client()
+        self.badge_rules = self._rules_repo.load_all(tahrir)

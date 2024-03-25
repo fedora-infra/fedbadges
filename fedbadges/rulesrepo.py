@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import subprocess
 
 import yaml
 
@@ -12,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class RulesRepo:
 
-    def __init__(self, config, directory):
+    def __init__(self, config):
         self.config = config
         self.directory = os.path.abspath(self.config["badges_directory"])
         self._last_load = None
@@ -24,6 +25,7 @@ class RulesRepo:
         return self.rules
 
     def _load_all(self, tahrir_client):
+        self._last_rules_load = datetime.datetime.now()
         # badges indexed by trigger
         badges = []
         log.info("Looking in %r to load badge definitions" % self.directory)
@@ -37,15 +39,14 @@ class RulesRepo:
 
                 try:
                     badge_rule = fedbadges.rules.BadgeRule(
-                        badge, tahrir_client, self.issuer_id, self.config, self.fasjson
+                        badge, self.issuer_id, self.config, self.fasjson
                     )
-                    badge_rule.setup()
+                    badge_rule.setup(tahrir_client)
                     badges.append(badge_rule)
                 except ValueError as e:
                     log.error("Initializing rule for %r failed with %r", fname, e)
 
         log.info("Loaded %i total badge definitions" % len(badges))
-        self._last_rules_load = datetime.datetime.now()
         return badges
 
     def _load_badge_from_yaml(self, fname):
@@ -58,7 +59,18 @@ class RulesRepo:
             return None
 
     def _needs_update(self):
-        # Run "git -C directory log -1 --pretty=format:%aI"
-        # Deserialize it with datetime.datetime.fromisoformat()
-        # Compare with self._last_rules_load
-        pass
+        result = subprocess.run(
+            [  # noqa: S603
+                "/usr/bin/git",
+                "-C",
+                self.directory,
+                "log",
+                "-1",
+                r"--pretty=format:%aI",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        last_commit_time = datetime.datetime.fromisoformat(result.stdout.strip())
+        return last_commit_time > self._last_rules_load
