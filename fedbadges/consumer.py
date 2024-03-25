@@ -67,7 +67,7 @@ class FedoraBadgesConsumer:
         )
 
         # Load badge definitions
-        self._rules_repo = RulesRepo(self.config)
+        self._rules_repo = RulesRepo(self.config, self.issuer_id, self.fasjson)
         self._rules_repo.setup()
 
         self._refresh_badges_task = Periodic(

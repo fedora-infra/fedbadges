@@ -13,8 +13,10 @@ log = logging.getLogger(__name__)
 
 class RulesRepo:
 
-    def __init__(self, config):
+    def __init__(self, config, issuer_id, fasjson):
         self.config = config
+        self.issuer_id = issuer_id
+        self.fasjson = fasjson
         self.directory = os.path.abspath(self.config["badges_repo"])
         self._last_rules_load = None
         self.rules = []
