@@ -38,8 +38,8 @@ def email_to_fas_accounts(fasjson, email):
 
 @click.command()
 @option_debug
-def main():
-    setup_logging()
+def main(debug):
+    setup_logging(debug=debug)
     config = fm_config["consumer_config"]
     uri = config["database_uri"]
     tahrir = TahrirDatabase(

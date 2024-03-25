@@ -36,8 +36,8 @@ def get_awards(fasjson, group_badges):
 
 @click.command()
 @option_debug
-def main():
-    setup_logging()
+def main(debug):
+    setup_logging(debug=debug)
     config = fm_config["consumer_config"]
     uri = config["database_uri"]
     tahrir = TahrirDatabase(
