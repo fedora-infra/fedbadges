@@ -57,7 +57,7 @@ class RulesRepo:
         return self.rules
 
     def _load_all(self, tahrir_client):
-        self._last_rules_load = datetime.datetime.now()
+        self._last_rules_load = datetime.datetime.now(tz=datetime.timezone.utc)
         rules_dir = os.path.join(self.directory, "rules")
         # badges indexed by trigger
         badges = []
@@ -108,4 +108,6 @@ class RulesRepo:
             text=True,
         )
         last_commit_time = datetime.datetime.fromisoformat(result.stdout.strip())
+        if last_commit_time.tzinfo is None:
+            last_commit_time = last_commit_time.replace(tzinfo=datetime.timezone.utc)
         return last_commit_time > self._last_rules_load

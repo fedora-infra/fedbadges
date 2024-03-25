@@ -73,9 +73,11 @@ def krb2fas(name):
 
 
 def validate_possible(possible, fields):
-    if not fields.issubset(possible):
+    fields_set = set(fields)
+    if not fields_set.issubset(possible):
         raise KeyError(
-            f"{fields.difference(possible)!r} are not possible fields. " f"Choose from {possible!r}"
+            f"{fields_set.difference(possible)!r} are not possible fields. "
+            f"Choose from {possible!r}"
         )
 
 
@@ -84,7 +86,7 @@ def validate_badge(required, possible, badge_dict):
     validate_possible(possible, fields)
     if required and not required.issubset(fields):
         raise ValueError(
-            f"BadgeRule requires {required!r}. " f"Missing {required.difference(fields)!r}"
+            f"BadgeRule requires {required!r}. Missing {required.difference(fields)!r}"
         )
 
 
