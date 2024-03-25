@@ -1,6 +1,10 @@
 import asyncio
 import inspect
+import logging
 from contextlib import suppress
+
+
+log = logging.getLogger(__name__)
 
 
 class Periodic:
@@ -34,7 +38,10 @@ class Periodic:
 
     async def _run(self):
         while True:
-            result = self.func()
-            if inspect.isawaitable(result):
-                await result
+            try:
+                result = self.func()
+                if inspect.isawaitable(result):
+                    await result
+            except Exception:
+                log.exception("Periodic call failed:")
             await asyncio.sleep(self.seconds)

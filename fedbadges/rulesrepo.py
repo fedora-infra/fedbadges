@@ -16,7 +16,7 @@ class RulesRepo:
     def __init__(self, config):
         self.config = config
         self.directory = os.path.abspath(self.config["badges_repo"])
-        self._last_load = None
+        self._last_rules_load = None
         self.rules = []
 
     def setup(self):
@@ -90,6 +90,8 @@ class RulesRepo:
             return None
 
     def _needs_update(self):
+        if self._last_rules_load is None:
+            return True
         result = subprocess.run(
             [  # noqa: S603
                 "/usr/bin/git",
