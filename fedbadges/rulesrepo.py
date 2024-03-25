@@ -15,7 +15,7 @@ class RulesRepo:
 
     def __init__(self, config):
         self.config = config
-        self.directory = os.path.abspath(self.config["badges_directory"])
+        self.directory = os.path.abspath(self.config["badges_repo"])
         self._last_load = None
         self.rules = []
 
@@ -34,7 +34,9 @@ class RulesRepo:
         else:
             result.check_returncode()
             safe_dirs = result.stdout.strip().split("\n")
+        log.debug("Git safe dirs: %r", safe_dirs)
         if self.directory not in safe_dirs:
+            log.debug("Adding %s to git's safe dirs", self.directory)
             subprocess.run(
                 [  # noqa: S603
                     "/usr/bin/git",
@@ -54,10 +56,11 @@ class RulesRepo:
 
     def _load_all(self, tahrir_client):
         self._last_rules_load = datetime.datetime.now()
+        rules_dir = os.path.join(self.directory, "rules")
         # badges indexed by trigger
         badges = []
-        log.info("Looking in %r to load badge definitions" % self.directory)
-        for root, _dirs, files in os.walk(self.directory):
+        log.info("Looking in %r to load badge definitions", rules_dir)
+        for root, _dirs, files in os.walk(rules_dir):
             for partial_fname in files:
                 fname = root + "/" + partial_fname
                 badge = self._load_badge_from_yaml(fname)
@@ -74,7 +77,7 @@ class RulesRepo:
                 except ValueError as e:
                     log.error("Initializing rule for %r failed with %r", fname, e)
 
-        log.info("Loaded %i total badge definitions" % len(badges))
+        log.info("Loaded %s total badge definitions", len(badges))
         return badges
 
     def _load_badge_from_yaml(self, fname):

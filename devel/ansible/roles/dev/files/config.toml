@@ -34,7 +34,7 @@ routing_keys = ["#"]
 [consumer_config]
 # This tells the consumer where to look for its BadgeRule definitions.  It
 # may be a relative or an absolute path on the file system.
-badges_directory = "tests/test_badges"
+badges_repo = "tests/test_badges"
 
 # Number of seconds to delay before consuming a message for our event loop.
 # This is here to help us mitigate distributed race conditions between
