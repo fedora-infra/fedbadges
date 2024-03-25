@@ -19,6 +19,34 @@ class RulesRepo:
         self._last_load = None
         self.rules = []
 
+    def setup(self):
+        self._mark_safe()
+
+    def _mark_safe(self):
+        result = subprocess.run(
+            ["/usr/bin/git", "config", "--get-all", "safe.directory"],  # noqa: S603
+            text=True,
+            stdout=subprocess.PIPE,
+        )
+        if result.returncode == 1:
+            # Option isn't set
+            safe_dirs = []
+        else:
+            result.check_returncode()
+            safe_dirs = result.stdout.strip().split("\n")
+        if self.directory not in safe_dirs:
+            subprocess.run(
+                [  # noqa: S603
+                    "/usr/bin/git",
+                    "config",
+                    "--global",
+                    "--add",
+                    "safe.directory",
+                    self.directory,
+                ],
+                check=True,
+            )
+
     def load_all(self, tahrir_client, force=False):
         if force or self._needs_update():
             self.rules = self._load_all(tahrir_client)
