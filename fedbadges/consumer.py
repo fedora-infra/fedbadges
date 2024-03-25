@@ -6,6 +6,7 @@ Authors:  Ross Delinger
 """
 
 import asyncio
+import datetime
 import logging
 import os.path
 import threading
@@ -21,6 +22,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 import fedbadges.rules
+import fedbadges.rulesrepo
 
 
 log = logging.getLogger(__name__)
@@ -63,8 +65,8 @@ class FedoraBadgesConsumer:
         self.fasjson = fasjson_client.Client(self.config["fasjson_base_url"])
 
         # Load badge definitions
-        directory = self.config["badges_directory"]
-        self.badge_rules = self._load_badges_from_yaml(directory)
+        self._rules_repo = fedbadges.rulesrepo.RulesRepo(self.config)
+        self.badge_rules = self._rules_repo.load_all()
 
     def _initialize_tahrir_connection(self):
         database_uri = self.config.get("database_uri")
@@ -102,41 +104,6 @@ class FedoraBadgesConsumer:
 
     def _initialize_datanommer_connection(self):
         datanommer.models.init(self.config["datanommer_db_uri"])
-
-    def _load_badges_from_yaml(self, directory):
-        # badges indexed by trigger
-        badges = []
-        directory = os.path.abspath(directory)
-        log.info("Looking in %r to load badge definitions" % directory)
-        client = self._get_tahrir_client()
-        for root, _dirs, files in os.walk(directory):
-            for partial_fname in files:
-                fname = root + "/" + partial_fname
-                badge = self._load_badge_from_yaml(fname)
-
-                if not badge:
-                    continue
-
-                try:
-                    badge_rule = fedbadges.rules.BadgeRule(
-                        badge, client, self.issuer_id, self.config, self.fasjson
-                    )
-                    badge_rule.setup()
-                    badges.append(badge_rule)
-                except ValueError as e:
-                    log.error("Initializing rule for %r failed with %r", fname, e)
-
-        log.info("Loaded %i total badge definitions" % len(badges))
-        return badges
-
-    def _load_badge_from_yaml(self, fname):
-        log.debug("Loading %r" % fname)
-        try:
-            with open(fname) as f:
-                return yaml.safe_load(f.read())
-        except Exception as e:
-            log.error("Loading %r failed with %r", fname, e)
-            return None
 
     def award_badge(self, username, badge_rule, link=None):
         email = f"{username}@fedoraproject.org"
