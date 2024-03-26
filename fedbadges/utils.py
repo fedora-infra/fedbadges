@@ -59,7 +59,7 @@ def format_args(obj, subs):
 def single_argument_lambda_factory(expression, argument, name="value"):
     """Compile and execute a lambda expression with a single argument"""
 
-    code = compile("lambda {name}: {expression}", __file__, "eval")
+    code = compile(f"lambda {name}: {expression}", __file__, "eval")
     func = types.LambdaType(code, globals())()
     return func(argument)
 

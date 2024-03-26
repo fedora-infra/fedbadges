@@ -236,7 +236,7 @@ class BadgeRule:
 
             awardees = frozenset([e for e in awardees if e is not None])
         else:
-            awardees = msg.usernames
+            awardees = frozenset(msg.usernames)
 
         awardees = awardees.difference(self.banned_usernames)
 
