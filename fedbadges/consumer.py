@@ -73,7 +73,7 @@ class FedoraBadgesConsumer:
         self._refresh_badges_task = Periodic(
             partial(self.loop.run_in_executor, None, self._reload_rules), RULES_RELOAD_INTERVAL
         )
-        await self._refresh_badges_task.start()
+        await self._refresh_badges_task.start(run_now=True)
 
     def _initialize_tahrir_connection(self):
         database_uri = self.config.get("database_uri")
