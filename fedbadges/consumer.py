@@ -26,7 +26,6 @@ from .utils import notification_callback
 
 log = logging.getLogger(__name__)
 
-DEFAULT_CONSUME_DELAY = 3
 DEFAULT_DELAY_LIMIT = 100
 RULES_RELOAD_INTERVAL = 15 * 60  # 15 minutes
 
@@ -36,7 +35,6 @@ class FedoraBadgesConsumer:
 
     def __init__(self):
         self.config = fm_config["consumer_config"]
-        self.consume_delay = int(self.config.get("consume_delay", DEFAULT_CONSUME_DELAY))
         self.delay_limit = int(self.config.get("delay_limit", DEFAULT_DELAY_LIMIT))
         self.badge_rules = []
         self.lock = threading.Lock()
@@ -130,10 +128,12 @@ class FedoraBadgesConsumer:
         # this message arrives at datanommer, we'll get skewed results!  Race
         # condition.  We go to sleep to allow ample time for datanommer to
         # consume this one before we go and start doing checks on it.
-        # TODO: make a SQL query in datanommer instead of waiting
-        # TODO: scratch that, check if the current message is in the matched messages
-        #       when querying datanommer, and if it's not add 1 to the count.
-        time.sleep(self.consume_delay)
+        # TODO: Option 1, easy: make a SQL query in datanommer instead of waiting
+        # TODO: Option 2, a bit harder: check if the current message is in the
+        #       matched messages when querying datanommer, and if it's not add 1
+        #       to the count.
+
+        self._wait_for_datanommer(message)
 
         datagrepper_url = self.config["datagrepper_url"]
         link = f"{datagrepper_url}/id?id={message.id}&is_raw=true&size=extra-large"
@@ -147,6 +147,13 @@ class FedoraBadgesConsumer:
         for badge_rule in self.badge_rules:
             try:
                 for recipient in badge_rule.matches(message, tahrir):
+                    log.debug(
+                        "Rule %s matched for %s (message %s on %s)",
+                        badge_rule.badge_id,
+                        recipient,
+                        message.id,
+                        message.topic,
+                    )
                     self.award_badge(recipient, badge_rule, link)
             except Exception:
                 log.exception("Rule: %s, message: %s", repr(badge_rule), repr(message))
@@ -156,3 +163,10 @@ class FedoraBadgesConsumer:
     def _reload_rules(self):
         tahrir = self._get_tahrir_client()
         self.badge_rules = self._rules_repo.load_all(tahrir)
+
+    def _wait_for_datanommer(self, message: Message):
+        while True:
+            dn_msg = datanommer.models.Message.from_msg_id(message.id)
+            if dn_msg is not None:
+                break
+            time.sleep(0.5)
