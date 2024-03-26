@@ -189,7 +189,7 @@ class BadgeRule:
         # recipient_key, we can use that to extract the potential awardee.  If
         # that is not specified, we just use `msg2usernames`.
         if self.recipient_key:
-            subs = construct_substitutions({"msg": msg.body})
+            subs = construct_substitutions(msg)
             obj = format_args(self.recipient_key, subs)
 
             if isinstance(obj, (str, int, float)):
@@ -450,7 +450,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         me all the messages bearing the same topic as the message that just
         arrived".
         """
-        subs = construct_substitutions({"msg": msg.body})
+        subs = construct_substitutions(msg)
         kwargs = format_args(copy.copy(self._d["filter"]), subs)
         kwargs = recursive_lambda_factory(kwargs, {"msg": msg.body}, name="msg")
 
@@ -477,7 +477,7 @@ class DatanommerCriteria(AbstractSpecializedComparator):
         %(msg.comment.update_submitter)s.  Placeholders like that will have
         their value substituted with whatever appears in the incoming message.
         """
-        subs = construct_substitutions({"msg": msg.body})
+        subs = construct_substitutions(msg)
         operation = format_args(copy.copy(self._d["operation"]), subs)
         return operation["lambda"]
 

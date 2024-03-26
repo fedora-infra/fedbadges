@@ -17,7 +17,13 @@ from fedora_messaging import exceptions as fm_exceptions
 log = logging.getLogger(__name__)
 
 
-def construct_substitutions(msg: dict):
+def construct_substitutions(message: fm_api.Message):
+    subs = dict_to_subs({"msg": message.body})
+    subs["topic"] = message.topic
+    return subs
+
+
+def dict_to_subs(msg: dict):
     """Convert a fedmsg message into a dict of substitutions."""
     subs = {}
     for key1 in msg:
@@ -26,7 +32,7 @@ def construct_substitutions(msg: dict):
                 dict(
                     [
                         (".".join([key1, key2]), val2)
-                        for key2, val2 in list(construct_substitutions(msg[key1]).items())
+                        for key2, val2 in list(dict_to_subs(msg[key1]).items())
                     ]
                 )
             )
