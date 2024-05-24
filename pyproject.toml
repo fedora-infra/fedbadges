@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fedbadges"
-version = "2.1.0"
+version = "2.1.1"
 description = "Fedora Messaging consumer for awarding open badges"
 
 license = "GPL-2.0-or-later"

@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 2.1.1
+
+- Add `rows_per_page` to the allowed datanommer grep args ([ccfc0f6](https://github.com/fedora-infra/tahrir-api/commit/ccfc0f6>))
+- Python 3.10 compat for sent-at ([b689df6](https://github.com/fedora-infra/tahrir-api/commit/b689df6>))
+- Use the release datanommer version ([e585557](https://github.com/fedora-infra/tahrir-api/commit/e585557>))
+- Remove the `get_first` reimplementation now that it's in datanommer-models ([1737740](https://github.com/fedora-infra/tahrir-api/commit/1737740>))
+
 ## Version 2.1.0
 
 - Fix the libravatar manual awarder ([86c402f](https://github.com/fedora-infra/tahrir-api/commit/86c402f>))
