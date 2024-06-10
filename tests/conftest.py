@@ -5,6 +5,7 @@ import datanommer
 import pytest
 from fedora_messaging.config import conf
 from tahrir_api import dbapi
+from tahrir_api.utils import get_db_manager_from_uri
 
 from fedbadges.cached import configure as configure_cache
 from fedbadges.consumer import FedoraBadgesConsumer
@@ -55,7 +56,8 @@ def badges_db(tmp_path, notification_callback_mock):
         autocommit=False,
         notification_callback=notification_callback_mock,
     )
-    db.db_mgr.sync()
+    db_mgr = get_db_manager_from_uri(database_uri)
+    db_mgr.sync()
     yield db
     db.session.rollback()
 
