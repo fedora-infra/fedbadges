@@ -27,7 +27,7 @@ def test_metadata_validation():
 
 
 def test_full_specification():
-    """Test for failure if no criteria specified."""
+    """Test for failure if no trigger is specified."""
     with pytest.raises(ValueError):
         fedbadges.rules.BadgeRule(
             dict(
@@ -98,7 +98,7 @@ def test_full_simple_match_almost_succeed(fasproxy, tahrir_client):
     rule.setup(tahrir_client)
 
     # This message has zero users associated with it, so even if trigger
-    # and criteria are met, there's noone to award the badge to -- and so,
+    # and condition are met, there's noone to award the badge to -- and so,
     # we should *fail* the ``matches`` call.
     msg = Message(topic="org.fedoraproject.prod.bodhi.mashtask.complete", body={"success": False})
 

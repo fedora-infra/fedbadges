@@ -20,7 +20,8 @@ fedbadges is a callback class for the Fedora Messaging consumer.
 When started, it will load some initial configuration
 and a set of ``BadgeRules`` (more on that later) and then sit quietly
 listening to the Fedora Messaging bus.  Each rule (composed of some metadata,
-a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
+a ``trigger``, an optional ``condition`` and an optional way of counting previous
+messages) is defined on disk as a yaml file.
 
 * When a new message comes along, our callback looks to see if it matches
   any of the ``BadgeRules`` it has registered.
@@ -35,14 +36,13 @@ a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
   or "messages only from the failure of a koji build".  More on their
   specification below.
 
-* BadgeRules must also define a set of ``criteria`` -- a more *heavyweight*
-  check.  During the processing of a newly received message, if the
-  message matches a BadgeRule's ``trigger``, the ``criteria`` is then
-  considered.  This typically involves a more expensive query to the
+* BadgeRules can also define a ``previous`` value, as a way to count similar
+  messages that went through the bus in the past. This typically involves a
+  more expensive query to the
   `datanommer <https://github.com/fedora-infra/datanommer>`_ database.
 
-  A BadgeRule ``criteria`` may read something like "$user has
-  pushed 200 bodhi updates to stable" or "$user chaired an IRC meeting".
+  A BadgeRule ``previous`` query may read something like "updates pushed to
+  stable by the candidate" or "IRC meetings chaired by the candidate".
 
   **Aside:** Although datanommer is the only currently supported backend, we
   can implement other queryable backend in the future as needed like FAS
@@ -50,7 +50,17 @@ a ``trigger``, and a set of ``criteria``) is defined on disk as a yaml file.
   like libravatar (to award a badge if the user is a user of the AGPL web
   service).
 
-* If a badge's ``trigger`` and ``criteria`` both match, then the badge is
+* BadgeRule can define a ``condition`` that the number of messages returned by
+  the ``previous`` query must match. This can be something like
+  ``greater than or equal to: 50``. If unset, the default condition is
+  ``greater than or equal to 1``.
+
+* If no ``previous`` query is set, then the rule only considers the current
+  incoming message (it's like the ``previous`` result is always ``1``). This
+  is relevant for rules that award a badge on the first action. Those rules
+  don't need to set a ``condition`` either, the default one will do.
+
+* If a badge's ``trigger`` and ``condition`` both match, then the badge is
   awarded.  If the BadgeRule doesn't specify, we award the badge to the
   author of the action using the message's ``agent_name`` property.
 
@@ -148,63 +158,59 @@ it and compiles it into a python callable on initialization.  Our callable
 here serializes the message to a JSON string before doing its comparison.
 Powerful!
 
-Criteria
+Previous
 ~~~~~~~~
 
 As mentioned above in the architecture section, we currently only support
-datanommer as a queryable backend for criteria.  We hope to expand that
-in the future.
+datanommer as a queryable backend for ``previous`` queries. We hope to expand
+that in the future.
 
-Datanommer criteria are composed of three things:
+Datanommer queries are composed of two things:
 
 - A **filter** limits the scope of the query to datanommer.
 - An **operation** defines what we want to do with the filtered query.
-  Currently, we can only *count* the results.
-- A **condition** defines how we want to compare the results of the
-  **operation** to determine if our criteria matches or not.
+  Currently, we can *count* the results or run them through a ``lambda``
+  function that will return an integer (the number of matched messages).
 
-Here's an example of a simple criteria definition::
+Here's an example of a simple previous definition::
 
-    criteria:
+    previous:
       filter:
         topics:
-        - "%(topic)s"
+        - message.topic
       operation: count
-      condition:
-        greater than or equal to: 2
 
-The above criteria will match if there is more than one message in datanommer
-with the same topic as the incoming message being handled.  Here, ``"%(topic)s"``
-is a `template variable`.  Template variables will have their values
-substituted before the expensive check is made against datanommer.
+The above ``previous`` query will return the number of messages in datanommer
+with the same topic as the incoming message being handled.  Here,
+``message.topic`` is a ``lambda function`` that has the incoming ``message``
+in scope.
 
 ----
 
 The above example doesn't make much sense -- we'd never use it for a real
-badge.  The criteria would be true if there were two of *any* message kicked
-off by *any* user at any time in the past.  Pretty generic.
-Here's a more interesting criteria definition::
+badge.  The ``previous`` query would be true if there were two of *any* message
+kicked off by *any* user at any time in the past.  Pretty generic.
+Here's a more interesting ``previous`` query::
 
-    criteria:
+    previous:
       filter:
         topics:
         - org.fedoraproject.prod.git.receive
         users:
-        - "%(msg.commit.username)s"
+        - message.body["commit"]["username"]
       operation: count
-      condition:
-        greater than or equal to: 50
 
-This criteria would match if there existed 50 messages of the topic
+This ``previous`` query would return the number of messages of the topic
 ``"org.fedoraproject.prod.git.receive"`` that were also kicked off by whatever
-user is listed in the ``msg['msg']['commit']['username']`` field of the
-message being currently processed.  In other words, this criteria would match
-if the user has pushed to the fedora git repos 50 or more times.
+user is listed in the ``message.body['commit']['username']`` field of the
+message being currently processed.  In other words, this query would return
+the number of pushes to the fedora git repos by the user.
 
-----
+Condition
+~~~~~~~~~
 
-You can do some fancy things with the **condition** of a datanommer
-filter.  Here's a list of the possible comparisons you can make:
+You can do some fancy things with the **condition** field.
+Here's a list of the possible comparisons you can make:
 
 - ``"is greater than or equal to"`` or alternatively
   ``"greater than or equal to"``
@@ -224,24 +230,17 @@ by using the ``lambda`` condition whereby fedbadges will compile whatever
 statement you provide into a callable and use that at runtime.  For example::
 
 
-    criteria:
-      filter:
-        topics:
-        - org.fedoraproject.prod.git.receive
-        users:
-        - "%(msg.commit.username)s"
-      operation: count
-      condition:
-        lambda: value != 0 and ((value & (value - 1)) == 0)
+    condition:
+      lambda: value != 0 and ((value & (value - 1)) == 0)
 
-Who knows why you would want to do this, but the above criteria check will
-succeed if the number of messages returned from the filtered datanommer query
-is exactly a power of 2.
+Who knows why you would want to do this, but the above condition check will
+succeed if the number of messages that matched in the past is exactly a power
+of 2.
 
 Specifying Recipients
 ~~~~~~~~~~~~~~~~~~~~~
 
-By default, if the trigger and criteria match, fedbadges will award badges
+By default, if the trigger and condition match, fedbadges will award badges
 to the user returned by the message's ``agent_name`` property.
 This *usually* corresponds with "which user is responsible" for this message.
 That is *usually* what we want to award badges for.
@@ -264,13 +263,13 @@ handle the fas case we described above::
 
     trigger:
       topic: org.fedoraproject.prod.bodhi.update.comment
-    criteria:
+    condition:
+      greater than or equal to: 1
+    previous:
       filter:
         topics:
-        - "%(topic)s"
+        - message.topic
         users:
-        - "%(msg.update.user.name)s"
+        - recipient
       operation: count
-      condition:
-        greater than or equal to: 1
-    recipient: "%(msg.update.user.name)s"
+    recipient: message.body["update"]["user"]["name"]
