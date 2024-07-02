@@ -20,8 +20,8 @@ http_client = None
 
 
 def gather_authors(repodir):
-    result = subprocess.run(
-        ["/usr/bin/git", "log", r"--pretty=tformat:%ae"],  # noqa: S603
+    result = subprocess.run(  # noqa: S603
+        ["/usr/bin/git", "log", r"--pretty=tformat:%ae"],
         cwd=repodir,
         text=True,
         stdout=subprocess.PIPE,
@@ -54,8 +54,8 @@ def main(debug):
     for repo in repos:
         with tempfile.TemporaryDirectory() as tmpdir:
             log.info("Trying %s", repo)
-            subprocess.run(
-                [  # noqa: S603
+            subprocess.run(  # noqa: S603
+                [
                     "/usr/bin/git",
                     "clone",
                     f"https://github.com/fedora-infra/{repo}.git",

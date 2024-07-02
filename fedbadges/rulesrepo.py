@@ -25,8 +25,8 @@ class RulesRepo:
         self._mark_safe()
 
     def _mark_safe(self):
-        result = subprocess.run(
-            ["/usr/bin/git", "config", "--get-all", "safe.directory"],  # noqa: S603
+        result = subprocess.run(  # noqa: S603
+            ["/usr/bin/git", "config", "--get-all", "safe.directory"],
             text=True,
             stdout=subprocess.PIPE,
         )
@@ -39,8 +39,8 @@ class RulesRepo:
         log.debug("Git safe dirs: %r", safe_dirs)
         if self.directory not in safe_dirs:
             log.debug("Adding %s to git's safe dirs", self.directory)
-            subprocess.run(
-                [  # noqa: S603
+            subprocess.run(  # noqa: S603
+                [
                     "/usr/bin/git",
                     "config",
                     "--global",
@@ -94,8 +94,8 @@ class RulesRepo:
     def _needs_update(self):
         if self._last_rules_load is None:
             return True
-        result = subprocess.run(
-            [  # noqa: S603
+        result = subprocess.run(  # noqa: S603
+            [
                 "/usr/bin/git",
                 "-C",
                 self.directory,
