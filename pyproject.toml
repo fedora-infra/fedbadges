@@ -48,7 +48,7 @@ tahrir-api = "^1.0.0"
 dogpile-cache = "^1.3.2"
 pymemcache = "^4.0.0"
 redis = {version = "^5.0.4", optional = true}
-requests-ratelimiter = "^0.6.0"
+requests-ratelimiter = "^0.6.0 || ^0.7.0"
 
 # Message schemas. The reference list of all message schemas is in
 # https://github.com/fedora-infra/fedora-messaging/blob/develop/docs/schema-packages.txt
