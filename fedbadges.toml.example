@@ -53,6 +53,38 @@ fasjson_base_url = "https://fasjson.fedoraproject.org"
 # Check for new rules every these many minutes
 rules_reload_interval = 15
 
+# Users skipped when awarding badges
+skip_users = [
+    "bodhi",
+    "oscar",
+    "apache",
+    "koji",
+    "bodhi",
+    "taskotron",
+    "pagure",
+    "packit",
+    "packit-stg",
+    "koschei",
+    "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
+    "root",
+    "zodbot",
+    "bodhidev-bot",
+    "eclipse-bluechi-bot",
+    "githubbotargparsemanpage",
+    "imagebuilder-bot",
+    "knet-ci-bot",
+    "l10nbot",
+    "noobdevbot",
+    "notifs-bot",
+    "notifs-stg-bot",
+    "osbuild-automation-bot",
+    "releng-bot",
+    "sambabot",
+    "sourcegraph-bot",
+    "theforeman-bot",
+    "rhcontainerbot",
+]
+
 # Cache configuation
 [consumer_config.cache]
 backend = "dogpile.cache.memory"

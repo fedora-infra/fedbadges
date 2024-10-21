@@ -93,39 +93,6 @@ class BadgeRule:
         ]
     )
 
-    banned_usernames = frozenset(
-        [
-            "bodhi",
-            "oscar",
-            "apache",
-            "koji",
-            "bodhi",
-            "taskotron",
-            "pagure",
-            "packit",
-            "packit-stg",
-            "koschei",
-            "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
-            "root",
-            "zodbot",
-            "bodhidev-bot",
-            "eclipse-bluechi-bot",
-            "githubbotargparsemanpage",
-            "imagebuilder-bot",
-            "knet-ci-bot",
-            "l10nbot",
-            "noobdevbot",
-            "notifs-bot",
-            "notifs-stg-bot",
-            "osbuild-automation-bot",
-            "releng-bot",
-            "sambabot",
-            "sourcegraph-bot",
-            "theforeman-bot",
-            "rhcontainerbot",
-        ]
-    )
-
     def __init__(self, badge_dict, issuer_id, config, fasjson):
         try:
             validate_fields(self.required, self.possible, badge_dict)
@@ -222,8 +189,8 @@ class BadgeRule:
         # Remove None
         candidates = frozenset([e for e in candidates if e is not None])
 
-        # Exclude banned usernames
-        candidates = candidates.difference(self.banned_usernames)
+        # Skipped usernames
+        candidates = candidates.difference(frozenset(self.config.get("skip_users", [])))
 
         # Strip anyone who is an IP address
         candidates = frozenset(

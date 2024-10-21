@@ -50,6 +50,37 @@ distgit_hostname = "src.tinystage.test"
 id_provider_hostname = "id.tinystage.test"
 fasjson_base_url = "https://fasjson.tinystage.test/fasjson"
 
+# Users skipped when awarding badges
+skip_users = [
+    "bodhi",
+    "oscar",
+    "apache",
+    "koji",
+    "bodhi",
+    "taskotron",
+    "pagure",
+    "packit",
+    "packit-stg",
+    "koschei",
+    "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
+    "root",
+    "zodbot",
+    "bodhidev-bot",
+    "eclipse-bluechi-bot",
+    "githubbotargparsemanpage",
+    "imagebuilder-bot",
+    "knet-ci-bot",
+    "l10nbot",
+    "noobdevbot",
+    "notifs-bot",
+    "notifs-stg-bot",
+    "osbuild-automation-bot",
+    "releng-bot",
+    "sambabot",
+    "sourcegraph-bot",
+    "theforeman-bot",
+    "rhcontainerbot",
+]
 
 # Cache configuation
 [consumer_config.cache]
