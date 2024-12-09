@@ -107,6 +107,47 @@ def test_full_simple_match_almost_succeed(fasproxy, tahrir_client, fm_config):
         assert rule.matches(msg, tahrir_client) == set()
 
 
+def test_skip_user(fasproxy, tahrir_client, fm_config, user_exists):
+    """Test that skipped users are actually skipped."""
+    rule = fedbadges.rules.BadgeRule(
+        dict(
+            name="Test",
+            description="Doesn't matter...",
+            creator="Somebody",
+            discussion="http://somelink.com",
+            issuer_id="fedora-project",
+            image_url="http://somelinke.com/something.png",
+            trigger=dict(category="fas"),
+            condition={"greater than or equal to": 1},
+        ),
+        1,
+        fm_config,
+        fasproxy,
+    )
+    rule.setup(tahrir_client)
+
+    msg = MemberSponsorV1(
+        topic="org.fedoraproject.stg.fas.group.member.sponsor",
+        body={
+            "msg": {
+                "group": "ambassadors",
+                "user": "ralph",
+                "agent": "toshio",
+            }
+        },
+    )
+
+    with patch("fedbadges.rules.BadgeRule._get_current_value") as get_current_value:
+        get_current_value.return_value = 1
+        assert rule.matches(msg, tahrir_client) == frozenset(["toshio"])
+        get_current_value.assert_called_once()
+        get_current_value.reset_mock()
+        # Now add Toshio to the skipped users
+        rule.config["skip_users"] = ["toshio"]
+        assert rule.matches(msg, tahrir_client) == frozenset()
+        get_current_value.assert_not_called()
+
+
 def test_yaml_specified_awardee_success(fasproxy, tahrir_client, fm_config, user_exists):
     """Test that we can override msg.usernames."""
     # For instance, fas.group.member.remove contains two users,
