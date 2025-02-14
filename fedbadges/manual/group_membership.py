@@ -60,4 +60,5 @@ def main(debug):
     for badge_id, usernames in awards.items():
         badge = tahrir.get_badge(badge_id=badge_id)
         for username in usernames:
-            award_badge(tahrir, badge, username)
+            email = f"{username}@{config['email_domain']}"
+            award_badge(tahrir, badge, email)

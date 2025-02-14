@@ -45,7 +45,7 @@ def main(debug):
             log.info(f"Mirror admin {username} does not exist in FAS, skipping.")
             continue
 
-        email = f"{username}@fedoraproject.org"
+        email = f"{username}@{config['email_domain']}"
 
         person = tahrir.get_person(person_email=email)
         if not person:

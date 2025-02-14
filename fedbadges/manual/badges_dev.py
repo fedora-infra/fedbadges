@@ -66,7 +66,8 @@ def main(debug):
                 log.debug("Considering email %s", email)
                 username = email_to_fas_accounts(fasjson, email)
                 log.debug("Considering user %s", username)
-                award_badge(tahrir, badge, username)
+                email = f"{username}@{config['email_domain']}"
+                award_badge(tahrir, badge, email)
 
 
 if __name__ == "__main__":

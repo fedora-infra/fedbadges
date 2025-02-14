@@ -54,7 +54,7 @@ def main(debug):
         for person in fasjson.search_user(
             group=REQUIRED_GROUPS, creation__before=threshold, _fields=["username"]
         ):
-            email = person["username"] + "@fedoraproject.org"
+            email = f"{person['username']}@{config['email_domain']}"
             award_badge(tahrir, badge, email)
 
 
