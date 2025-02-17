@@ -77,6 +77,7 @@ noggin-messages = {version = "*", optional = true}
 nuancier-messages = {version = "*", optional = true}
 pagure-messages = {version = "*", optional = true}
 tahrir-messages = {version = "*", optional = true}
+webhook-to-fedora-messaging-messages = {version = "*", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=7.0.0"
@@ -120,6 +121,7 @@ schemas = [
   "nuancier-messages",
   "pagure-messages",
   "tahrir-messages",
+  "webhook-to-fedora-messaging-messages",
 ]
 
 [tool.poetry.scripts]
