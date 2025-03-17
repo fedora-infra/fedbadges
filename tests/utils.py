@@ -1,4 +1,4 @@
-""" Utilities for tests """
+"""Utilities for tests"""
 
 import datetime
 
