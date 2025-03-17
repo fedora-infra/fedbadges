@@ -1,4 +1,4 @@
-""" Utilities for fedbadges that don't quite fit anywhere else. """
+"""Utilities for fedbadges that don't quite fit anywhere else."""
 
 # These are here just so they're available in globals()
 # for compiling lambda expressions

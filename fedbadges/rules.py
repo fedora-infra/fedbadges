@@ -1,4 +1,4 @@
-""" Models for fedbadges.
+"""Models for fedbadges.
 
 The primary thing here is a "BadgeRule" which is an in-memory working
 abstraction of the trigger and criteria required to award a badge.

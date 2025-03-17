@@ -1,4 +1,4 @@
-""" Consumers for producing openbadges by listening for messages on fedmsg
+"""Consumers for producing openbadges by listening for messages on fedmsg
 
 Authors:  Ross Delinger
           Ralph Bean
