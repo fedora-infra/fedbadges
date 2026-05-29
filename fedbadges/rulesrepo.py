@@ -25,7 +25,7 @@ class RulesRepo:
         self._mark_safe()
 
     def _mark_safe(self):
-        result = subprocess.run(  # noqa: S603
+        result = subprocess.run(
             ["/usr/bin/git", "config", "--get-all", "safe.directory"],
             text=True,
             stdout=subprocess.PIPE,

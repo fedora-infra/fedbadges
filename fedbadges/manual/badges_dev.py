@@ -20,7 +20,7 @@ http_client = None
 
 
 def gather_authors(repodir):
-    result = subprocess.run(  # noqa: S603
+    result = subprocess.run(
         ["/usr/bin/git", "log", r"--pretty=tformat:%ae"],
         cwd=repodir,
         text=True,
