@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 import textwrap
 
+import noggin.utility.timezones as timezones
 import python_freeipa
 from faker import Faker
-
-import noggin.utility.timezones as timezones
 from noggin.security.ipa import Client
 
-
-USER_PASSWORD = "testuserpw"
+USER_PASSWORD = "testuserpw"  # noqa: S105
 
 fake = Faker()
 fake.seed_instance(0)
