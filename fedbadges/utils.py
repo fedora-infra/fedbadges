@@ -20,7 +20,6 @@ from fedora_messaging import exceptions as fm_exceptions
 from fedora_messaging.config import conf as fm_config
 from twisted.internet import reactor, threads
 
-
 log = logging.getLogger(__name__)
 
 

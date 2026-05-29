@@ -3,7 +3,6 @@ import inspect
 import logging
 from contextlib import suppress
 
-
 log = logging.getLogger(__name__)
 
 

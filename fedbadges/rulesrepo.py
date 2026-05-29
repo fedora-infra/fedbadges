@@ -7,7 +7,6 @@ import yaml
 
 import fedbadges.rules
 
-
 log = logging.getLogger(__name__)
 
 

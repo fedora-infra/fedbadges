@@ -10,7 +10,6 @@ from fedbadges.fas import FASProxy
 
 from .utils import award_badge, option_debug, setup_logging
 
-
 # Users in the fedora-contributor group are members of at least 1 group.
 REQUIRED_GROUPS = ["fedora-contributor"]
 

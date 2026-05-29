@@ -2,7 +2,6 @@ import logging
 
 import click
 
-
 _log = logging.getLogger(__name__)
 
 option_debug = click.option("--debug", is_flag=True, default=False, help="enable debugg logging")

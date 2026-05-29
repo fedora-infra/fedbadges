@@ -23,7 +23,6 @@ from .fas import FASProxy
 from .rulesrepo import RulesRepo
 from .utils import datanommer_has_message, notification_callback
 
-
 log = logging.getLogger(__name__)
 
 DEFAULT_RULES_RELOAD_INTERVAL = 15  # in minutes

@@ -32,7 +32,6 @@ from fedbadges.utils import (
     single_argument_lambda_factory,
 )
 
-
 log = logging.getLogger(__name__)
 
 

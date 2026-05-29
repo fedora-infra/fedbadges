@@ -4,7 +4,6 @@ import pymemcache
 from dogpile.cache import make_region
 from dogpile.cache.proxy import ProxyBackend
 
-
 log = logging.getLogger(__name__)
 cache = make_region()
 

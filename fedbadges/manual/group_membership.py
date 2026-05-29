@@ -10,7 +10,6 @@ import fedbadges.utils
 
 from .utils import award_badge, option_debug, setup_logging
 
-
 log = logging.getLogger(__name__)
 
 
