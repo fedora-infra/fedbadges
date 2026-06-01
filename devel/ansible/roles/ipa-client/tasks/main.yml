@@ -26,6 +26,14 @@
   register: python_stat_result
 
 - block:
+  - name: Make sure certifi is installed
+    become_user: "{{ python_stat_result.stat.pw_name }}"
+    command:
+      cmd: "{{ python_exec }} -m pip install certifi"
+      chdir: "{{ python_run_dir }}"
+    register: _install_certifi
+    changed_when: '"Requirement already satisfied" not in _install_certifi.stdout'
+
   - name: Find where certifi's CA bundle is located
     command:
       cmd: "{{ python_exec }} -c 'import certifi; print(certifi.where())'"

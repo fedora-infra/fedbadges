@@ -3,6 +3,7 @@
     name:
       - gcc
       - libpq-devel
+      - python3-devel
       - python3-psycopg2
       - postgresql-server
       - timescaledb
@@ -77,6 +78,7 @@
   pip:
     name: "{{ item }}"
     virtualenv: "{{ venv }}"
+    virtualenv_command: "python3 -m venv"
   loop:
     - datanommer-commands
 
