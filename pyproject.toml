@@ -95,6 +95,7 @@ pre-commit = ">=2.13"
 sphinxcontrib-napoleon = "*"
 bodhi-messages = "*"
 noggin-messages = "*"
+pytest-twisted = "^1.14.3"
 
 [tool.poetry.extras]
 schemas = [
@@ -155,6 +156,9 @@ order-by-type = false
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
+
+[tool.pytest.ini_options]
+addopts = "--reactor=asyncio"
 
 [tool.coverage.run]
 branch = true

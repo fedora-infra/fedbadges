@@ -5,19 +5,17 @@ Authors:  Ross Delinger
           Aurelien Bompard
 """
 
-import asyncio
 import datetime
 import logging
 import time
-from functools import partial
 
 import datanommer.models
 import tahrir_api.dbapi
 from fedora_messaging.api import Message
 from fedora_messaging.config import conf as fm_config
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from twisted.internet import defer, reactor, task, threads
 
-from .aio import Periodic
 from .cached import configure as configure_cache
 from .fas import FASProxy
 from .rulesrepo import RulesRepo
@@ -34,42 +32,35 @@ class FedoraBadgesConsumer:
     def __init__(self):
         self.config = fm_config["consumer_config"]
         self.badge_rules = []
-        self.loop = asyncio.get_event_loop()
-        self._ready = self.loop.create_task(self.setup())
-        if not self.loop.is_running():
-            self.loop.run_until_complete(self._ready)
+        self._ready = self.setup()
 
-    async def setup(self):
+    @defer.inlineCallbacks
+    def setup(self):
         # Five things need doing at start up time
         # 0) Set up a request local to hang thread-safe db sessions on.
         # 1) Initialize our connection to the Tahrir DB
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
         # Cache
-        await self.loop.run_in_executor(None, self._initialize_cache)
+        yield threads.deferToThread(self._initialize_cache)
 
         # Tahrir stuff.
-        await self.loop.run_in_executor(None, self._initialize_tahrir_connection)
+        yield threads.deferToThread(self._initialize_tahrir_connection)
 
         # Datanommer stuff
-        await self.loop.run_in_executor(None, self._initialize_datanommer_connection)
+        yield threads.deferToThread(self._initialize_datanommer_connection)
 
         # FASJSON stuff
-        self.fasjson = await self.loop.run_in_executor(
-            None, FASProxy, self.config["fasjson_base_url"]
-        )
+        self.fasjson = yield threads.deferToThread(FASProxy, self.config["fasjson_base_url"])
 
-        # Load badge definitions
+        # Load badge definitions periodically
         self._rules_repo = RulesRepo(self.config, self.issuer_id, self.fasjson)
-        self._rules_repo.setup()
-
-        rules_reload_inteval = self.config.get(
+        yield threads.deferToThread(self._rules_repo.setup)
+        rules_reload_interval = self.config.get(
             "rules_reload_interval", DEFAULT_RULES_RELOAD_INTERVAL
         )
-        self._refresh_badges_task = Periodic(
-            partial(self.loop.run_in_executor, None, self._reload_rules), rules_reload_inteval * 60
-        )
-        await self._refresh_badges_task.start(run_now=True)
+        refresh_badges_task = task.LoopingCall(reactor.callInThread, self._reload_rules)
+        refresh_badges_task.start(rules_reload_interval * 60, now=True)
 
     def _initialize_cache(self):
         cache_args = self.config.get("cache")

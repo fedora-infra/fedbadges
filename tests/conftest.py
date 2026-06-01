@@ -8,9 +8,26 @@ from tahrir_api import dbapi
 from tahrir_api.utils import get_db_manager_from_uri
 
 from fedbadges.cached import configure as configure_cache
-from fedbadges.consumer import FedoraBadgesConsumer
+
+# from fedbadges.consumer import FedoraBadgesConsumer
 from fedbadges.fas import FASProxy
-from fedbadges.rulesrepo import RulesRepo
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_configure(config):
+    """
+    Short-term fix to support Python 3.14.
+
+    Twisted 25.5 does not support Python 3.14, and at the time of this writing neither
+    does pytest-twisted. This is because Python removed a number of APIs in asyncio. This
+    is a temporary workaround because they plan to remove these APIs too.
+    """
+    # import asyncio
+    # from twisted.internet import asyncioreactor
+    # asyncioreactor.install(asyncio.new_event_loop())
+    # from twisted.internet import reactor
+    # print(reactor)
+    # asyncio.set_event_loop(asyncio.new_event_loop())
 
 
 @pytest.fixture()
@@ -78,6 +95,8 @@ def fasproxy(fasjson_client):
 
 @pytest.fixture()
 def consumer(fm_config, badges_db, fasjson_client):
+    from fedbadges.consumer import FedoraBadgesConsumer
+
     return FedoraBadgesConsumer()
 
 
@@ -96,6 +115,8 @@ def tahrir_client(fm_config, badges_db, notification_callback_mock):
 
 @pytest.fixture()
 def rules(fm_config, fasjson_client, tahrir_client):
+    from fedbadges.rulesrepo import RulesRepo
+
     repo = RulesRepo(conf["consumer_config"], 1, fasjson_client)
     return repo.load_all(tahrir_client=tahrir_client)
 

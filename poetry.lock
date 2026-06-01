@@ -945,7 +945,7 @@ version = "5.3.1"
 description = "Decorators for Humans"
 optional = false
 python-versions = ">=3.8"
-groups = ["main"]
+groups = ["main", "dev"]
 files = [
     {file = "decorator-5.3.1-py3-none-any.whl", hash = "sha256:f47fe6fdbd2edd623ecfe36875d37aba411624e2670dd395dddae1358689bb3c"},
     {file = "decorator-5.3.1.tar.gz", hash = "sha256:4cbcdd55a6efadb9dbea26b858f4fb3264567b52d69ca0d25b721b553f60ea82"},
@@ -1284,8 +1284,7 @@ version = "3.5.1"
 description = "Lightweight in-process concurrent programming"
 optional = false
 python-versions = ">=3.10"
-groups = ["main"]
-markers = "platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\""
+groups = ["main", "dev"]
 files = [
     {file = "greenlet-3.5.1-cp310-cp310-macosx_11_0_universal2.whl", hash = "sha256:7eacb17a9d41538a2bc4912eba5ef13823c83cb69e4d141d0813debe7163187f"},
     {file = "greenlet-3.5.1-cp310-cp310-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e5cc9606aa5f4e0bde0d3bd502b44f743864c3ffa5cfa1011b1e30f5aa02366f"},
@@ -1367,6 +1366,7 @@ files = [
     {file = "greenlet-3.5.1-cp315-cp315t-win_arm64.whl", hash = "sha256:5028648bf2253ec4745add746129d3904121fa7fe871a76bed23c5720573ce0a"},
     {file = "greenlet-3.5.1.tar.gz", hash = "sha256:5a56aeb7d5d9cc4b3a735efb5095bd4b4f6f0e4f93e5ca876d0e2315137b7829"},
 ]
+markers = {main = "platform_machine == \"aarch64\" or platform_machine == \"ppc64le\" or platform_machine == \"x86_64\" or platform_machine == \"amd64\" or platform_machine == \"AMD64\" or platform_machine == \"win32\" or platform_machine == \"WIN32\""}
 
 [package.extras]
 docs = ["Sphinx", "furo"]
@@ -2725,6 +2725,28 @@ pytest = ">=7"
 
 [package.extras]
 testing = ["process-tests", "pytest-xdist", "virtualenv"]
+
+[[package]]
+name = "pytest-twisted"
+version = "1.14.3"
+description = "A twisted plugin for pytest."
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
+groups = ["dev"]
+files = [
+    {file = "pytest_twisted-1.14.3-py2.py3-none-any.whl", hash = "sha256:f2e3f3f6f12f78df17c028fe16d87af09c76b95a7a85bc378b2d3e73a086e81a"},
+    {file = "pytest_twisted-1.14.3.tar.gz", hash = "sha256:37e150cbbc0edba6592d36c53f44fc1196f3a9e93e7bef6a25bb10d9963f7f3e"},
+]
+
+[package.dependencies]
+decorator = "*"
+greenlet = "*"
+pytest = ">=2.3"
+
+[package.extras]
+dev = ["black", "pre-commit"]
+pyqt5 = ["qt5reactor[pyqt5] (>=0.6.2)"]
+pyside2 = ["qt5reactor[pyside2] (>=0.6.3)"]
 
 [[package]]
 name = "python-dateutil"
@@ -4432,4 +4454,4 @@ schemas = ["anitya-schema", "bodhi-messages", "bugzilla2fedmsg-schema", "ci-mess
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "63cd21b139c506af459cc33b30e8521b8c9d08a59a6670829ec1d276329c6717"
+content-hash = "0e5e7e5c2b662f8d312440ef2ba316c4f4c3e5bfc4956cbfecd2c57c7cbe0371"
