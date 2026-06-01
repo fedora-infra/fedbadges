@@ -9,8 +9,8 @@ Vagrant.configure(2) do |config|
   config.hostmanager.manage_guest = true
 
   config.vm.define "fedbadges" do |fedbadges|
-    fedbadges.vm.box_url = "https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-Vagrant-39-1.5.x86_64.vagrant-libvirt.box"
-    fedbadges.vm.box = "f39-cloud-libvirt"
+    fedbadges.vm.box_url = "https://download.fedoraproject.org/pub/fedora/linux/releases/43/Cloud/x86_64/images/Fedora-Cloud-Base-Vagrant-libvirt-43-1.6.x86_64.vagrant.libvirt.box"
+    fedbadges.vm.box = "f43-cloud-libvirt"
     fedbadges.vm.hostname = "fedbadges.tinystage.test"
 
     fedbadges.vm.synced_folder '.', '/vagrant', disabled: true
