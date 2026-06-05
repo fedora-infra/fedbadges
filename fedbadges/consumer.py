@@ -5,6 +5,7 @@ Authors:  Ross Delinger
           Aurelien Bompard
 """
 
+import asyncio
 import datetime
 import logging
 import time
@@ -32,28 +33,41 @@ class FedoraBadgesConsumer:
     def __init__(self):
         self.config = fm_config["consumer_config"]
         self.badge_rules = []
-        self._ready = self.setup()
+        self.issuer_id = None
+        self.loop = asyncio.get_event_loop()
+        self._ready_d = defer.Deferred()
+        self._ready = self.loop.create_task(self.setup())
+        if not self.loop.is_running():
+            self.loop.run_until_complete(self._ready)
+        self._ready = self.setup_repo_refresh()
 
-    @defer.inlineCallbacks
-    def setup(self):
+    async def setup(self):
         # Five things need doing at start up time
         # 0) Set up a request local to hang thread-safe db sessions on.
         # 1) Initialize our connection to the Tahrir DB
         # 2) Initialize our connection to the datanommer DB.
         # 3) Load our badge definitions and rules from YAML.
         # Cache
-        yield threads.deferToThread(self._initialize_cache)
+        await self.loop.run_in_executor(None, self._initialize_cache)
 
         # Tahrir stuff.
-        yield threads.deferToThread(self._initialize_tahrir_connection)
+        await self.loop.run_in_executor(None, self._initialize_tahrir_connection)
 
         # Datanommer stuff
-        yield threads.deferToThread(self._initialize_datanommer_connection)
+        await self.loop.run_in_executor(None, self._initialize_datanommer_connection)
 
         # FASJSON stuff
-        self.fasjson = yield threads.deferToThread(FASProxy, self.config["fasjson_base_url"])
+        self.fasjson = await self.loop.run_in_executor(
+            None, FASProxy, self.config["fasjson_base_url"]
+        )
 
+        # Signal we're done
+        self._ready_d.callback(None)
+
+    @defer.inlineCallbacks
+    def setup_repo_refresh(self):
         # Load badge definitions periodically
+        yield self._ready_d
         self._rules_repo = RulesRepo(self.config, self.issuer_id, self.fasjson)
         yield threads.deferToThread(self._rules_repo.setup)
         rules_reload_interval = self.config.get(
