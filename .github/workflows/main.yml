@@ -14,26 +14,26 @@ on:
 
 jobs:
 
-  # checks:
-  #   name: Checks
-  #   runs-on: ubuntu-latest
-  #   container: fedorapython/fedora-python-tox:latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    container: fedorapython/fedora-python-tox:latest
+    steps:
+      - uses: actions/checkout@v6
 
-  #     - name: Install dependencies
-  #       run: |
-  #         dnf install -y pre-commit git libpq-devel krb5-devel
-  #         pip install poetry>=1.2
+      - name: Install dependencies
+        run: |
+          dnf install -y pre-commit git libpq-devel krb5-devel
+          pip install poetry>=1.2
 
-  #     - name: Mark the working directory as safe for Git
-  #       run: git config --global --add safe.directory $PWD
+      - name: Mark the working directory as safe for Git
+        run: git config --global --add safe.directory $PWD
 
-  #     - name: Install the project
-  #       run: poetry install
+      - name: Install the project
+        run: poetry install
 
-  #     - name: Run pre-commit checks
-  #       run: pre-commit run --all-files
+      - name: Run pre-commit checks
+        run: pre-commit run --all-files
 
   unit-tests:
     name: Unit tests
@@ -47,6 +47,9 @@ jobs:
           dnf install -y libpq-devel krb5-devel
           pip install poetry>=1.2
 
+      - name: Mark the working directory as safe for Git
+        run: git config --global --add safe.directory $PWD
+
       - name: Run the tests
         run: tox -e ${{ matrix.pyver }}
 
@@ -56,7 +59,6 @@ jobs:
           - py310
           - py311
           - py312
-          - lint
 
 
   # https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
@@ -64,7 +66,7 @@ jobs:
     name: Build distribution 📦
     runs-on: ubuntu-latest
     needs:
-      # - checks
+      - checks
       - unit-tests
     outputs:
       release-notes: ${{ steps.extract-changelog.outputs.markdown }}
@@ -129,6 +131,7 @@ jobs:
     name: Create a GitHub Release 📢
     needs:
       - publish-to-pypi
+      # The "build" dep is redundant but needed to access the changelog
       - build
     runs-on: ubuntu-latest
     permissions:
@@ -154,5 +157,5 @@ jobs:
         with:
           files: dist/*
           fail_on_unmatched_files: true
-          body: ${{ needs.build.outputs.release-notes }}
           # generate_release_notes: true
+          body: ${{ needs.build.outputs.release-notes }}
