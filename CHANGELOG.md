@@ -1,5 +1,119 @@
 # Changelog
 
+## Version 2.3.0
+
+- Read and store current values in the DB as well ([813a96d](https://github.com/fedora-infra/fedbadges/commit/813a96d>))
+- Compute the leaderboard when a badge is awarded ([1bc58d7](https://github.com/fedora-infra/fedbadges/commit/1bc58d7>))
+- Protect against the current value being inserted in the DB by another process ([406d133](https://github.com/fedora-infra/fedbadges/commit/406d133>))
+- Only store the current value in the DB, not in the cache ([0ba0b4e](https://github.com/fedora-infra/fedbadges/commit/0ba0b4e>))
+- Guard against get_previous_fn() taking longer than the redis lock ([0b41dd7](https://github.com/fedora-infra/fedbadges/commit/0b41dd7>))
+- Better handling of expired Redis locks ([b0eac37](https://github.com/fedora-infra/fedbadges/commit/b0eac37>))
+- Better handling of duplicate assertions ([4c5b5ee](https://github.com/fedora-infra/fedbadges/commit/4c5b5ee>))
+- Make the list of banned users configurable ([81bc386](https://github.com/fedora-infra/fedbadges/commit/81bc386>))
+- Add a unit test for the previous commit ([1297e9a](https://github.com/fedora-infra/fedbadges/commit/1297e9a>))
+- Fix manual awarders that were using usernames instead of emails ([3d44c90](https://github.com/fedora-infra/fedbadges/commit/3d44c90>))
+- Don't create the DB connection in a thread pool or it will not be available to the main thread ([95c9d52](https://github.com/fedora-infra/fedbadges/commit/95c9d52>))
+- Use Twisted for the looping call ([4a29a65](https://github.com/fedora-infra/fedbadges/commit/4a29a65>))
+- Bump `tahrir-api` from `1.4.0` to `1.5.6` ([02f227f](https://github.com/fedora-infra/fedbadges/commit/02f227f>))
+- Use pre-commit instead of calling ruff and black in tox ([7549679](https://github.com/fedora-infra/fedbadges/commit/7549679>))
+- Fix Github Actions ([56126ab](https://github.com/fedora-infra/fedbadges/commit/56126ab>))
+- Fix formatting ([338860c](https://github.com/fedora-infra/fedbadges/commit/338860c>))
+- Fix ruff issues ([e2f6d99](https://github.com/fedora-infra/fedbadges/commit/e2f6d99>))
+- Liccheck still needs pkg_resources ([a8af353](https://github.com/fedora-infra/fedbadges/commit/a8af353>))
+- Add a log message ([e6ad585](https://github.com/fedora-infra/fedbadges/commit/e6ad585>))
+- Add schema packages (
+    [af3adfd](https://github.com/fedora-infra/fedbadges/commit/af3adfd>),
+    [b650aec](https://github.com/fedora-infra/fedbadges/commit/b650aec>),
+    [588e7e3](https://github.com/fedora-infra/fedbadges/commit/588e7e3>),
+    [3497050](https://github.com/fedora-infra/fedbadges/commit/3497050>),
+    [86f3d80](https://github.com/fedora-infra/fedbadges/commit/86f3d80>),
+    [e53677d](https://github.com/fedora-infra/fedbadges/commit/e53677d>)
+  )
+- Blocklist additional usernames (
+    [56b9324](https://github.com/fedora-infra/fedbadges/commit/56b9324>),
+    [d2ae673](https://github.com/fedora-infra/fedbadges/commit/d2ae673>),
+    [2f3103b](https://github.com/fedora-infra/fedbadges/commit/2f3103b>)
+  )
+- Update poetry lock file to allow tahrir-api 1.4.3 ([d69dec5](https://github.com/fedora-infra/fedbadges/commit/d69dec5>))
+- Update dependencies ([7545b3e](https://github.com/fedora-infra/fedbadges/commit/7545b3e>))
+- Update dependency requests-ratelimiter (
+    [c9351bd](https://github.com/fedora-infra/fedbadges/commit/c9351bd>),
+    [988417d](https://github.com/fedora-infra/fedbadges/commit/988417d>),
+    [2253b08](https://github.com/fedora-infra/fedbadges/commit/2253b08>)
+  )
+- Update dependency redis to v6 ([709c928](https://github.com/fedora-infra/fedbadges/commit/709c928>))
+- Update dependency requests to v2.32.4 [SECURITY] ([3327e8c](https://github.com/fedora-infra/fedbadges/commit/3327e8c>))
+- Update dependency psutil to v7 ([8de4106](https://github.com/fedora-infra/fedbadges/commit/8de4106>))
+- Bump urllib3 from 2.4.0 to 2.5.0 ([2a52dd4](https://github.com/fedora-infra/fedbadges/commit/2a52dd4>))
+- Bump jinja2 from 3.1.5 to 3.1.6 ([56da57c](https://github.com/fedora-infra/fedbadges/commit/56da57c>))
+- Bump cryptography from 44.0.0 to 44.0.1 ([cb8e675](https://github.com/fedora-infra/fedbadges/commit/cb8e675>))
+- Fix the Vagrant development environment (
+    [972c08a](https://github.com/fedora-infra/fedbadges/commit/972c08a>),
+    [4f27183](https://github.com/fedora-infra/fedbadges/commit/4f27183>),
+    [0c9356e](https://github.com/fedora-infra/fedbadges/commit/0c9356e>)
+  )
+- Update Github Actions (
+    [43a10e8](https://github.com/fedora-infra/fedbadges/commit/43a10e8>),
+    [6e27506](https://github.com/fedora-infra/fedbadges/commit/6e27506>),
+    [2aff2b0](https://github.com/fedora-infra/fedbadges/commit/2aff2b0>),
+    [48e41a1](https://github.com/fedora-infra/fedbadges/commit/48e41a1>),
+    [350ae24](https://github.com/fedora-infra/fedbadges/commit/350ae24>),
+    [737873e](https://github.com/fedora-infra/fedbadges/commit/737873e>),
+    [bc1044d](https://github.com/fedora-infra/fedbadges/commit/bc1044d>),
+    [cb007c3](https://github.com/fedora-infra/fedbadges/commit/cb007c3>),
+    [0597bf7](https://github.com/fedora-infra/fedbadges/commit/0597bf7>),
+    [6aea03a](https://github.com/fedora-infra/fedbadges/commit/6aea03a>),
+    [1f534ed](https://github.com/fedora-infra/fedbadges/commit/1f534ed>),
+    [781acd6](https://github.com/fedora-infra/fedbadges/commit/781acd6>),
+    [4027dbe](https://github.com/fedora-infra/fedbadges/commit/4027dbe>)
+  )
+- Update dependencies in lockfile (
+    [7672817](https://github.com/fedora-infra/fedbadges/commit/7672817>),
+    [770edcc](https://github.com/fedora-infra/fedbadges/commit/770edcc>),
+    [ff4c723](https://github.com/fedora-infra/fedbadges/commit/ff4c723>),
+    [aa8e001](https://github.com/fedora-infra/fedbadges/commit/aa8e001>),
+    [3c25f98](https://github.com/fedora-infra/fedbadges/commit/3c25f98>),
+    [22bd05a](https://github.com/fedora-infra/fedbadges/commit/22bd05a>),
+    [96aeaac](https://github.com/fedora-infra/fedbadges/commit/96aeaac>),
+    [91aaf2a](https://github.com/fedora-infra/fedbadges/commit/91aaf2a>),
+    [ca533a7](https://github.com/fedora-infra/fedbadges/commit/ca533a7>),
+    [e8c8c8a](https://github.com/fedora-infra/fedbadges/commit/e8c8c8a>),
+    [37e1165](https://github.com/fedora-infra/fedbadges/commit/37e1165>),
+    [3c9abfd](https://github.com/fedora-infra/fedbadges/commit/3c9abfd>),
+    [9b026d4](https://github.com/fedora-infra/fedbadges/commit/9b026d4>),
+    [cd64b3b](https://github.com/fedora-infra/fedbadges/commit/cd64b3b>),
+    [815dc79](https://github.com/fedora-infra/fedbadges/commit/815dc79>),
+    [b82617f](https://github.com/fedora-infra/fedbadges/commit/b82617f>),
+    [fb343b2](https://github.com/fedora-infra/fedbadges/commit/fb343b2>),
+    [88fbf59](https://github.com/fedora-infra/fedbadges/commit/88fbf59>),
+    [ec3c953](https://github.com/fedora-infra/fedbadges/commit/ec3c953>),
+    [b5760b8](https://github.com/fedora-infra/fedbadges/commit/b5760b8>),
+    [69c1219](https://github.com/fedora-infra/fedbadges/commit/69c1219>),
+    [98484fe](https://github.com/fedora-infra/fedbadges/commit/98484fe>),
+    [7c1e855](https://github.com/fedora-infra/fedbadges/commit/7c1e855>),
+    [771b7b3](https://github.com/fedora-infra/fedbadges/commit/771b7b3>),
+    [478e16e](https://github.com/fedora-infra/fedbadges/commit/478e16e>),
+    [35c8de0](https://github.com/fedora-infra/fedbadges/commit/35c8de0>),
+    [50b6c5b](https://github.com/fedora-infra/fedbadges/commit/50b6c5b>),
+    [ad6d939](https://github.com/fedora-infra/fedbadges/commit/ad6d939>),
+    [121e2a9](https://github.com/fedora-infra/fedbadges/commit/121e2a9>),
+    [b5b73e8](https://github.com/fedora-infra/fedbadges/commit/b5b73e8>),
+    [6f491df](https://github.com/fedora-infra/fedbadges/commit/6f491df>),
+    [90fb7b3](https://github.com/fedora-infra/fedbadges/commit/90fb7b3>),
+    [51130b2](https://github.com/fedora-infra/fedbadges/commit/51130b2>),
+    [a5edef4](https://github.com/fedora-infra/fedbadges/commit/a5edef4>),
+    [70964e5](https://github.com/fedora-infra/fedbadges/commit/70964e5>),
+    [27a3255](https://github.com/fedora-infra/fedbadges/commit/27a3255>),
+    [04cca56](https://github.com/fedora-infra/fedbadges/commit/04cca56>),
+    [712363d](https://github.com/fedora-infra/fedbadges/commit/712363d>),
+    [18a96da](https://github.com/fedora-infra/fedbadges/commit/18a96da>),
+    [affb27d](https://github.com/fedora-infra/fedbadges/commit/affb27d>),
+    [5a94912](https://github.com/fedora-infra/fedbadges/commit/5a94912>),
+    [5d9b501](https://github.com/fedora-infra/fedbadges/commit/5d9b501>),
+    [a230c75](https://github.com/fedora-infra/fedbadges/commit/a230c75>),
+    [57de2cf](https://github.com/fedora-infra/fedbadges/commit/57de2cf>)
+  )
+
 ## Version 2.2.0
 
 - Remove args from `grep()` that are not in `get_first()` ([5dcd107](https://github.com/fedora-infra/tahrir-api/commit/5dcd107>))
